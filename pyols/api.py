@@ -78,6 +78,7 @@ class OntologyTool(object):
                             disambiguation=disambiguation,
                             description=description)
         newkw.assert_valid()
+        return newkw
 
     def getKeyword(self, name):
         """ Return keyword 'name' from current ontology.
@@ -95,47 +96,30 @@ class OntologyTool(object):
         """ Return an iterator over all the keywords in the current NS. """
         return Keyword.query_by(namespace=self._namespace)
 
-    def addRelation(self, name, weight=0.0, types=[], inverses=[], uid=""):
-        """Create a keyword relation 'name' in the Plone Relations library, if non-existant.
+    def addRelation(self, name, weight=1.0, types=[], inverse=None):
+        """ Create a keyword relation 'name' in the Plone Relations
+            library, raising an exception if it already exists.
 
-        'weight' is set in any case if in [0,1]. For each item in the 'types' list from {'transitive', 'symmetric', 'functional', 'inversefunctional'} an appropiate rule is created in the Relations ruleset. For each relation name in the 'inverses' list an InverseImplicator rule is created in the Relations ruleset. The inverse keyword relation is created in the Plone Relations library if non-existant. Rules for inferring types for the inverse relation are created. If 'uid' is specified, the referenced relation ruleset is registered as relation 'name'.
+            weight is in the range [0,1].
+            types is a list of relationship types, each of which is one of:
+                {'transitive', 'symmetric', 'functional', 'inversefunctional'}
+            inverse is the name of the the inverse relation.  If it does not
+            exist, it will be created with the same weight and types.
+            
+            If the inverse, B, already has an inverse, C, the inverse of C
+            will be set to None and the inverse of B set to the new relation. """
 
-        Exceptions:
-            ValidationException : 'name' is not a valid XML NCName.
-            NameError           : Relation 'name' already exists in current ontology.
-            AttributeError      : 'uid' references no relation in current ontology.
-        """
-        if not owl.isXMLNCName(name):
-            raise ValidationException("Invalid name for relation specified")
+        if inverse is not None:
+            try:
+                inverse = self.getRelation(inverse)
+            except PyolsNotFound:
+                inverse = self.addRelation(name, weight, types)
 
-        if self.isUsedName(name, 'Ruleset'):
-            raise NameError, "Relation '%s' already exists in current ontology" % name
-
-        relations_library = getToolByName(self, 'relations_library')
-
-        if not uid:
-            uid = generateUniqueId('Ruleset')
-            relations_library.invokeFactory('Ruleset', uid)
-
-        ruleset = relations_library.getRuleset(uid)
-        ruleset.setTitle(name)
-        ruleset.reindexObject()
-        ruleset.unmarkCreationFlag()
-
-        self.setWeight  (name, weight)
-
-        if type(types) != ListType:
-            types = [types]
-        self.setTypes   (name, types)
-
-        if type(inverses) != ListType:
-            inverses = [inverses]
-        self.setInverses(name, inverses)
-
-        zLOG.LOG(PROJECTNAME, zLOG.INFO,
-                 "Added relation %s." % name)
-
-        return ruleset
+        newrel = Relation.new(namespace_id=self._namespace.id,
+                              name=name, weight=weight, inverse=inverse)
+        newrel.types = types
+        newrel.assert_valid()
+        return newrel
 
     def getRelation(self, name):
         """Return ruleset for keyword relation 'name' of current ontology from the Plone Relations library.

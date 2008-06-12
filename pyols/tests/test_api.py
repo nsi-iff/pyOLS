@@ -111,4 +111,7 @@ class TestOntologyTool:
             kws = list(self.ot.keywords())
             assert_equal(len(kws), x+1)
 
+    def testAddRelation(self):
+        raise SkipTest("Finish this test after testSetTypes in test_model.")
+
 run_tests(__name__)

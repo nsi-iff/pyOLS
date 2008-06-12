@@ -147,22 +147,101 @@ Relations are the different possible ways keywords can be connected.
 
 Relations bind keywords together through "KeywordRelationship"s.
 """
-class Relation(Entity):
+class Relation(Entity, StorageMethods):
     has_field('id', Integer, primary_key=True)
     belongs_to('namespace', of_kind='Namespace', required=True)
     has_field('name', Unicode(128), required=True)
 
     has_field('revelance', Float, default=1)
-    has_field('transitive', Boolean, default=False)
-    has_field('symmetric', Boolean, default=False)
-    has_field('functional', Boolean, default=False)
-    has_field('inverse_functional', Boolean, default=False)
-    belongs_to('inverse', of_kind='Relation')
+    has_many('_types', of_kind='RelationType')
+    # Note: the original documentation suggested that a relation could
+    #       have more than one inverse.  After much though on the matter,
+    #       we have decided that this does not make any sense, so we have
+    #       left that out.
+    belongs_to('_inverse', of_kind='Relation')
     # The 'belongs_to' is slightly misleading here... But
     # it's the best way to express this kind of relationship
 
     using_options(tablename='relations')
     using_table_options(UniqueConstraint('namespace_id', 'name'))
+
+    def _get_inverse(self):
+        return self._inverse
+    def _set_inverse(self, new_inverse):
+        """ Set the inverse of this relationship.
+            If the new inverse, B, already has an inverse, C, the inverse of C
+            will be set to None and the inverse of B set to self. """
+
+        if new_inverse is None and self.inverse is None:
+            # Nothing to do
+            return
+
+        if new_inverse is not None and new_inverse._inverse is not None:
+            # If the new inverse has an inverse, null it out
+            new_inverse._inverse._inverse = None
+            new_inverse._inverse.flush()
+
+        if self.inverse is not None:
+            # And if we have an inverse, null that out
+            self._inverse._inverse = None
+            self._inverse.flush()
+
+        self._inverse = new_inverse
+
+        if new_inverse is not None:
+            new_inverse._inverse = self
+            new_inverse.flush()
+        self.flush()
+    inverse = property(_get_inverse, _set_inverse)
+
+    def _get_types(self):
+        return [type.name for type in self._types]
+    def _set_types(self, new_types):
+        for type in self._types:
+            if type.name not in new_types:
+                type.expunge()
+            else: # The type is in the new_types
+                new_types.remove(type.name)
+        for type in new_types:
+            type = RelationType.new(name=type, relation=self)
+            type.assert_valid()
+            self._types.append(type)
+        for type in self._types:
+            type.flush()
+        self.flush()
+    types = property(_get_types, _set_types)
+
+    def assert_valid(self):
+        StorageMethods.assert_valid(self)
+
+        if not 0 <= self.weight <= 1:
+            raise PyolsValidationError("%s is not a valid weight for relation %s. "
+                                       "Weights must be in the range [0,1]."\
+                                       %(self.weight, self.name))
+
+         
+
+
+class RelationType(Entity, StorageMethods):
+    has_field('name', Integer, primary_key=True)
+    belongs_to('relation', of_kind='Relation', primary_key=True)
+
+    using_options(tablename='relation_types')
+
+    valid_types = ('transitive', 'symmetric', 'functional', 'inverse_functional')
+
+    def assert_valid(self):
+        if self.name not in self.valid_types:
+            return PyolsProgrammerError("%s is not a valid relation type. "
+                                        "Valid types are %s." \
+                                        %(self.name, ", ".join(self.valid_types)))
+        StorageMethods.assert_valid(self)
+
+
+    has_field('transitive', Boolean, default=False)
+    has_field('symmetric', Boolean, default=False)
+    has_field('functional', Boolean, default=False)
+    has_field('inverse_functional', Boolean, default=False)
 
 
 class Keyword(Entity, StorageMethods):
