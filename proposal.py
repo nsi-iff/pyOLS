@@ -71,6 +71,18 @@ class KeywordProposal(BaseFolder):
     archetype_name = 'Keyword Proposal'
     content_icon = "kwproposal.gif"
 
+    # Alias view->base_view for Plone 2.5, cf. http://dev.plone.org/archetypes/ticket/677
+    aliases = {
+        '(Default)'  : 'base_view',
+        'view'       : 'base_view',
+        'index.html' : 'base_view',
+        'edit'       : 'base_edit',
+        'properties' : 'base_metadata',
+        'sharing'    : 'folder_localrole_form',
+        'gethtml'    : '',
+        'mkdir'      : '',
+        }
+
     def at_post_create_script(self):
         self.name = self.generateName(self.getKPTitle(), self.getShortAdditionalDescription())
 
