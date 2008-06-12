@@ -1,18 +1,8 @@
-"""
-from keywordgraph import KeywordGraph
-from keyword import Keyword
-from ontology import Ontology
-from utils import generateUniqueId
-from config import *
-import owl
-"""
+from pronto.model import Keyword, Namespace
 
 import difflib
-
 from types import *
-
 import os.path, sys, os, glob, re
-
 from warnings import warn
 
 def _unifyRawResults(results):
@@ -180,7 +170,7 @@ def findFonts(paths = None):
 ###
 ###END TTFQuery
 
-class OntologyTool:
+class OntologyTool(object):
     def __init__(self, namespace):
         # Set the namespace we will use for convinience, but it can be changed
         # using instance.namespace = new_namespace without consequence.
@@ -229,19 +219,23 @@ class OntologyTool:
     def _set_namespace(self, new_namespace):
         """ Set the current namespace.
             It it does not exist, it will be created. """
-        self._namespace = Namespace.get_or_create(name=new_namespace)
+        self._namespace = Namespace.get_or_create_by(name=new_namespace)
 
     def _get_namespace(self):
         """ Return the name of the current namespace. """
         return self._namespace.name
-
     namespace = property(_get_namespace, _set_namespace)
 
     def addKeyword(self, name, disambiguation='', description=''):
         """ Create a keyword in the ontology.
             An error will be raised if a keyword with the same name
             and disambiguation exists in the current namespace. """
-        # XXX: Finish!
+
+        newkw = Keyword.new(namespace_id=self._namespace.id, name=name,
+                            disambiguation=disambiguation,
+                            description=description)
+        newkw.assert_valid()
+        newkw.save()
 
     def getKeyword(self, name):
         """Return keyword 'name' from current ontology.
