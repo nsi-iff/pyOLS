@@ -12,7 +12,7 @@ if sys.version_info < (2, 5):
 
 
 setup(
-    name = 'PROnto',
+    name = 'pyOLS',
 
     version = "0.1a",
 

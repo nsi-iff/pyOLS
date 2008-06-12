@@ -1,4 +1,4 @@
-from pronto.model import Keyword, Namespace
+from pyols.model import Keyword, Namespace
 
 import difflib
 from types import *

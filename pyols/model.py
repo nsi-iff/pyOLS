@@ -1,7 +1,7 @@
-""" Model for PROnto. """
+""" Model for pyOLS. """
 
-from pronto.exceptions import ProntoValidationError, ProntoProgrammerError
-from pronto.owl import isXMLNCName
+from pyols.exceptions import PyolsValidationError, PyolsProgrammerError
+from pyols.owl import isXMLNCName
 
 from elixir import *
 from sqlalchemy import UniqueConstraint
@@ -53,7 +53,7 @@ class StorageMethods:
         for field in required_fields:
             field_val = getattr(self, field)
             if not field_val:
-                raise ProntoValidationError(
+                raise PyolsValidationError(
                         "Field %s of %s null (%r) when it must be non-null"
                         %(field, self, field_val))
 
@@ -64,7 +64,7 @@ class StorageMethods:
                                if isinstance(x, UniqueConstraint)]
 
         if len(constraints) > 1:
-            raise ProntoProgrammerError(
+            raise PyolsProgrammerError(
                     "assert_unique will not behave correctly if there is more "
                     "than one unique constraint on a table.")
 
@@ -74,7 +74,7 @@ class StorageMethods:
 
         if self.get_by(**query):
             vals = ", ".join(["=".join(a) for a in query.items()])
-            raise ProntoValidationError(
+            raise PyolsValidationError(
                     "A %s already exists with %s."
                     %(self.__class__.__name__, values))
 
@@ -82,11 +82,11 @@ class StorageMethods:
         # This may or may not stay here... I need to figure out how to
         # do validateion.
         if not hasattr(self, 'name'):
-            raise ProntoProgrammerError("%s does not have a name."
+            raise PyolsProgrammerError("%s does not have a name."
                                         %(self.__class__.__name__))
 
         if not isXMLNCName(self.name):
-            raise ProntoValidationError("%s is not a valid name for a %s"
+            raise PyolsValidationError("%s is not a valid name for a %s"
                                         %(self.name, self.__class__.__name__))
 
     def save(self):

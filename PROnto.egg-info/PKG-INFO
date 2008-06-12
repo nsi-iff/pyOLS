@@ -1,5 +1,5 @@
 Metadata-Version: 1.0
-Name: PROnto
+Name: pyOLS
 Version: 0.1adev
 Summary: Python Remote Ontology provides functions for creating, searching and graphing ontologies over XML-RPC.
 Home-page: UNKNOWN
