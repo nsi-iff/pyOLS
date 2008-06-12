@@ -72,6 +72,24 @@ class ClassificationTool(UniqueObject,
         self._cutoff = 0.1
         self._use_gv_tool = 0
         self._storage = 'kw_storage'
+        self._classifytypes = []
+
+    def reftypes(self):
+        '''returns a list of all archetype (and hopefully this includes all referencable) portal types'''
+        at = getToolByName(self, 'archetype_tool')
+        typeslist=[]
+        for el in at.listRegisteredTypes():
+            typeslist.append(el['meta_type'])
+            
+        return typeslist
+
+    def getClassifyTypes(self):
+        '''returns a list of all the types which are set as classifyable'''
+        return self._classifytypes
+
+    def setClassifyTypes(self, types):
+        '''set the list of the classifyable types'''
+        self._classifytypes=types
 
     def returnReadMe(self):
         """Return README file for display in configlet"""

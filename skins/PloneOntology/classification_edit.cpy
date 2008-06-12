@@ -5,7 +5,7 @@
 ##bind script=script
 ##bind state=state
 ##bind subpath=traverse_subpath
-##parameters=keywords=None, kw=None, delKeywords=None, searchterm='', keyworda='', keywordb='', SearchKW='',SearchKWA='', SearchKWB='', skw=''
+##parameters=keywords=[], kw=None, delKeywords=None, searchterm='', keyworda='', keywordb='', SearchKW='',SearchKWA='', SearchKWB='', skw='',
 ##title=Classification handler
 ##
 

@@ -1,0 +1,81 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      lang="en"
+      metal:use-macro="here/main_template/macros/master"
+      i18n:domain="plone">
+
+ <body>
+
+  <tal:block metal:fill-slot="main"
+       tal:define="kw_search python: request.get('kw_search','');
+	           skw python: request.get('skw','');
+	     	  ">
+
+    <form name="classify_form"
+          method="post"
+          enctype="multipart/form-data"
+          class="enableUnloadProtection"
+          tal:attributes="action python:here.absolute_url()+'/'+template.id">
+
+
+    <tal:block tal:define="results python:here.portal_classification.searchMatchingKeywordsFor(here, kw_search,);
+                           existing_refs python:here.getRefs(relationship='classifiedAs',)">
+
+<fieldset><legend>search for new keywords for referencing</legend>
+      <input type="text"
+	    name="kw_search"
+	    value=""
+	    id="kw_search"
+	    size="30"
+	    tabindex="#"
+            onfocus="loadHandler(this);"
+            onkeypress="activeStringStart(this)"
+	    />
+
+	<input type="hidden" 
+               name="id"
+               tal:attributes="value here/id" />
+
+     <input type="submit" name="form.button.kw_search" value="Search"/>
+		<div tal:condition="results">
+		  <table> <!-- Table Header ??? -->
+		    <tr tal:repeat="item results">
+		      <tal:block tal:define="cururl request/URL; 
+		                             s item/title_or_id; 
+					     newurl string:${cururl}?fieldset=classification&searchterm=${s}">
+		      <td><input type="checkbox" name="keywords:list" tal:attributes="value item/getId"/></td>
+
+		      <td><span tal:content="item/title_or_id"/></td>
+		      <td><span tal:replace="item/description|nothing"/></td>
+		      </tal:block>
+		    </tr>
+		  </table>
+		  <input type="submit" name="form.button.add_ref" value="Add References"/>
+		</div>
+
+	 </fieldset>
+		<span tal:condition="python: existing_refs!=[]">
+<fieldset><legend>current refenced keywords</legend>
+		  <table> <!-- Table Header ??? -->
+		    <tr tal:repeat="item existing_refs">
+		      <tal:block tal:define="cururl request/URL; 
+		                             s item/title_or_id; 
+					     newurl string:${cururl}?fieldset=classification&searchterm=${s}">
+		      <td><input type="checkbox" name="exkeywords:list" tal:attributes="value item/getId"/></td>
+
+		      <td><span tal:content="item/title_or_id"/></td>
+		      <td><span tal:replace="item/description|nothing"/></td>
+		      </tal:block>
+		    </tr>
+		  </table>
+<input type="submit" name="form.button.del_ref" value="Remove References"/></fieldset>     </span>      <input type="hidden" name="form.submitted" value="1" />
+
+	      </tal:block>
+          <input type="hidden" name="form.submitted" value="1" />
+
+</form>	
+       
+</tal:block>
+
+</body>
+</html>
+ 

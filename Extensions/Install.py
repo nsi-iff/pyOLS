@@ -81,6 +81,16 @@ def registerConfiguration(portal, out):
                                    , None
                                    )
 
+def addClassifyAction(portal):
+    at=getToolByName(portal, 'portal_actions')
+
+    at.addAction('classify',
+                 name='Classify',
+                 action='string:${object_url}/classify_form',
+                 condition='python:(portal.reference_catalog.isReferenceable(object) and object.meta_type in portal.portal_classification.getClassifyTypes())',
+                 permission='Modify portal content',
+                 category='object_tabs')
+
 def addCustomFormControllerTransitions(portal, out):
     # st = getToolByName(portal, 'portal_skins')
     # pt = st.archetypes.base_edit
@@ -236,6 +246,7 @@ def install(portal):
     setupRelationProposalWorkflow(portal, out)
     installTypes(portal, out, listTypes(PROJECTNAME), PROJECTNAME, GLOBALS)
     addArchive(portal, out)
+    addClassifyAction(portal)
     setupTool(portal, out)
     wf_tool = getToolByName(portal, 'portal_workflow')
     wf_tool.setChainForPortalTypes('KeywordProposal', 'keyword_proposal_workflow ')
@@ -248,7 +259,6 @@ def install(portal):
 
 def uninstall(portal):
     out = StringIO()
-
     portal_conf=getToolByName(portal,'portal_controlpanel')
     portal_conf.unregisterConfiglet(PROJECTNAME)
     removeCustomFormControllerTransitions(portal, out)

@@ -64,6 +64,12 @@
                tal:content="value"
                tal:attributes="value value;
                                selected python:test(value == gtool.getLayouter())" />
+       </select></td></tr>
+       <tr><td>Types that allow classification</td><td><select name="types" size="7" multiple tal:define="values python: ctool.reftypes()">
+       <option tal:repeat="value values"
+               tal:content="value"
+               tal:attributes="value value;
+                               selected python:test(value in ctool.getClassifyTypes())" />
        </select></td></tr><table>
       <input type="submit" name="form.button.change" value="Save Changes"/>
       <input type="hidden" name="form.submitted" value="1" />

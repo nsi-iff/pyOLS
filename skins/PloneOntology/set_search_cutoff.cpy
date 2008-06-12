@@ -5,7 +5,7 @@
 ##bind script=script
 ##bind state=state
 ##bind subpath=traverse_subpath
-##parameters=cutoff=0.1, storage='kw_storage', tool='twopi',
+##parameters=cutoff=0.1, storage='kw_storage', tool='fdp', types=[]
 ##title=
 ##
 
@@ -13,6 +13,8 @@ ctool = context.portal_classification
 gtool = context.graphviz_tool
 
 ctool.setStorageId(storage)
+
+ctool.setClassifyTypes(types)
 
 try:
     ctool.setSearchCutoff(cutoff)
