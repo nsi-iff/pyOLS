@@ -186,6 +186,7 @@ class Keyword(BaseContent):
             rel_id = ctool.getRelation(relation).getId()
         else:
             rel_id = [ctool.getRelation(rel).getId() for rel in ctool.relations(rlib)]
+        # Returns a list of Keywords which relate back to this one
         return self.getRefs(rel_id)
 
     def getBackReferences(self, relation=None):

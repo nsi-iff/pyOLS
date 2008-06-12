@@ -6,20 +6,22 @@ import difflib
 from types import *
 
 def _unifyRawResults(results):
-    """unify result list and add scores for unique objects.
-
-    results is list of tuples (score, object).
-    """
+    """ Unify result list and add scores for unique objects.
+        Result is list of tuples (score, object).
+        results: a list of (relevence, Keyword) tuples.
+        >>> _unifyRawResults([(1.0, 'dog'), (1.0, 'cat'), (1.0, 'dog')])
+        [(2.0, 'dog'), (1.0, 'cat')]
+        >>> """
 
     result = []
     obs = []
-    for c in results:
-        if not c[1] in obs:
-            result.append(c)
-            obs.append(c[1])
+    for (rel, kw) in results:
+        if not kw in obs:
+            result.append((rel, kw))
+            obs.append(kw)
         else:
-            index = obs.index(c[1])
-            result[index] = (result[index][0] + c[0], result[index][1])
+            index = obs.index(kw)
+            result[index] = (result[index][0] + rel, result[index][1])
 
     return result
 
@@ -191,10 +193,8 @@ class OntologyTool(object):
         kwa.remove()
 
     def search(self, kwName, links="all"):
-        """Search Content for a given keyword with name 'kwName'.
-
-        By default follow all link types.
-        """
+        """ Search Content for a given keyword with name 'kwName'.
+            By default follow all link types.  """
 
         keywords = self.getRelatedKeywords(kwName, links=links,
                                            cutoff = self.getSearchCutoff())
@@ -215,8 +215,7 @@ class OntologyTool(object):
         return results
 
     def searchFor(self, obj, links="all"):
-        """Search related content for content object.
-        """
+        """ Search for content related to obj. """
 
         # search not possible for non AT types
         if not getattr(obj, 'isReferenceable', 0): return []
@@ -238,9 +237,11 @@ class OntologyTool(object):
 
         return results
 
-    def getRelatedKeywords(self, keyword, fac=1, result={}, links="all", cutoff=0.1):
-        """Return list of keywords, that are related to keyword with name 'keyword'.
-        """
+    def getRelatedKeywords(self, keyword, fac=1, result={},
+                           links="all", cutoff=0.1):
+        """ Return list of keywords, that are related to 'keyword'.
+            getRelatedKeywords('dog', 0.5, {'cat': 1}, "all", 0.2) =>
+                {'dog': 0.5', 'cat': 1, 'golden retriever': 0.25} """
 
         try:
             kwObj = self.getKeyword(keyword)
@@ -257,10 +258,13 @@ class OntologyTool(object):
         # proper link types initialization
         if type(links) == StringType:
             if links == "all":
+                # Query for all the possible relationships
                 rl = getToolByName(self, 'relations_library')
                 links = self.relations(rl)
             else:
+                # Only use the relationship from links
                 links = [links]
+        # Otherwise links is a list of relationship types
 
         children = self._getDirectLinkTargets(kwObj, fac, links, cutoff)
         result = self._getRecursiveContent(kwObj, children, result, links, cutoff)
@@ -268,30 +272,50 @@ class OntologyTool(object):
         return result
 
     def _getDirectLinkTargets(self, kwObj, fac, links, cutoff):
+        """ kwObj: The keyword we're dealing with
+            fac: It's relevence factor
+            links: Relationships to follow
+            cutoff: Stop searching below this relevence  """
+
+
         children=[]
 
         for rel in links:
+            # The relevence of keywords related by this relationship
+            # will be the relevence of this keyword * weight of the relationship
             relfac = self.getWeight(rel) * fac
+            if relfac <= cutoff: continue
             children.extend([(relfac, x)
-                             for x in (kwObj.getReferences(rel) or []) if x is not None and relfac>cutoff])
+                              for x in (kwObj.getReferences(rel) or [])
+                              if x is not None])
 
+        # At this point, children will be a list of (relevence, Keyword) tuples,
+        # where each Keyword relates back to the kwObj
         return _unifyRawResults(children)
 
     def _getRecursiveContent(self, kwObj, children, result, links, cutoff):
-        for c in children:
-            cname = c[1].getName()
-            if not result.has_key(cname):
-                result[cname] = c[0]
+        """ kwObj: The keyword we're dealing with
+            children: A list of (score, Keyword) tuples. See _unifyRawResults.
+            result: A dictionary of {kwname: relevence} which the result will
+                    be stored in.
+            links: A list of relationship names to follow
+            cutoff: The search cutoff.  See getRelatedKeywords. """
 
-                recursive = self.getRelatedKeywords(cname, c[0],
-                                                    result, links, cutoff)
+        for (score, kw) in children:
+            cname = kw.getName()
+            if result.has_key(cname): continue
 
-                if recursive.has_key(kwObj.getName()): #suppress direct backlinks
-                    del recursive[kwObj.getName()]
+            result[cname] = score
 
-                for kw in recursive.keys():
-                    if not result.has_key(kw):
-                        result[kw] = recursive[kw]
+            recursive = self.getRelatedKeywords(cname, score,
+                                                result, links, cutoff)
+
+            if recursive.has_key(kwObj.getName()): #suppress direct backlinks
+                del recursive[kwObj.getName()]
+
+            for kw in recursive.keys():
+                if not result.has_key(kw):
+                    result[kw] = recursive[kw]
 
         return result
 
@@ -304,7 +328,7 @@ class OntologyTool(object):
     def getSearchCutoff(self):
         return self._cutoff
 
-    def searchMatchingKeywordsFor(self, obj, search, exclude=[], search_kw_proposals='false', search_linked_keywords='true'):
+    def srelated content for content objectearchMatchingKeywordsFor(self, obj, search, exclude=[], search_kw_proposals='false', search_linked_keywords='true'):
         """Return keywords matching a search string.
         """
         #XXX obj in method signature is obsolete
@@ -322,23 +346,23 @@ class OntologyTool(object):
 
         extresult=[]
         if search_linked_keywords == 'true':
-         [extresult.extend(x.getLinkedKeywords()) for x in result]
+            [extresult.extend(x.getLinkedKeywords()) for x in result]
 
 
         if search_kw_proposals=='true':
-         kwps = catalog.searchResults(portal_type='KeywordProposal')
-         kwpsdict={}
-         for el in kwps:
-          if el.getObject().getParentNode().getId() != 'accepted_kws':
-           kwpsdict.update({el.getObject().getId():el.getObject()})
-         result2 = difflib.get_close_matches(search, kwpsdict.keys(), n=5, cutoff=0.5)
-         result2 = [kwpsdict[x] for x in result2]
-         for el in result:
-          for el2 in result2:
-           if el2.getId()==el.getId() or el2.title_or_id() == el.title_or_id():
-            result2.remove(el2)
-         result.extend(result2)
-         result.extend(extresult)
+            kwps = catalog.searchResults(portal_type='KeywordProposal')
+            kwpsdict={}
+            for el in kwps:
+                if el.getObject().getParentNode().getId() != 'accepted_kws':
+                    kwpsdict.update({el.getObject().getId():el.getObject()})
+            result2 = difflib.get_close_matches(search, kwpsdict.keys(), n=5, cutoff=0.5)
+            result2 = [kwpsdict[x] for x in result2]
+            for el in result:
+                for el2 in result2:
+                    if el2.getId()==el.getId() or el2.title_or_id() == el.title_or_id():
+                        result2.remove(el2)
+            result.extend(result2)
+            result.extend(extresult)
 
         #remove duplicates & excludes
 
@@ -705,4 +729,6 @@ class OntologyTool(object):
         """
         self._encoding = encoding
 
-#def \(getGVNodeShapesList\|getGVEdgeShapesList\|getFocusNodeShape\|setFocusNodeShape\|getFocusNodeColor\|setFocusNodeColor\|getFocusNodeFontColor\|setFocusNodeFontColor\|getFocusNodeFontColor\|setFocusNodeFontColor\|getFocusNodeFontSize\|setFocusNodeFontSize\|getFocusNodeShape\|setFocusNodeColor\|getFocusNodeColor\|setFocusNodeColor\|getFocusNodeFontColor\|setFocusNodeFontColor\|getFocusNodeFontColor\|setFocusNodeFontColor\|getFocusNodeFontSize\|setFocusNodeFontSize\|getFirstNodeShape\|setFirstNodeShape\|getFirstNodeColor\|setFirstNodeColor\|getFirstNodeFontColor\|setFirstNodeFontColor\|getFirstNodeFontColor\|setFirstNodeFontColor\|getFirstNodeFontSize\|setFirstNodeFontSize\|getSecondNodeShape\|setSecondNodeShape\|getSecondNodeColor\|setSecondNodeColor\|getSecondNodeFontColor\|setSecondNodeFontColor\|getSecondNodeFontColor\|setSecondNodeFontColor\|getSecondNodeFontSize\|setSecondNodeFontSize\|getEdgeShape\|setEdgeShape\|getEdgeColor\|setEdgeColor\|getEdgeFontColor\|setEdgeFontColor\|getEdgeFontColor\|setEdgeFontColor\|getEdgeFontSize\|setEdgeFontSize\|getGVFontList\|getFontPath\|getGVFont\|setGVFont\|getRelFont\|setRelFont\|getBack\|setBack\|getForth\|setForth\|getEncoding\|setEncoding\|addKeyword\|getKeyword\|delKeyword\|keywords\|addRelation\|getRelation\|delRelation\|relations\|getWeight\|setWeight\|setTypes\|getTypes\|setInverses\|getInverses\|addReference\|delReference\|search\|searchFor\|getRelatedKeywords\|_getDirectLinkTargets\|_getRecursiveContent\|setSearchCutoff\|getSearchCutoff\|searchMatchingKeywordsFor\|useGraphViz\|generateGraphvizMap\)
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()
