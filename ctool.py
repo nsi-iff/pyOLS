@@ -188,11 +188,14 @@ class ClassificationTool(UniqueObject,
         """Return keyword 'name' from current ontology.
 
         Exceptions:
-            NotFound : There is no keyword 'name' in current ontology.
+            NotFound            : There is no keyword 'name' in current ontology.
+            ValidationException : 'name' is empty.
         """
         catalog = getToolByName(self, 'portal_catalog')
 
-        # FIXME: Empty 'name' yields first keyword from whole list ([0]).
+        if not name:
+            raise ValidationException, "Empty keyword name."
+
         try:
             return catalog.searchResults(portal_type='Keyword', name=name)[0].getObject()
         except:
@@ -273,7 +276,8 @@ class ClassificationTool(UniqueObject,
         """Return the relation ruleset from the Plone Relations library.
 
         Exceptions:
-            NotFound : No relation ruleset 'name' in library.
+            NotFound   : No relation ruleset 'name' in library. (Products.Relations version <  0.6)
+            ValueError : No relation ruleset 'name' in library. (Products.Relations version >= 0.6)
         """
 
         relations_library = getToolByName(self, 'relations_library')
@@ -297,7 +301,8 @@ class ClassificationTool(UniqueObject,
         """Return the weight of keyword relation 'name'.
 
         Exceptions:
-            NotFound : No relation ruleset 'name' in library.
+            NotFound   : No relation ruleset 'name' in library. (Products.Relations version <  0.6)
+            ValueError : No relation ruleset 'name' in library. (Products.Relations version >= 0.6)
         """
         r = self.getRelation(name)
         try:
@@ -309,7 +314,8 @@ class ClassificationTool(UniqueObject,
         """Set weight of keyword relation 'name' to 'w', if 'w' >= 0.
 
         Exceptions:
-            NotFound : No relation ruleset 'name' in library.
+            NotFound   : No relation ruleset 'name' in library. (Products.Relations version <  0.6)
+            ValueError : No relation ruleset 'name' in library. (Products.Relations version >= 0.6)
         """
         r = self.getRelation(name)
 
@@ -323,7 +329,8 @@ class ClassificationTool(UniqueObject,
         Return the list of types of keyword relation 'name'.
 
         Exceptions:
-            NotFound : No relation ruleset 'name' in library.
+            NotFound   : No relation ruleset 'name' in library. (Products.Relations version <  0.6)
+            ValueError : No relation ruleset 'name' in library. (Products.Relations version >= 0.6)
         """
 
         r = self.getRelation(name)
@@ -369,7 +376,8 @@ class ClassificationTool(UniqueObject,
         """Get list of types for keyword relation 'name'.
 
         Exceptions:
-            NotFound : No relation ruleset 'name' in library.
+            NotFound   : No relation ruleset 'name' in library. (Products.Relations version <  0.6)
+            ValueError : No relation ruleset 'name' in library. (Products.Relations version >= 0.6)
         """
         ruleset = self.getRelation(name)
 
@@ -390,7 +398,8 @@ class ClassificationTool(UniqueObject,
         Inverse relations are set to relations in 'i', if 'i' is non-empty list of relation names. Empty list deletes all inverses. All relations in 'i' are created, if non-existant. Inferring types for relations in 'i' are created from the types of relation 'name'.
 
         Exceptions:
-            NotFound : No relation ruleset 'name' in library.
+            NotFound   : No relation ruleset 'name' in library. (Products.Relations version <  0.6)
+            ValueError : No relation ruleset 'name' in library. (Products.Relations version >= 0.6)
         """
         ruleset = self.getRelation(name)
         current = self.getInverses(name)
@@ -435,7 +444,8 @@ class ClassificationTool(UniqueObject,
         """Get inverse relations for the relation 'name'.
 
         Exceptions:
-            NotFound : No relation ruleset 'name' in library.
+            NotFound   : No relation ruleset 'name' in library. (Products.Relations version <  0.6)
+            ValueError : No relation ruleset 'name' in library. (Products.Relations version >= 0.6)
         """
         ruleset = self.getRelation(name)
         return [rule.getInverseRuleset().getId() for rule in ruleset.getComponents(interfaces.IRule) if re.match('inverseOf', rule.getId())]
@@ -447,7 +457,8 @@ class ClassificationTool(UniqueObject,
         'src' and 'dst' are created, if non-existant. The reference is created through Plone Relations library, so relation-specific rulesets are honored.
 
         Exceptions:
-            NotFound            : No relation ruleset 'relation' in library.
+            NotFound            : No relation ruleset 'relation' in library. (Products.Relations version <  0.6)
+            ValueError          : No relation ruleset 'relation' in library. (Products.Relations version >= 0.6)
             ValidationException : Reference does not validate in the relation ruleset or 'src' or 'dst' are invalid XMLNCNames
         """
         zLOG.LOG(PROJECTNAME, zLOG.INFO,
@@ -473,7 +484,8 @@ class ClassificationTool(UniqueObject,
         'src' and 'dst' are created, if non-existant. The reference is removed through Plone Relations library, so relation-specific rulesets are honored.
 
         Exceptions:
-            NotFound            : No relation ruleset 'name' in library.
+            NotFound            : No relation ruleset 'relation' in library. (Products.Relations version <  0.6)
+            ValueError          : No relation ruleset 'relation' in library. (Products.Relations version >= 0.6)
             ValidationException : Unreference does not validate in the relation ruleset.
         """
         try:

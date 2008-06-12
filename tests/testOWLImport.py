@@ -12,6 +12,7 @@ ZopeTestCase.installProduct('PloneOntology')
 
 from Products.PloneOntology.owl import OWLExporter, OWLImporter
 from zExceptions import NotFound
+import Products.Relations
 
 class TestOWLImporter(PloneTestCase.PloneTestCase):
     """Test the KeywordStorage class."""
@@ -26,6 +27,8 @@ class TestOWLImporter(PloneTestCase.PloneTestCase):
 
         self.exporter = OWLExporter()
         self.importer = OWLImporter(self.portal)
+
+        self.relations_version = float(open(os.path.join(Products.Relations.__path__[0], 'version.txt')).readline().strip('\n\t b'))
 
     def testOWLImporterObjectProperty(self):
         owl = self.exporter.getEntities()['owl']
@@ -63,7 +66,10 @@ class TestOWLImporter(PloneTestCase.PloneTestCase):
         prop = self.exporter.getDOM().documentElement.lastChild
         self.importer.importObjectProperty(prop)
 
-        self.assertRaises(NotFound, self.ct.getRelation, "foo1")
+        if self.relations_version < 0.6:
+            self.assertRaises(NotFound, self.ct.getRelation, "foo1")
+        else:
+            self.assertRaises(ValueError, self.ct.getRelation, "foo1")
 
     def testOWLImporterObjectPropertyIgnoreNonOWLClassRange(self):
         owl = self.exporter.getEntities()['owl']
@@ -71,7 +77,10 @@ class TestOWLImporter(PloneTestCase.PloneTestCase):
         prop = self.exporter.getDOM().documentElement.lastChild
         self.importer.importObjectProperty(prop)
 
-        self.assertRaises(NotFound, self.ct.getRelation, "foo1")
+        if self.relations_version < 0.6:
+            self.assertRaises(NotFound, self.ct.getRelation, "foo1")
+        else:
+            self.assertRaises(ValueError, self.ct.getRelation, "foo1")
 
     def testOWLImporterObjectPropertyAccumulateNonBuiltins(self):
         owl = self.exporter.getEntities()['owl']

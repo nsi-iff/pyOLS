@@ -5,7 +5,6 @@ from xml.dom.minidom import parse, parseString, getDOMImplementation
 import re
 
 def parseURIRef(uriRef):
-    # FIXME: Do we see xml entities (for context)?
     (fragmentContext, fragment) = re.match('([^#]*)#?(.*)', uriRef).groups()
     return {'fragmentContext':fragmentContext, 'fragment':fragment}
 
@@ -216,7 +215,7 @@ class OWLImporter(OWLBase):
     def ensureBuiltinProperties(self):
         """Ensure existance of OWL built-in relations.
 
-        rdfs:subClassOf     -- childOf <validation.register(PartialUrlValidator('isPartialUrl'))-> parentOf
+        rdfs:subClassOf     -- childOf <-> parentOf
         owl:equivalentClass -- synonymOf
         """
         ct = getToolByName(self._context, 'portal_classification')

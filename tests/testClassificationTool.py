@@ -10,6 +10,7 @@ from Products.CMFPlone.tests import PloneTestCase
 
 from Products.Relations import interfaces
 from Products.Relations.exception import ValidationException
+import Products.Relations
 from zExceptions import NotFound
 import re
 
@@ -30,6 +31,8 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
         self.rtool = self.portal.relations_library
         self.ctool = self.portal.portal_classification
         self.storage = self.ctool.getStorage()
+
+        self.relations_version = float(open(os.path.join(Products.Relations.__path__[0], 'version.txt')).readline().strip('\n\t b'))
 
     ###### The tests ##########
 
@@ -72,6 +75,10 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
 
     def testKeywordFetchNotExisting(self):
         self.failUnlessRaises(NotFound, self.ctool.getKeyword, 'test')
+
+    def testKeywordFetchEmpty(self):
+        self.ctool.addKeyword('nonempty')
+        self.failUnlessRaises(ValidationException, self.ctool.getKeyword, '')
 
     def testKeywordUsedName(self):
         self.ctool.addKeyword('test')
@@ -169,7 +176,10 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
         self.assertEqual(r1, r2)
 
     def testRelationFetchNotExisting(self):
-        self.failUnlessRaises(NotFound, self.ctool.getRelation, 'testOf')
+        if self.relations_version < 0.6:
+            self.failUnlessRaises(NotFound, self.ctool.getRelation, 'testOf')
+        else:
+            self.failUnlessRaises(ValueError, self.ctool.getRelation, 'testOf')
 
     def testRelationListing(self):
         r1 = self.ctool.addRelation('testOf')
@@ -200,7 +210,10 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
         self.failIf('testOf3' in l)
 
     def testRelationSetWeightNotExisting(self):
-        self.assertRaises(NotFound, self.ctool.setWeight, 'unrelatedTo', 0.7)
+        if self.relations_version < 0.6:
+            self.assertRaises(NotFound, self.ctool.setWeight, 'unrelatedTo', 0.7)
+        else:
+            self.assertRaises(ValueError, self.ctool.setWeight, 'unrelatedTo', 0.7)
 
     def testRelationSetWeight(self):
         r1 = self.ctool.addRelation('testOf')
@@ -227,7 +240,10 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
         self.assertAlmostEqual(0.5, self.ctool.getWeight('testOf'))
 
     def testRelationSetTypesNotExisting(self):
-        self.assertRaises(NotFound, self.ctool.setTypes, 'unrelatedTo', [])
+        if self.relations_version < 0.6:
+            self.assertRaises(NotFound, self.ctool.setTypes, 'unrelatedTo', [])
+        else:
+            self.assertRaises(ValueError, self.ctool.setTypes, 'unrelatedTo', [])
 
     def testRelationSetTypes(self):
         r1 = self.ctool.addRelation('testOf')
@@ -281,7 +297,10 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
         self.assertEqual(['transitive'], self.ctool.getTypes('testOf'))
 
     def testRelationSetInversesNotExisting(self):
-        self.assertRaises(NotFound, self.ctool.setInverses, 'unrelatedTo', [])
+        if self.relations_version < 0.6:
+            self.assertRaises(NotFound, self.ctool.setInverses, 'unrelatedTo', [])
+        else:
+            self.assertRaises(ValueError, self.ctool.setInverses, 'unrelatedTo', [])
 
     def testRelationSetInversesEmpty(self):
         r1 = self.ctool.addRelation('childOf')
@@ -357,7 +376,10 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
         father = self.ctool.addKeyword('father')
         child  = self.ctool.addKeyword('child')
 
-        self.failUnlessRaises(NotFound, self.ctool.addReference,'father', 'kid', 'parentOf')
+        if self.relations_version < 0.6:
+            self.failUnlessRaises(NotFound, self.ctool.addReference,'father', 'kid', 'parentOf')
+        else:
+            self.failUnlessRaises(ValueError, self.ctool.addReference,'father', 'kid', 'parentOf')
 
     def testReferenceSymmetric(self):
         self.ctool.addRelation('synonymOf', 1.0, ['symmetric'])
@@ -422,7 +444,10 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
         child  = self.ctool.addKeyword('child')
         kid  = self.ctool.addKeyword('kid')
 
-        self.assertRaises(NotFound, self.ctool.delReference, 'child', 'kid', 'siblingOf')
+        if self.relations_version < 0.6:
+            self.assertRaises(NotFound, self.ctool.delReference, 'child', 'kid', 'siblingOf')
+        else:
+            self.assertRaises(ValueError, self.ctool.delReference, 'child', 'kid', 'siblingOf')
 
     def testEmptyAfterCreation(self):
         """Tool contains no keywords after initialization"""

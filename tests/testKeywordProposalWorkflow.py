@@ -37,7 +37,7 @@ class TestKeywordProposalWF(PloneTestCase.PloneTestCase):
         object.setRelation(object.definedRelations()[0])
         object.setSearchKWB(kwb)
         prop.addReference(object, relationship='hasRelation', )
-        
+
     def testKeywordProposalWF(self):
         prop=getattr(self.folder, 'kwp')
         wf_id="keyword_proposal_workflow"
