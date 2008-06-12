@@ -1,7 +1,6 @@
 from keywordgraph import KeywordGraph
 import keyword
 import owl
-import ctool
 
 from Products.CMFCore.utils import getToolByName
 from Products.CMFCore.PortalFolder import ContentFilter
@@ -19,6 +18,32 @@ from types import StringType
 import zLOG, string
 
 from zExceptions import NotFound
+
+class XMLNCNameValidator:
+    __implements__ = (ivalidator,)
+    def __init__(self, name):
+        self.name = name
+    def __call__(self, value, *args, **kwargs):
+        from Products.PloneOntology.owl import isXMLNCName
+        if not isXMLNCName(value):
+            return ("Validation failed (%s): '%s' is not an XML NCName." % (self.name, value))
+        else:
+            return 1
+
+class UniqueNameValidator:
+    __implements__ = (ivalidator,)
+    def __init__(self, name):
+        self.name = name
+    def __call__(self, value, *args, **kwargs):
+        from Products.CMFCore.utils import getToolByName
+        instance = kwargs.get('instance')
+        #type = kwargs.get('portal_type')
+        ctool = getToolByName(instance, 'portal_classification')
+        used = ctool.isUsedName(value)
+        if used and used != instance:
+            return ("Validation failed (%s): '%s' is already used by %s." % (self.name, value, used))
+        else:
+            return 1
 
 _marker = []
 
@@ -42,7 +67,7 @@ kwSchema = BaseSchema + Schema((
     StringField('name',
                 required=1,
                 default_method="getKwId",
-                validators=('isXMLNCName', 'isUniqueName'),
+                validators=(XMLNCNameValidator('isXMLNCName'), UniqueNameValidator('isUniqueName')),
                 widget=StringWidget(label='Name',
                                     description='XML NCName identifier in the ontology',
                                     condition='python: object.getName() != object.getKwId()',
@@ -71,32 +96,6 @@ def generateName(title, shortDescription=""):
     if shortDescription:
         name = name + '_' + shortDescription
     return owl.toXMLNCName(name)
-
-class XMLNCNameValidator:
-    __implements__ = (ivalidator,)
-    def __init__(self, name):
-        self.name = name
-    def __call__(self, value, *args, **kwargs):
-        from Products.PloneOntology.owl import isXMLNCName
-        if not isXMLNCName(value):
-            return ("Validation failed (%s): '%s' is not an XML NCName." % (self.name, value))
-        else:
-            return 1
-
-class UniqueNameValidator:
-    __implements__ = (ivalidator,)
-    def __init__(self, name):
-        self.name = name
-    def __call__(self, value, *args, **kwargs):
-        from Products.CMFCore.utils import getToolByName
-        instance = kwargs.get('instance')
-        #type = kwargs.get('portal_type')
-        ctool = getToolByName(instance, 'portal_classification')
-        used = ctool.isUsedName(value)
-        if used and used != instance:
-            return ("Validation failed (%s): '%s' is already used by %s." % (self.name, value, used))
-        else:
-            return 1
 
 class Keyword(BaseContent):
 
@@ -170,28 +169,32 @@ class Keyword(BaseContent):
         return res
 
     def getReferences(self, relation=None):
+        ctool = getToolByName(self, 'portal_classification')
+        rlib  = getToolByName(self, 'relations_library')
         if relation:
-            ctool = getToolByName(self, 'portal_classification')
             rel_id = ctool.getRelation(relation).getId()
         else:
-            rel_id = None
+            rel_id = [ctool.getRelation(rel).getId() for rel in ctool.relations(rlib)]
         return self.getRefs(rel_id)
 
     def getBackReferences(self, relation=None):
+        ctool = getToolByName(self, 'portal_classification')
+        rlib  = getToolByName(self, 'relations_library')
         if relation:
-            ctool = getToolByName(self, 'portal_classification')
             rel_id = ctool.getRelation(relation).getId()
         else:
-            rel_id = None
+            rel_id = [ctool.getRelation(rel).getId() for rel in ctool.relations(rlib)]
         return self.getBRefs(rel_id)
 
     def getRelations(self):
-        rlib = getToolByName(self, 'relations_library')
-        return [rlib.getRuleset(rel_id).Title() for rel_id in self.getRelationships()]
+        ctool = getToolByName(self, 'portal_classification')
+        rlib  = getToolByName(self, 'relations_library')
+        return [rlib.getRuleset(rel_id).Title() for rel_id in self.getRelationships() if rel_id != ctool.getClassifyRelationship()]
 
     def getBackRelations(self):
-        rlib = getToolByName(self, 'relations_library')
-        return [rlib.getRuleset(rel_id).Title() for rel_id in self.getBRelationships()]
+        ctool = getToolByName(self, 'portal_classification')
+        rlib  = getToolByName(self, 'relations_library')
+        return [rlib.getRuleset(rel_id).Title() for rel_id in self.getBRelationships() if rel_id != ctool.getClassifyRelationship()]
 
     def getWrappedKeywords(self):
         """returns all linked keywords wrapped together with a list of the corresponding relationtypes.
@@ -257,7 +260,8 @@ class Keyword(BaseContent):
 
         From CMF Portalfolder (follows CMF 1.6 API).
         """
-        obs = self.getBRefs('classifiedAs')
+        ctool = getToolByName(self, 'portal_classification')
+        obs = self.getBRefs(ctool.getClassifyRelationship())
         return self._filteredItems(obs, filter)
 
     security.declarePublic("classifiedContentValues")
@@ -291,14 +295,14 @@ class Keyword(BaseContent):
             result = [self]
 
         if forth == '1':
-         direct = self.getReferences()
-         for kw in direct:
-            result.extend(kw.findDependent(levels-1, exact))
+            direct = self.getReferences()
+            for kw in direct:
+                result.extend(kw.findDependent(levels-1, exact))
 
         if back == '1':
-         directback = self.getBackReferences()
-         for kw in directback:
-            result.extend(kw.findDependent(levels-1, exact))
+            directback = self.getBackReferences()
+            for kw in directback:
+                result.extend(kw.findDependent(levels-1, exact))
 
         if exact and levels>1:
             result = [x for x in result if not x==self]

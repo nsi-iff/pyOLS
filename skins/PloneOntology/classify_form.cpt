@@ -26,7 +26,7 @@
           tal:attributes="action python:here.absolute_url()+'/'+template.id">
 
 
-    <tal:block tal:define="existing_refs python:here.getRefs(relationship='classifiedAs',);
+    <tal:block tal:define="existing_refs python:here.getRefs(here.portal_classification.getClassifyRelationship());
                            kw_active_search python: request.get('kw_active_search','');
                            kw_search python: request.get('kw_search','')">
 
@@ -84,7 +84,7 @@
 
 	 </fieldset>
 		<span tal:condition="python: existing_refs!=[]">
-                <fieldset><legend i18n:translate="Ontology_label_current_reference">current refenced keywords</legend>
+                <fieldset><legend i18n:translate="Ontology_label_current_reference">currently referenced keywords</legend>
 		  <table> <!-- Table Header ??? -->
 		    <tr tal:repeat="item existing_refs">
 		      <tal:block tal:define="cururl request/URL; 

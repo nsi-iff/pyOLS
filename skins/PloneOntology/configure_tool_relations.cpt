@@ -73,11 +73,11 @@ tal:attributes="value rel;"/><tal:block tal:replace="rel"/></td>
 </table>
 
 <input type="submit" 
-       name="form.button.change" 
+       name="form.button.change"
        value="Save Changes"
        i18n:attributes="value" />
 <input type="submit" 
-       name="form.button.delete" 
+       name="form.button.delete"
        value="Delete"
        i18n:attributes="value" />
 
@@ -89,13 +89,13 @@ No relations are defined between keywords.
 </tal:block>
 
 
-<input type="submit" 
-       value="Add Relation" 
+<input type="submit"
+       value="Add Relation"
        name="form.button.add"
        i18n:attributes="value" />
 
-<input type="hidden" 
-       name="form.submitted" 
+<input type="hidden"
+       name="form.submitted"
        value="1" />
 
 </form>

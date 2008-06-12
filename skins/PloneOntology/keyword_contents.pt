@@ -11,7 +11,7 @@
 
     <div metal:fill-slot="main"
      tal:define="ctool python:here.portal_classification;
-                 content python:ctool.search(here.getId());
+                 content python:ctool.search(here.getName());
              ">
 
      <h1 i18n:translate="">Content related to <span tal:content="here/title_or_id" i18n:name="content_title"/></h1>

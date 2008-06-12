@@ -25,6 +25,10 @@ class TestKeyword(PloneOntologyTestCase):
         self.ctool.addReference('father', 'mother', 'marriedWith')
         self.ctool.addReference('father', 'child', 'parentOf')
         self.ctool.addReference('mother', 'child', 'parentOf')
+        self.folder.invokeFactory('Document', id='child1Document')
+        self.folder.invokeFactory('Document', id='child2Document')
+        self.folder.child1Document.addReference(self.child, self.ctool.getClassifyRelationship())
+        self.folder.child2Document.addReference(self.child, self.ctool.getClassifyRelationship())
 
 
     ###### The tests ##########
@@ -34,10 +38,18 @@ class TestKeyword(PloneOntologyTestCase):
         self.assertEqual(self.mother.getReferences('parentOf'),    [self.child])
         self.assertEqual(self.child.getReferences('childOf'),      [self.father, self.mother])
 
+    def testGetReferencesAllButClassifyRelationship(self):
+        self.assertEqual(self.child.getReferences(), [self.father, self.mother])
+        self.assertEqual(self.child.getRefs()      , [self.father, self.mother])
+
     def testGetBackReferences(self):
         self.assertEqual(self.father.getBackReferences('marriedWith'), [self.mother])
         self.assertEqual(self.mother.getBackReferences('childOf'),     [self.child])
         self.assertEqual(self.child.getBackReferences('parentOf'),     [self.father, self.mother])
+
+    def testGetBackReferencesAllButClassifyRelationship(self):
+        self.assertEqual(self.child.getBackReferences(), [self.father, self.mother])
+        self.assertEqual(self.child.getBRefs()         , [self.father, self.mother, self.folder.child1Document, self.folder.child2Document])
 
     def testGetRelations(self):
         father_relations = self.father.getRelations()
@@ -45,10 +57,13 @@ class TestKeyword(PloneOntologyTestCase):
         mother_relations = self.mother.getRelations()
         mother_relations.sort()
         child_relations = self.child.getRelations()
+        child_relations_archetypes = self.child.getRelationships()
         child_relations.sort()
+        child_relations_archetypes.sort()
         self.assertEqual(father_relations, ['marriedWith', 'parentOf'])
         self.assertEqual(mother_relations, ['marriedWith', 'parentOf'])
         self.assertEqual(child_relations,  ['childOf'])
+        self.assertEqual(child_relations_archetypes, [self.ctool.getRelation(rel).getId() for rel in child_relations])
 
     def testGetBackRelations(self):
         father_backrelations = self.father.getBackRelations()
@@ -56,11 +71,15 @@ class TestKeyword(PloneOntologyTestCase):
         mother_backrelations = self.mother.getBackRelations()
         mother_backrelations.sort()
         child_backrelations = self.child.getBackRelations()
+        child_backrelations_archetypes = self.child.getBRelationships()
+        child_backrelations_withClassifyRelation = [self.ctool.getRelation(rel).getId() for rel in child_backrelations] + [self.ctool.getClassifyRelationship()]
         child_backrelations.sort()
+        child_backrelations_archetypes.sort()
+        child_backrelations_withClassifyRelation.sort()
         self.assertEqual(father_backrelations, ['childOf', 'marriedWith'])
         self.assertEqual(mother_backrelations, ['childOf', 'marriedWith'])
         self.assertEqual(child_backrelations,  ['parentOf'])
-
+        self.assertEqual(child_backrelations_archetypes, child_backrelations_withClassifyRelation)
 
 def test_suite():
     from unittest import TestSuite, makeSuite

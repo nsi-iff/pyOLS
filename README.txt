@@ -124,7 +124,7 @@ PloneOntology Readme
         All relation rulsets from the Relations Library should be 
         displayed here. One can edit the relevance factor of the 
         relations here - preferably it should be between 0 (unrelated) 
-        and 1(identical). Lets assume a ruleset *synonymOf' which
+        and 1 (identical). Lets assume a ruleset *synonymOf' which
         states that a keyword A is synonym to a keyword B and the 
         other way around. Content classified with keyword A is thus 
         VERY closely related to content classified with keyword B, so 

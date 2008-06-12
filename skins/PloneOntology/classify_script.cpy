@@ -18,28 +18,28 @@ if add_ref:
     kws=''
     for el in keywords:
      if el not in exkeywords:
-        kws=kws+el+', '
         storage = context.portal_classification.getStorage()
         keyword = getattr(storage, el)
         newUID = keyword.UID()
-	context.reference_catalog.addReference(context, newUID, 'classifiedAs')
+        context.reference_catalog.addReference(context, newUID, context.portal_classification.getClassifyRelationship())
+        kws = (kws and kws + ', ') + keyword.title_or_id()
     return state.set(portal_status_message='added references: ' + kws)
 
 if del_ref:
     kws=''
     for el in exkeywords:
-        kws=kws+el+', '
         storage = context.portal_classification.getStorage()
         keyword = getattr(storage, el)
         newUID = keyword.UID()
-	context.reference_catalog.deleteReference(context, newUID, 'classifiedAs')
+        context.reference_catalog.deleteReference(context, newUID, context.portal_classification.getClassifyRelationship())
+        kws = (kws and kws + ', ') + keyword.title_or_id()
     return state.set(portal_status_message='removed following references: ' + kws)
 
 
 
 if kw_search:
    if active_search_result != '' and active_search_result != None:
-	context.reference_catalog.addReference(context, active_search_result, 'classifiedAs')
+        context.reference_catalog.addReference(context, active_search_result, context.portal_classification.getClassifyRelationship())
         return state.set(portal_status_message='added reference')
 
    else:

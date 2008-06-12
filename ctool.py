@@ -244,6 +244,7 @@ class ClassificationTool(UniqueObject,
         self._edge_font_color = '#111111'
         self._edge_font_size = 8
         self._encoding = 'utf-8'
+        self._classifyRelationship = "classifiedAs_byPloneOntology"
 
     def getGVNodeShapesList(self):
         """Return the gv node shape list.
@@ -263,7 +264,7 @@ class ClassificationTool(UniqueObject,
         """Set the focus_nodeshape for gv output.
         """
         self._focus_nodeshape=focus_nodeshape
-        
+
     def getFocusNodeColor(self):
         """Return the current gv focus_nodecolor.
         """
@@ -273,7 +274,7 @@ class ClassificationTool(UniqueObject,
         """Set the focus_nodecolor for gv output.
         """
         self._focus_nodecolor=focus_nodecolor
-        
+
     def getFocusNodeFontColor(self):
         """Return the current gv focus_node_font_color.
         """
@@ -283,7 +284,7 @@ class ClassificationTool(UniqueObject,
         """Set the focus_node_font_color for gv output.
         """
         self._focus_node_font_color=focus_node_font_color
-        
+
     def getFocusNodeFontColor(self):
         """Return the current gv focus_node_font_color.
         """
@@ -293,7 +294,7 @@ class ClassificationTool(UniqueObject,
         """Set the focus_node_font_color for gv output.
         """
         self._focus_node_font_color=focus_node_font_color
-        
+
     def getFocusNodeFontSize(self):
         """Return the current gv focus_node_font_size.
         """
@@ -303,7 +304,7 @@ class ClassificationTool(UniqueObject,
         """Set the focus_node_font_size for gv output.
         """
         self._focus_node_font_size=focus_node_font_size
-                
+
     def getFocusNodeShape(self):
         """Return the current gv focus_nodeshape.
         """
@@ -313,7 +314,7 @@ class ClassificationTool(UniqueObject,
         """Set the focus_nodeshape for gv output.
         """
         self._focus_nodeshape=focus_nodeshape
-        
+
     def getFocusNodeColor(self):
         """Return the current gv focus_nodecolor.
         """
@@ -323,7 +324,7 @@ class ClassificationTool(UniqueObject,
         """Set the focus_nodecolor for gv output.
         """
         self._focus_nodecolor=focus_nodecolor
-        
+
     def getFocusNodeFontColor(self):
         """Return the current gv focus_node_font_color.
         """
@@ -333,7 +334,7 @@ class ClassificationTool(UniqueObject,
         """Set the focus_node_font_color for gv output.
         """
         self._focus_node_font_color=focus_node_font_color
-        
+
     def getFocusNodeFontColor(self):
         """Return the current gv focus_node_font_color.
         """
@@ -343,7 +344,7 @@ class ClassificationTool(UniqueObject,
         """Set the focus_node_font_color for gv output.
         """
         self._focus_node_font_color=focus_node_font_color
-        
+
     def getFocusNodeFontSize(self):
         """Return the current gv focus_node_font_size.
         """
@@ -353,7 +354,7 @@ class ClassificationTool(UniqueObject,
         """Set the focus_node_font_size for gv output.
         """
         self._focus_node_font_size=focus_node_font_size
-                
+
     def getFirstNodeShape(self):
         """Return the current gv first_nodeshape.
         """
@@ -363,7 +364,7 @@ class ClassificationTool(UniqueObject,
         """Set the first_nodeshape for gv output.
         """
         self._first_nodeshape=first_nodeshape
-        
+
     def getFirstNodeColor(self):
         """Return the current gv first_nodecolor.
         """
@@ -373,7 +374,7 @@ class ClassificationTool(UniqueObject,
         """Set the first_nodecolor for gv output.
         """
         self._first_nodecolor=first_nodecolor
-        
+
     def getFirstNodeFontColor(self):
         """Return the current gv first_node_font_color.
         """
@@ -383,7 +384,7 @@ class ClassificationTool(UniqueObject,
         """Set the first_node_font_color for gv output.
         """
         self._first_node_font_color=first_node_font_color
-        
+
     def getFirstNodeFontColor(self):
         """Return the current gv first_node_font_color.
         """
@@ -393,7 +394,7 @@ class ClassificationTool(UniqueObject,
         """Set the first_node_font_color for gv output.
         """
         self._first_node_font_color=first_node_font_color
-        
+
     def getFirstNodeFontSize(self):
         """Return the current gv first_node_font_size.
         """
@@ -403,7 +404,7 @@ class ClassificationTool(UniqueObject,
         """Set the first_node_font_size for gv output.
         """
         self._first_node_font_size=first_node_font_size
-        
+
     def getSecondNodeShape(self):
         """Return the current gv second_nodeshape.
         """
@@ -413,7 +414,7 @@ class ClassificationTool(UniqueObject,
         """Set the second_nodeshape for gv output.
         """
         self._second_nodeshape=second_nodeshape
-        
+
     def getSecondNodeColor(self):
         """Return the current gv second_nodecolor.
         """
@@ -423,7 +424,7 @@ class ClassificationTool(UniqueObject,
         """Set the second_nodecolor for gv output.
         """
         self._second_nodecolor=second_nodecolor
-        
+
     def getSecondNodeFontColor(self):
         """Return the current gv second_node_font_color.
         """
@@ -433,7 +434,7 @@ class ClassificationTool(UniqueObject,
         """Set the second_node_font_color for gv output.
         """
         self._second_node_font_color=second_node_font_color
-        
+
     def getSecondNodeFontColor(self):
         """Return the current gv second_node_font_color.
         """
@@ -443,7 +444,7 @@ class ClassificationTool(UniqueObject,
         """Set the second_node_font_color for gv output.
         """
         self._second_node_font_color=second_node_font_color
-        
+
     def getSecondNodeFontSize(self):
         """Return the current gv second_node_font_size.
         """
@@ -453,7 +454,7 @@ class ClassificationTool(UniqueObject,
         """Set the second_node_font_size for gv output.
         """
         self._second_node_font_size=second_node_font_size
-   
+
     def getEdgeShape(self):
         """Return the current gv edgeshape.
         """
@@ -463,7 +464,7 @@ class ClassificationTool(UniqueObject,
         """Set the edgeshape for gv output.
         """
         self._edgeshape=edgeshape
-        
+
     def getEdgeColor(self):
         """Return the current gv edgecolor.
         """
@@ -473,7 +474,7 @@ class ClassificationTool(UniqueObject,
         """Set the edgecolor for gv output.
         """
         self._edgecolor=edgecolor
-        
+
     def getEdgeFontColor(self):
         """Return the current gv edge_font_color.
         """
@@ -483,7 +484,7 @@ class ClassificationTool(UniqueObject,
         """Set the edge_font_color for gv output.
         """
         self._edge_font_color=edge_font_color
-        
+
     def getEdgeFontColor(self):
         """Return the current gv edge_font_color.
         """
@@ -493,7 +494,7 @@ class ClassificationTool(UniqueObject,
         """Set the edge_font_color for gv output.
         """
         self._edge_font_color=edge_font_color
-        
+
     def getEdgeFontSize(self):
         """Return the current gv edge_font_size.
         """
@@ -512,7 +513,7 @@ class ClassificationTool(UniqueObject,
     def getFontPath(self):
         """Return the saved systems font path.
         """
-        return self._fontpath        
+        return self._fontpath
 
     def setFontPath(self, path=''):
         """set the systems font path manually.
@@ -581,6 +582,16 @@ class ClassificationTool(UniqueObject,
         """Set the encoding of strings used in the classification tool.
         """
         self._encoding = encoding
+
+    def getClassifyRelationship(self):
+        """Get the name of the Archetype References relationship used for referencing keywords from classified content objects.
+        """
+        return self._classifyRelationship
+
+    def setClassifyRelationship(self, relationship):
+        """Set the name of the Archetype References relationship used for referencing keywords from classified content objects.
+        """
+        self._classifyRelationship = relationship
 
     def reftypes(self):
         """Return a list of all referenceable portal types.
@@ -1080,21 +1091,20 @@ class ClassificationTool(UniqueObject,
 
         return 0
 
-    def search(self, kwId, links="all"):
-        """Search Content for a given keyword.
+    def search(self, kwName, links="all"):
+        """Search Content for a given keyword with name 'kwName'.
 
         By default follow all link types.
         """
-        storage = self.getStorage()
 
-        keywords = self.getRelatedKeywords(kwId, links=links,
+        keywords = self.getRelatedKeywords(kwName, links=links,
                                            cutoff = self.getSearchCutoff())
 
         results = []
 
         for kw in keywords.keys():
-            obj = getattr(storage, kw)
-            rels = obj.getBRefs('classifiedAs') or []
+            obj = self.getKeyword(kw)
+            rels = obj.getBRefs(self.getClassifyRelationship()) or []
 
             res = [(keywords[kw], x) for x in rels if self.isAllowed(x)]
             results.extend(res)
@@ -1105,7 +1115,6 @@ class ClassificationTool(UniqueObject,
         results.reverse() #descending scores
         return results
 
-
     def searchFor(self, obj, links="all"):
         """Search related content for content object.
         """
@@ -1113,13 +1122,13 @@ class ClassificationTool(UniqueObject,
         # search not possible for non AT types
         if not getattr(obj, 'isReferenceable', 0): return []
 
-        keywords = obj.getRefs('classifiedAs') or []
+        keywords = obj.getRefs(self.getClassifyRelationship()) or []
 
         results = []
 
         for kw in keywords:
             if kw is not None:
-                results.extend(self.search(kw.id, links=links))
+                results.extend(self.search(kw.getName(), links=links))
 
         results =  _unifyRawResults(results)
 
@@ -1131,21 +1140,20 @@ class ClassificationTool(UniqueObject,
         return results
 
     def getRelatedKeywords(self, keyword, fac=1, result={}, links="all", cutoff=0.1):
-        """Return list of keywords, that are related to the current one, keyword is the keyword ID.
+        """Return list of keywords, that are related to keyword with name 'keyword'.
         """
-        storage = self.getStorage()
 
         try:
-            kwObj = getattr(storage, keyword)
-        except AttributeError: # nonexistant keyword
+            kwObj = self.getKeyword(keyword)
+        except NotFound: # nonexistant keyword
             return {}
 
         # work with private copy w/t reference linking
         result = result.copy()
 
         # if necessary initialize keyword in result list
-        if not result.has_key(kwObj.id):
-            result[kwObj.id] = fac
+        if not result.has_key(kwObj.getName()):
+            result[kwObj.getName()] = fac
 
         # proper link types initialization
         if type(links) == StringType:
@@ -1172,15 +1180,15 @@ class ClassificationTool(UniqueObject,
 
     def _getRecursiveContent(self, kwObj, children, result, links, cutoff):
         for c in children:
-            cid = c[1].id
-            if not result.has_key(cid):
-                result[cid] = c[0]
+            cname = c[1].getName()
+            if not result.has_key(cname):
+                result[cname] = c[0]
 
-                recursive = self.getRelatedKeywords(cid, c[0],
+                recursive = self.getRelatedKeywords(cname, c[0],
                                                     result, links, cutoff)
 
-                if recursive.has_key(kwObj.id): #suppress direct backlinks
-                    del recursive[kwObj.id]
+                if recursive.has_key(kwObj.getName()): #suppress direct backlinks
+                    del recursive[kwObj.getName()]
 
                 for kw in recursive.keys():
                     if not result.has_key(kw):

@@ -40,17 +40,25 @@ class KeywordGraph:
 
     def getValue(self):
         return self._text.getvalue()
-
+    # size="11,8"; w="5";
+        #overlap="false";
+        #splines="true";
+        #len="10";
+        #pack="false";
+        #packMode="graph";
+        #decorate="true";
+        #labelfloat="false";
+        #ranksep="equally";
+        #rankdir="LR";
     def graphHeader(self, root):
         self._text.write('''digraph G{
-        size="11,8";
-        ranksep="1.5";
-        rankdir="LR";
-        len="10";
-        w="5";
         root="%s";
-        overlap="true";
-        splines="true";
+        size="11,8";
+        len="10";
+        splines="polyline";
+        concentrate="false";
+        overlap="false";
+        pack="false";
         node [style="filled", shape="%s", fontname="%s", fillcolor="%s", fontcolor="%s", fontsize="%s"];
         edge [shape="%s", fontname="%s", fillcolor="%s", fontcolor="%s", fontsize="%s"];
         ''' % (dotID(root.getName()), dotID(self._first_nodeshape), dotID(self._font), dotID(self._first_nodecolor), dotID(self._first_node_font_color), dotID(str(self._first_node_font_size)), dotID(self._edgeshape), dotID(self._relfont), dotID(self._edgecolor), dotID(self._edge_font_color), dotID(str(self._edge_font_size))))
