@@ -22,6 +22,7 @@ import keyword
 import archive
 import graphviztool
 import owl
+import map
 
 validation.register(keyword.XMLNCNameValidator('isXMLNCName'))
 validation.register(keyword.UniqueNameValidator('isUniqueName'))

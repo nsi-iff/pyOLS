@@ -6,6 +6,7 @@ from Acquisition import aq_base, aq_inner, aq_parent
 from OFS.SimpleItem import SimpleItem
 from Globals import InitializeClass, PersistentMapping
 
+from keywordgraph import KeywordGraph
 from keyword import Keyword
 from ontology import Ontology
 from utils import generateUniqueId
@@ -231,20 +232,20 @@ class ClassificationTool(UniqueObject,
         self._nodeshapes = ['box', 'polygon', 'ellipse', 'circle', 'point', 'egg', 'triangle', 'plaintext', 'diamond', 'trapezium', 'parallelogram', 'house', 'pentagon', 'hexagon', 'septagon', 'octagon', 'doublecircle', 'doubleoctagon', 'tripleoctagon', 'invtriangle', 'invtrapezium', 'invhouse', 'Mdiamond', 'Msquare', 'Mcircle', 'rect', 'rectangle', 'none']
         self._edgeshapes = ['box', 'crow', 'diamond', 'dot', 'inv', 'none', 'normal', 'tee', 'vee']
         self._focus_nodeshape = 'ellipse'
-        self._focus_nodecolor = '#eeeeee'
+        self._focus_nodecolor = '#dee7ec'
         self._focus_node_font_color = '#000000'
         self._focus_node_font_size = 9
         self._first_nodeshape = 'box'
-        self._first_nodecolor = 'transparent'
+        self._first_nodecolor = '#dee7ec'
         self._first_node_font_color = '#000000'
         self._first_node_font_size = 8
         self._second_nodeshape = 'box'
-        self._second_nodecolor = 'transparent'
+        self._second_nodecolor = '#dee7ec'
         self._second_node_font_color = '#000000'
         self._second_node_font_size = 7
         self._edgeshape = 'normal'
-        self._edgecolor = '#000000'
-        self._edge_font_color = '#111111'
+        self._edgecolor = '#cde2a7'
+        self._edge_font_color = '#000000'
         self._edge_font_size = 8
         self._encoding = 'utf-8'
         self._classifyRelationship = "classifiedAs_byPloneOntology"
@@ -534,7 +535,10 @@ class ClassificationTool(UniqueObject,
            self._fonts.append(el.split("\\")[len(el.split("\\"))-1][:-4])
           elif "/" in el:
            self._fonts.append(el.split("/")[len(el.split("/"))-1][:-4])
-        self._fonts.sort()
+        try:
+         self._fonts.sort()
+        except:
+         pass
         self._fontpath=path
         
     def getGVFont(self):
@@ -1264,5 +1268,33 @@ class ClassificationTool(UniqueObject,
         return set
 
     def useGraphViz(self): return self._use_gv_tool
+
+    def generateGraphvizMap(self):
+        """Generate graph source code for GraphViz.
+        """
+        storage = self.getStorage()
+        catalog = getToolByName(self, 'portal_catalog')
+
+        kws=[kw_res.getObject() for kw_res in catalog.searchResults(portal_type='Keyword')]
+
+        dot = KeywordGraph(self.getGVFont(), self.getRelFont(), self.getFocusNodeShape(), self.getFocusNodeColor(), self.getFocusNodeFontColor(), self.getFocusNodeFontSize(), self.getFirstNodeShape(), self.getFirstNodeColor(), self.getFirstNodeFontColor(), self.getFirstNodeFontSize(), self.getSecondNodeShape(), self.getSecondNodeColor(), self.getSecondNodeFontColor(), self.getSecondNodeFontSize(), self.getEdgeShape(), self.getEdgeColor(), self.getEdgeFontColor(), self.getEdgeFontSize())
+        
+        dot.graphHeader(kws[0])
+
+        for node in kws:
+            dot.firstLevelNode(node)
+            rels = node.getRelations() 
+            for rel in rels:
+                  obs = node.getReferences(rel)
+                  try:
+                    obs.remove(self)
+                  except ValueError: # self not in list
+                    pass
+                  for cnode in obs:
+                    dot.relation(node, cnode, rel)
+
+        dot.graphFooter()
+
+        return dot.getValue()
 
 InitializeClass(ClassificationTool)

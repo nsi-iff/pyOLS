@@ -120,8 +120,23 @@ PloneOntology Readme
          that).
 
          *Graphviz Layouter*: choose the layout algorithm for the
-         automatic graph generation of the keyword map. You can test
-         different layouts to find which represents your keywordbase
+         automatic graph generation of the keyword map. 
+         quote from graphviz.org:
+         -dot makes ``hierarchical'' or layered drawings of directed graphs.
+         The layout algorithm aims edges in the same direction (top to bottom,
+         or left to right) and then attempts to avoid edge crossings and reduce
+         edge length.
+         -neato and fdp make ``spring model'' layouts. neato uses the
+         Kamada-Kawai algorithm, which is equivalent to statistical
+         multi-dimensional scaling. fdp implements the Fruchterman-Reingold
+         heuristic including a multigrid solver that handles larger graphs
+         and clustered undirected graphs.
+         -twopi radial layout, after Graham Wills 97. The nodes are placed on
+         concentric circles depending their distance from a given root node.
+         -circo circular layout, after Six and Tollis 99, Kauffman and Wiese 02.
+         This is suitable for certain diagrams of multiple cyclic structures such
+         as certain telecommunications networks.
+         You can test different layouts to find which represents your keywordbase
          best. Note though that this may take a while on sites with 
          many Keywords, as all the Keyword Graphs are redrawn. Probably
          it is best to try this on a test site first...

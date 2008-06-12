@@ -1,0 +1,26 @@
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xml:lang="en-US"
+      lang="en-US"
+      metal:use-macro="here/main_template/macros/master"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n">
+<head><title></title></head>
+  <body>
+
+    <div metal:fill-slot="main">
+	<tal:block tal:condition="here/getMapGraphic">
+		<span tal:define="imgurl here/MapGraphic/absolute_url;">
+	
+		<img src="" tal:attributes="src imgurl" border="0" usemap="#Map">
+		<map name="Map" tal:content="structure here/MapData"/>
+		</span>
+	</tal:block>
+    <dl>
+    <dt tal:content="here/title_or_id"/>
+    </dl>
+    </div>
+
+  </body>
+</html>
+
