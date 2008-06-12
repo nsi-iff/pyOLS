@@ -153,6 +153,14 @@ def removeCustomFormControllerTransitions(portal, out):
     #lets get our hands dirty
     container = fc.actions
     try:
+        container.delete(FormActionKey('relations_adddelete', 'success','',
+                            'Save', fc))
+    except KeyError: pass
+    try:
+        container.delete(FormActionKey('relations_adddelete', 'failure','',
+                            'Save', fc))
+    except KeyError: pass
+    try:
         container.delete(FormActionKey('base_edit', 'success', '',
                                        'search', fc))
     except KeyError: pass
