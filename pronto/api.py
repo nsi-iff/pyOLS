@@ -181,7 +181,11 @@ def findFonts(paths = None):
 ###END TTFQuery
 
 class OntologyTool:
-    def __init__(self):
+    def __init__(self, namespace):
+        # Set the namespace we will use for convinience, but it can be changed
+        # using instance.namespace = new_namespace without consequence.
+        self.namespace = namespace
+
         self._fontpath=''
         self._fonts=[]
         data = os.popen('fc-list').readlines()
@@ -222,37 +226,22 @@ class OntologyTool:
         self._encoding = 'utf-8'
         self._classifyRelationship = "classifiedAs_byPloneOntology"
 
-    def addKeyword(self, name, title="", description="", shortDescription="", uid=""):
-        """Create a keyword in the current ontology. If 'uid' is specified, the referenced keyword is registered as 'name'.
+    def _set_namespace(self, new_namespace):
+        """ Set the current namespace.
+            It it does not exist, it will be created. """
+        self._namespace = Namespace.get_or_create(name=new_namespace)
 
-        Exceptions:
-            ValidationException : 'name' is not a valid XML NCName.
-            NameError           : Keyword 'name' already exists in current ontology.
-            AttributeError      : 'uid' references no keyword in current ontology.
-        """
-        if not owl.isXMLNCName(name):
-            raise ValidationException("Invalid name for keyword specified")
+    def _get_namespace(self):
+        """ Return the name of the current namespace. """
+        return self._namespace.name
 
-        if self.isUsedName(name):
-            raise NameError, "Keyword '%s' already exists in current ontology" % name
+    namespace = property(_get_namespace, _set_namespace)
 
-        storage = self.getStorage()
-        if not uid:
-            uid = generateUniqueId('Keyword')
-            storage.invokeFactory('Keyword', uid)
-        kw = getattr(storage, uid)
-        if not title:
-            title = name
-        kw.setName(name)
-        kw.setTitle(title)
-        kw.setKwDescription(description)
-        kw.setShortAdditionalDescription(shortDescription)
-        kw.unmarkCreationFlag()
-        kw.reindexObject()
-        zLOG.LOG(PROJECTNAME, zLOG.INFO,
-                 "Added keyword %s." % name)
-
-        return kw
+    def addKeyword(self, name, disambiguation='', description=''):
+        """ Create a keyword in the ontology.
+            An error will be raised if a keyword with the same name
+            and disambiguation exists in the current namespace. """
+        # XXX: Finish!
 
     def getKeyword(self, name):
         """Return keyword 'name' from current ontology.
