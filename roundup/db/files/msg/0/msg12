@@ -1,0 +1,3 @@
+The message:
+  WARNING  Fault 2: method "unsupported" is not supported
+Comes up when testing that calls to unsupported methods work.
