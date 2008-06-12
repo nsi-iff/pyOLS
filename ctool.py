@@ -217,6 +217,7 @@ class ClassificationTool(UniqueObject,
         self._storage = 'kw_storage'
         self._classifytypes = []
         self._gvfont = ''
+        self._relfont = ''
         self._forth = '1'
         self._back = '0'
 
@@ -227,10 +228,10 @@ class ClassificationTool(UniqueObject,
         if os.path.isfile( executable ):
           data = os.popen( executable ).readlines()
 #          match = re.compile( '\d+: (.+)')
-    #      set = []
-   #       for line in data:
-  #          result = match.match( line )
- #           if result:
+#      set = []
+#       for line in data:
+#          result = match.match( line )
+#           if result:
 #              set.append(result.group(1))
           return data
 #return self._fonts
@@ -273,6 +274,16 @@ class ClassificationTool(UniqueObject,
         """Set the font for gv output.
         """
         self._gvfont=font
+
+    def getRelFont(self):
+        """Return the current relation font.
+        """
+        return self._relfont
+
+    def setRelFont(self, font):
+        """Set the font for relation output.
+        """
+        self._relfont=font
 
     def getBack(self):
         """Return if Back References should be used in the KeywordMap generation"""

@@ -13,9 +13,10 @@ class KeywordGraph:
     """Dot code generator for keyword graphs.
     """
 
-    def __init__(self, font):
+    def __init__(self, font, relfont):
         self._text = StringIO()
         self._font = font
+        self._relfont = relfont
 
     def write(self, text):
         self._text.write(text)
@@ -35,7 +36,7 @@ class KeywordGraph:
         splines="true";
         node [shape="box", style="filled", fontname="%s"];
         edge [fontsize="7", fontcolor="#cccccc", fontname="%s"];
-        ''' % (dotID(root.getName()), dotID(self._font), dotID(self._font)))
+        ''' % (dotID(root.getName()), dotID(self._font), dotID(self._relfont)))
 
     def graphFooter(self):
         self._text.write("}\n")

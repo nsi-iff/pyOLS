@@ -67,11 +67,17 @@
                tal:attributes="value value;
                                selected python:test(value == gtool.getLayouter())" />
        </select></td></tr>
-       <tr><td i18n:translate="Ontology_highlight_graphviz_font">Graphviz Font</td><td><select name="font" size="1" tal:define="values python: ctool.getGVFontList()">
+       <tr><td>Node Font</td><td><select name="font" size="1" tal:define="values python: ctool.getGVFontList()">
        <option tal:repeat="value values"
                tal:content="value"
                tal:attributes="value value;
                                selected python:test(value == ctool.getGVFont())" />
+       </select></td></tr>
+       <tr><td>Edge Font</td><td><select name="relfont" size="1" tal:define="values python: ctool.getGVFontList()">
+       <option tal:repeat="value values"
+               tal:content="value"
+               tal:attributes="value value;
+                               selected python:test(value == ctool.getRelFont())" />
        </select></td></tr>
        <tr><td>Systems Font Path (only necessary if no fonts are found above)</td><td><input name="fontpath"  tal:attributes="value fontpath" /></td></tr>
        <tr><td i18n:translate="Ontology_highlight_forward_relations">Forward Relations</td><td><tal:block condition="python: ctool.getForth() == '1'"><input name="forth" type="checkbox" checked value="1" /></tal:block><tal:block condition="python: ctool.getForth() != '1'"><input name="forth" type="checkbox" value="1" /></tal:block></td></tr>

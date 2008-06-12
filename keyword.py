@@ -311,7 +311,7 @@ class Keyword(BaseContent):
         innernodes = self.findDependent(1, exact=True) # level 1 keywords
         outernodes = self.findDependent(2, exact=True) # level 2 keywords
 
-        dot = KeywordGraph(ctool.getGVFont())
+        dot = KeywordGraph(ctool.getGVFont(), ctool.getRelFont())
         dot.graphHeader(self)
 
         ### Graph nodes
