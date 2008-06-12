@@ -16,6 +16,8 @@ elif field=='kw_search':
 else:
     items = context.portal_classification.searchMatchingKeywordsFor(context, search=searchTerm, search_kw_proposals='false', search_linked_keywords='true')
 
+context.REQUEST.response.setHeader('Content-Type', 'text/html; charset=%s' % context.portal_classification.getEncoding())
+
 #categories = context.getCategories()
 value = '''
 <html><body>
