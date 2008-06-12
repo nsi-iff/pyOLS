@@ -3,23 +3,15 @@ import os, sys
 if __name__ == '__main__':
     execfile(os.path.join(sys.path[0], 'framework.py'))
 
-import Testing
-from Testing import ZopeTestCase
-from Products.CMFPlone.tests import PloneTestCase
-
-ZopeTestCase.installProduct('Relations')
-ZopeTestCase.installProduct('PloneOntology')
+from producttest import PloneOntologyTestCase
 
 from Products.PloneOntology.owl import OWLExporter
 
-class TestOWLExporter(PloneTestCase.PloneTestCase):
-    """Test the KeywordStorage class."""
+class TestOWLExporter(PloneOntologyTestCase):
+    """Test the OWL export."""
 
     def afterSetUp(self):
         self.setRoles(['Manager'])
-        self.qi = self.portal.portal_quickinstaller
-        self.qi.installProduct('Relations')
-        self.qi.installProduct('PloneOntology')
 
         self.exporter = OWLExporter()
 
@@ -152,10 +144,10 @@ class TestOWLExporter(PloneTestCase.PloneTestCase):
         self.assertEqual("blaz", desc.item(0).firstChild.data)
 
 def test_suite():
-        from unittest import TestSuite, makeSuite
-        suite = TestSuite()
-        suite.addTest(makeSuite(TestOWLExporter))
-        return suite
+    from unittest import TestSuite, makeSuite
+    suite = TestSuite()
+    suite.addTest(makeSuite(TestOWLExporter))
+    return suite
 
 if __name__ == '__main__':
     framework()

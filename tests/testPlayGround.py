@@ -3,21 +3,9 @@ import os, sys
 if __name__ == '__main__':
     execfile(os.path.join(sys.path[0], 'framework.py'))
 
-from types import *
+from producttest import PloneOntologyTestCase
 
-from Testing import ZopeTestCase
-from Products.CMFPlone.tests import PloneTestCase
-
-from Products.Relations import interfaces
-from Products.Relations.exception import ValidationException
-from zExceptions import NotFound
-import re
-
-# Install necessary products to portal
-ZopeTestCase.installProduct('Relations')
-ZopeTestCase.installProduct('PloneOntology')
-
-class TestWithPlayground(PloneTestCase.PloneTestCase):
+class TestWithPlayground(PloneOntologyTestCase):
     '''Test the NIP ClassificationTool application'''
 
     def classify(self, obj, keyword):
@@ -333,13 +321,11 @@ class TestWithPlayground(PloneTestCase.PloneTestCase):
         kws = v.findDependent(3, exact=True)
         self.assertEqual([], kws)
 
+def test_suite():
+    from unittest import TestSuite, makeSuite
+    suite = TestSuite()
+    suite.addTest(makeSuite(TestWithPlayground))
+    return suite
+
 if __name__ == '__main__':
     framework()
-else:
-    # While framework.py provides its own test_suite()
-    # method the testrunner utility does not.
-    from unittest import TestSuite, makeSuite
-    def test_suite():
-        suite = TestSuite()
-        suite.addTest(makeSuite(TestWithPlayground))
-        return suite

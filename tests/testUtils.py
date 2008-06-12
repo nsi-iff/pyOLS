@@ -1,19 +1,13 @@
+# -*- coding: utf-8 -*-
 import os, sys
 
 if __name__ == '__main__':
     execfile(os.path.join(sys.path[0], 'framework.py'))
 
-import unittest
-# from Testing import ZopeTestCase
-# from Products.CMFPlone.tests import PloneTestCase
-
-# Install necessary products to portal
-#ZopeTestCase.installProduct('Relations')
-#ZopeTestCase.installProduct('PloneOntology')
-
+from unittest import TestCase
 from Products.PloneOntology.utils import _normalize, generateUniqueId
 
-class TestUtils(unittest.TestCase):
+class TestUtils(TestCase):
     '''Test the utils module'''
 
     def testNormalize(self):

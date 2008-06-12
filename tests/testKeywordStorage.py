@@ -3,14 +3,9 @@ import os, sys
 if __name__ == '__main__':
     execfile(os.path.join(sys.path[0], 'framework.py'))
 
-import Testing
-from Testing import ZopeTestCase
-from Products.CMFPlone.tests import PloneTestCase
+from producttest import PloneOntologyTestCase
 
 from xml.dom.minidom import parseString
-
-ZopeTestCase.installProduct('Relations')
-ZopeTestCase.installProduct('PloneOntology')
 
 owl_skel = '''\
   <!DOCTYPE rdf:RDF [
@@ -40,14 +35,11 @@ owl_skel = '''\
   </rdf:RDF>
 '''
 
-class TestKeywordStorage(PloneTestCase.PloneTestCase):
+class TestKeywordStorage(PloneOntologyTestCase):
     """Test the KeywordStorage class."""
 
     def afterSetUp(self):
         self.setRoles(['Manager'])
-        self.qi = self.portal.portal_quickinstaller
-        self.qi.installProduct('Relations')
-        self.qi.installProduct('PloneOntology')
 
         self.rl = self.portal.relations_library
         self.ct = self.portal.portal_classification

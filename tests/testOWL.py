@@ -4,10 +4,10 @@ import os, sys
 if __name__ == '__main__':
     execfile(os.path.join(sys.path[0], 'framework.py'))
 
-import unittest
+from unittest import TestCase
 from Products.PloneOntology.owl import isXMLNCName, toXMLNCName
 
-class TestOWL(unittest.TestCase):
+class TestOWL(TestCase):
     """Test the OWL module. Import and Export are tested separately.
     """
 
@@ -52,13 +52,12 @@ class TestOWL(unittest.TestCase):
     def testToXMLNCNameMinusDotUnderscore(self):
         self.assertEqual('_-._', toXMLNCName('-._'))
 
+
+def test_suite():
+    from unittest import TestSuite, makeSuite
+    suite = TestSuite()
+    suite.addTest(makeSuite(TestOWL))
+    return suite
+
 if __name__ == '__main__':
     framework()
-else:
-    # While framework.py provides its own test_suite()
-    # method the testrunner utility does not.
-    from unittest import TestSuite, makeSuite
-    def test_suite():
-        suite = TestSuite()
-        suite.addTest(makeSuite(TestOWL))
-        return suite

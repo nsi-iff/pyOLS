@@ -3,25 +3,13 @@ import os, sys
 if __name__ == '__main__':
     execfile(os.path.join(sys.path[0], 'framework.py'))
 
-from types import *
+from producttest import PloneOntologyTestCase
 
-from Testing import ZopeTestCase
-from Products.CMFPlone.tests import PloneTestCase
-
-from zExceptions import NotFound
-
-# Install necessary products to portal
-ZopeTestCase.installProduct('Relations')
-ZopeTestCase.installProduct('PloneOntology')
-
-class TestRelationProposal(PloneTestCase.PloneTestCase):
-    '''Test the KeywordProposal Content Type'''
+class TestRelationProposal(PloneOntologyTestCase):
+    '''Test the RelationProposal Content Type'''
 
     def afterSetUp(self):
         self.setRoles(['Manager'])
-        self.qi = self.portal.portal_quickinstaller
-        self.qi.installProduct('Relations')
-        self.qi.installProduct('PloneOntology')
         self.ct = self.portal.portal_classification
         foo = self.ct.addKeyword("Foo")
         bar = self.ct.addKeyword("Bar")

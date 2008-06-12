@@ -3,14 +3,9 @@ import os, sys
 if __name__ == '__main__':
     execfile(os.path.join(sys.path[0], 'framework.py'))
 
-from Testing import ZopeTestCase
-from Products.CMFPlone.tests import PloneTestCase
+from producttest import PloneOntologyTestCase
 
-# Install necessary products to portal
-ZopeTestCase.installProduct('Relations')
-ZopeTestCase.installProduct('PloneOntology')
-
-class TestProductInstallation(PloneTestCase.PloneTestCase):
+class TestProductInstallation(PloneOntologyTestCase):
     '''Test the NIP ClassificationTool application'''
 
     def classify(self, obj, keyword):
@@ -22,9 +17,6 @@ class TestProductInstallation(PloneTestCase.PloneTestCase):
 
     def afterSetUp(self):
         self.setRoles(['Manager'])
-        self.qi = self.portal.portal_quickinstaller
-        self.qi.installProduct('Relations')
-        self.qi.installProduct('PloneOntology')
 
         self.portal.acl_users._doAddUser('member', 'secret',
                                          ['Member'], [])
@@ -37,6 +29,8 @@ class TestProductInstallation(PloneTestCase.PloneTestCase):
         self.storage = self.ctool.getStorage()
 
         #create playground
+        self.ctool.addRelation('parentOf')
+        self.ctool.addRelation('relatedTo')
         kws = ["Mammal", "Vertebrate", "Animal",
                "Hair", "Bone", "Structure"]
 
@@ -44,27 +38,27 @@ class TestProductInstallation(PloneTestCase.PloneTestCase):
 
         self.obs = {}
         for kw in kws:
-            self.ctool.manage_addKeyword(kw)
-            self.obs[kw] = getattr(self.storage, kw)
+            keyword = self.ctool.addKeyword(kw)
+            self.obs[kw] = getattr(self.storage, keyword.getId())
 
-        self.obs["Vertebrate"].addReference(self.obs["Mammal"], 'parentOf')
-        self.obs["Animal"].addReference(self.obs["Vertebrate"], 'parentOf')
-        self.obs["Structure"].addReference(self.obs["Bone"], 'parentOf')
-        self.obs["Structure"].addReference(self.obs["Hair"], 'parentOf')
+        self.ctool.addReference(self.obs["Vertebrate"].getName(), self.obs["Mammal"].getName()    , 'parentOf')
+        self.ctool.addReference(self.obs["Animal"].getName()    , self.obs["Vertebrate"].getName(), 'parentOf')
+        self.ctool.addReference(self.obs["Structure"].getName() , self.obs["Bone"].getName()      , 'parentOf')
+        self.ctool.addReference(self.obs["Structure"].getName() , self.obs["Hair"].getName()      , 'parentOf')
 
-        self.obs["Mammal"].addReference(self.obs["Hair"], 'relatedTo')
-        self.obs["Hair"].addReference(self.obs["Mammal"], 'relatedTo')
+        self.ctool.addReference(self.obs["Mammal"].getName() , self.obs["Hair"].getName()  , 'relatedTo')
+        self.ctool.addReference(self.obs["Hair"].getName()   , self.obs["Mammal"].getName(), 'relatedTo')
 
-        self.obs["Bone"].addReference(self.obs["Vertebrate"], 'relatedTo')
-        self.obs["Vertebrate"].addReference(self.obs["Bone"], 'relatedTo')
+        self.ctool.addReference(self.obs["Bone"].getName()      , self.obs["Vertebrate"].getName(), 'relatedTo')
+        self.ctool.addReference(self.obs["Vertebrate"].getName(), self.obs["Bone"].getName()      , 'relatedTo')
 
         #content (must support IReferenceable)
         for doc in docs:
-            self.folder.invokeFactory('ClassificationExample', id=doc)
+            self.folder.invokeFactory('Document', id=doc)
             self.obs[doc] = getattr(self.folder, doc)
 
         #classification
-        self.classify(self.obs["A"], self.obs["Mammal"])
+        self.classify(self.obs["A"],self.obs["Mammal"])
         self.classify(self.obs["A"],self.obs["Hair"])
         self.classify(self.obs["B"],self.obs["Mammal"])
         self.classify(self.obs["C"],self.obs["Vertebrate"])

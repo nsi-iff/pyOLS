@@ -3,25 +3,13 @@ import os, sys
 if __name__ == '__main__':
     execfile(os.path.join(sys.path[0], 'framework.py'))
 
-from types import *
+from producttest import PloneOntologyTestCase
 
-from Testing import ZopeTestCase
-from Products.CMFPlone.tests import PloneTestCase
-
-from zExceptions import NotFound
-
-# Install necessary products to portal
-ZopeTestCase.installProduct('Relations')
-ZopeTestCase.installProduct('PloneOntology')
-
-class TestRelationProposalWF(PloneTestCase.PloneTestCase):
+class TestRelationProposalWF(PloneOntologyTestCase):
     '''Test the RelationProposal Workflow'''
 
     def afterSetUp(self):
         self.setRoles(['Manager'])
-        self.qi = self.portal.portal_quickinstaller
-        self.qi.installProduct('Relations')
-        self.qi.installProduct('PloneOntology')
         self.ct = self.portal.portal_classification
         self.wf = self.portal.portal_workflow
         self.ct.addKeyword("Bar")
@@ -35,7 +23,7 @@ class TestRelationProposalWF(PloneTestCase.PloneTestCase):
         prop.setRelation(prop.definedRelations()[0])
         prop.setSearchKWA(kwa)
         prop.setSearchKWB(kwb)
-        
+
     def testRelationProposalWF(self):
         prop=getattr(self.folder, 'rp')
         wf_id="relation_proposal_workflow"
@@ -57,7 +45,6 @@ class TestRelationProposalWF(PloneTestCase.PloneTestCase):
         self.assertEqual(self.portal.portal_catalog.searchResults(portal_type='Keyword')[0].getObject().getRelations()[0], 'testOf')
         self.assertEqual(self.portal.portal_catalog.searchResults(portal_type='Keyword')[1].getObject().getBackRelations()[0], 'testOf')
         self.assertEqual(self.portal.portal_catalog.searchResults(portal_type='Keyword')[0].getObject().getReferences()[0], self.portal.portal_catalog.searchResults(portal_type='Keyword')[1].getObject())
-        
 
 def test_suite():
     from unittest import TestSuite, makeSuite

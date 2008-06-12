@@ -4,34 +4,21 @@ import os, sys
 if __name__ == '__main__':
     execfile(os.path.join(sys.path[0], 'framework.py'))
 
-from types import *
-
-from Testing import ZopeTestCase
-from Products.CMFPlone.tests import PloneTestCase
+from producttest import PloneOntologyTestCase
 
 from Products.Relations import interfaces
 from Products.Relations.exception import ValidationException
-import Products.Relations
-
 from Products.PloneOntology.utils import generateUniqueId
 
 from zExceptions import NotFound
 import re
 
-# Install necessary products to portal
-ZopeTestCase.installProduct('Relations')
-ZopeTestCase.installProduct('PloneOntology')
-
-class TestClassificationTool(PloneTestCase.PloneTestCase):
-    """Test the NIP ClassificationTool application.
+class TestClassificationTool(PloneOntologyTestCase):
+    """Test the ctool module.
     """
 
     def afterSetUp(self):
         self.setRoles(['Manager'])
-        self.qi = self.portal.portal_quickinstaller
-        self.qi.installProduct('Relations')
-        self.qi.installProduct('PloneOntology')
-
         self.rtool = self.portal.relations_library
         self.ctool = self.portal.portal_classification
         self.storage = self.ctool.getStorage()
@@ -483,13 +470,11 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
 
         self.failIf('fooble' in self.ctool.relations(self.rtool))
 
+def test_suite():
+    from unittest import TestSuite, makeSuite
+    suite = TestSuite()
+    suite.addTest(makeSuite(TestClassificationTool))
+    return suite
+
 if __name__ == '__main__':
     framework()
-else:
-    # While framework.py provides its own test_suite()
-    # method the testrunner utility does not.
-    from unittest import TestSuite, makeSuite
-    def test_suite():
-        suite = TestSuite()
-        suite.addTest(makeSuite(TestClassificationTool))
-        return suite

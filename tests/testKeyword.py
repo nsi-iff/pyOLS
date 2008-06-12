@@ -4,28 +4,14 @@ import os, sys
 if __name__ == '__main__':
     execfile(os.path.join(sys.path[0], 'framework.py'))
 
-from types import *
+from producttest import PloneOntologyTestCase
 
-from Testing import ZopeTestCase
-from Products.CMFPlone.tests import PloneTestCase
-
-from Products.Relations import interfaces
-from Products.Relations.exception import ValidationException
-import Products.Relations
-
-# Install necessary products to portal
-ZopeTestCase.installProduct('Relations')
-ZopeTestCase.installProduct('PloneOntology')
-
-class TestKeyword(PloneTestCase.PloneTestCase):
-    """Test the NIP ClassificationTool application.
+class TestKeyword(PloneOntologyTestCase):
+    """Test the keyword module.
     """
 
     def afterSetUp(self):
         self.setRoles(['Manager'])
-        self.qi = self.portal.portal_quickinstaller
-        self.qi.installProduct('Relations')
-        self.qi.installProduct('PloneOntology')
 
         self.rtool = self.portal.relations_library
         self.ctool = self.portal.portal_classification
@@ -75,13 +61,12 @@ class TestKeyword(PloneTestCase.PloneTestCase):
         self.assertEqual(mother_backrelations, ['childOf', 'marriedWith'])
         self.assertEqual(child_backrelations,  ['parentOf'])
 
+
+def test_suite():
+    from unittest import TestSuite, makeSuite
+    suite = TestSuite()
+    suite.addTest(makeSuite(TestKeyword))
+    return suite
+
 if __name__ == '__main__':
     framework()
-else:
-    # While framework.py provides its own test_suite()
-    # method the testrunner utility does not.
-    from unittest import TestSuite, makeSuite
-    def test_suite():
-        suite = TestSuite()
-        suite.addTest(makeSuite(TestKeyword))
-        return suite
