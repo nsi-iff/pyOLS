@@ -44,7 +44,7 @@ class TestWithPlayground(PloneTestCase.PloneTestCase):
         self.obs = {}
         for kw in kws:
             self.obs[kw] = self.ctool.addKeyword(kw)
-            
+
         self.ctool.addRelation('parentOf', 0.5)
         self.ctool.addRelation('relatedTo', 0.7)
 

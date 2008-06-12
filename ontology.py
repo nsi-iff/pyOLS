@@ -59,7 +59,7 @@ class Ontology(BaseBTreeFolder):
         """
         idList=[]
         for el in self.getTopLevel():
-            idList.append(el.getId())
+            idList.append(el.getName())
 ##             for il in self.RootKW:
 ##                 idList.append(il)
 
@@ -107,7 +107,7 @@ class Ontology(BaseBTreeFolder):
         if keywords:
             file.write('  <keywords>\n')
             for kw in keywords:
-                file.write('    <keyword id="%s" title="%s">\n' % (kw.getId(), kw.title))
+                file.write('    <keyword id="%s" title="%s">\n' % (kw.getName(), kw.title))
                 if kw.getKwDescription():
                     file.write('      <description>\n')
                     file.write(kw.getKwDescription())
@@ -115,7 +115,7 @@ class Ontology(BaseBTreeFolder):
 
                 for rel in kw.getRelationships():
                     for ref in kw.getRefs(rel):
-                        file.write('      <reference dst="%s" type="%s"/>\n' % (ref.getId(), rel))
+                        file.write('      <reference dst="%s" type="%s"/>\n' % (ref.getName(), rel))
 
                 file.write('    </keyword>\n\n')
             file.write('  </keywords>\n\n')
@@ -223,19 +223,19 @@ class Ontology(BaseBTreeFolder):
         # Export OWL classes.
         for kw in ct.keywords():
             keyword = ct.getKeyword(kw)
-            scs = [ c.getId() for c in keyword.getRefs('childOf')   ]
-            ecs = [ c.getId() for c in keyword.getRefs('synonymOf') ]
+            scs = [ c.getName() for c in keyword.getRefs('childOf')   ]
+            ecs = [ c.getName() for c in keyword.getRefs('synonymOf') ]
             ops = []
             for p in keyword.getRelationships():
                 if p not in [ 'childOf', 'parentOf', 'synonymOf' ]:
                     for c in keyword.getRefs(p):
-                        ops.append((p,c.getId()))
+                        ops.append((p,c.getName()))
             lang         = 'en'
             labels       = []
             comments     = []
             descriptions = []
             label       = keyword.title
-            comment     = keyword.getShort_additional_description()
+            comment     = keyword.getShortAdditionalDescription()
             description = keyword.getKwDescription()
             if label:
                 labels.append((lang, label))
@@ -243,7 +243,7 @@ class Ontology(BaseBTreeFolder):
                 comments.append((lang, comment))
             if description:
                 descriptions.append((lang, description))
-            exporter.generateClass(name            = keyword.getId(),
+            exporter.generateClass(name            = kw,
                                    superclasses    = scs,
                                    labels          = labels,
                                    comments        = comments,
@@ -252,7 +252,7 @@ class Ontology(BaseBTreeFolder):
             )
 
             for c in ecs:
-                exporter.generateEquivalentClass(keyword.getId(), c)
+                exporter.generateEquivalentClass(kw, c)
 
         return exporter.serialize()
 

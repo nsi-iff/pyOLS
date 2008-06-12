@@ -35,23 +35,34 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
 
     def testKeywordCreationDefault(self):
         kw = self.ctool.addKeyword('test')
-        self.assertEqual(kw.title, '')
+        self.assertEqual(kw.title, 'test')
         self.assertEqual(kw.getKwDescription(), '')
-        self.assertEqual(kw.short_additional_description, '')
+        self.assertEqual(kw.shortAdditionalDescription, '')
 
     def testKeywordCreationParameter(self):
         kw = self.ctool.addKeyword('test', 'test_title', 'test_description', 'test_short_additional_description')
+        self.assertEqual(kw.getName(), 'test')
         self.assertEqual(kw.title, 'test_title')
         self.assertEqual(kw.getKwDescription(), 'test_description')
-        self.assertEqual(kw.short_additional_description, 'test_short_additional_description')
+        self.assertEqual(kw.shortAdditionalDescription, 'test_short_additional_description')
 
     def testKeywordCreationAlreadyExisting(self):
         kw = self.ctool.addKeyword('test')
-
         self.failUnlessRaises(NameError, self.ctool.addKeyword, 'test')
 
     def testKeywordCreationEmptyName(self):
         self.failUnlessRaises(ValidationException, self.ctool.addKeyword, '')
+
+    def testKeywordCreationNonXMLName(self):
+        self.failUnlessRaises(ValidationException, self.ctool.addKeyword, 'this is no xml name')
+
+    def testKeywordCreationFromExistingUID(self):
+        self.storage.invokeFactory('Keyword', 'test_uid')
+        kw = self.ctool.addKeyword('test', uid='test_uid')
+        self.assertEqual(kw, getattr(self.storage, 'test_uid'))
+
+    def testKeywordCreationFromNotExistingUID(self):
+        self.failUnlessRaises(AttributeError, self.ctool.addKeyword, 'test', uid='no_such_uid')
 
     def testKeywordFetchExisting(self):
         kw = self.ctool.addKeyword('test')
@@ -61,6 +72,18 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
 
     def testKeywordFetchNotExisting(self):
         self.failUnlessRaises(NotFound, self.ctool.getKeyword, 'test')
+
+    def testKeywordUsedName(self):
+        self.ctool.addKeyword('test')
+        self.failUnless(self.ctool.isUsedName('test'))
+
+    def testKeywordUsedNameObject(self):
+        kw = self.ctool.addKeyword('test')
+        self.assertEqual(kw, self.ctool.isUsedName('test'))
+
+    def testKeywordUnusedName(self):
+        self.ctool.addKeyword('test1')
+        self.failIf(self.ctool.isUsedName('test2'))
 
     def testKeywordDeleteExisting(self):
         kw = self.ctool.addKeyword('test')
@@ -76,6 +99,31 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
             self.fail("Keyword 'test' shouldn't be there")
         except NotFound:
             pass
+
+    def testKeywordListing(self):
+        k1 = self.ctool.addKeyword('test')
+        k2 = self.ctool.addKeyword('test2')
+        k3 = self.ctool.addKeyword('test3')
+
+        k = self.ctool.keywords()
+        self.assertEqual(k, ['test', 'test2', 'test3'])
+
+    def testKeywordRenameFetchNew(self):
+        kw = self.ctool.addKeyword('test1')
+        kw.setName('test2')
+        kw.reindexObject()
+        self.assertEqual(kw, self.ctool.getKeyword('test2'))
+
+    def testKeywordRenameFetchOld(self):
+        kw = self.ctool.addKeyword('test1')
+        kw.setName('test2')
+        kw.reindexObject()
+        self.failUnlessRaises(NotFound, self.ctool.getKeyword, 'test1')
+
+    def testKeywordRenameListing(self):
+        kw = self.ctool.addKeyword('test1')
+        kw.setName('test2')
+        self.assertEqual(['test2'], self.ctool.keywords())
 
     def testRelationCreationDefault(self):
         test_ruleset = self.ctool.addRelation('testOf')
@@ -362,7 +410,7 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
 
         self.assertEqual(child.getRefs('childOf'), [])
         self.assertEqual(father.getRefs('parentOf'), [])
-        
+
     def testReferenceDeleteNotExistingNotCreated(self):
         self.ctool.addRelation('synonymOf', 1.0, ['symmetric'])
         child  = self.ctool.addKeyword('child')

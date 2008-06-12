@@ -11,7 +11,7 @@ import unittest
 #ZopeTestCase.installProduct('Relations')
 #ZopeTestCase.installProduct('PloneOntology')
 
-from Products.PloneOntology.utils import _normalize
+from Products.PloneOntology.utils import _normalize, generateUniqueId
 
 class TestUtils(unittest.TestCase):
     '''Test the utils module'''
@@ -21,7 +21,10 @@ class TestUtils(unittest.TestCase):
         self.assertEqual("thomas", _normalize("Th om as"))
         self.assertEqual("thomas", _normalize("Th#{om-as"))
         self.assertEqual("tho123mas", _normalize("Tho-1.2.3m-as"))
-                         
+
+    def testGenerateUniqueId(self):
+        self.failIfEqual(generateUniqueId('UnitTest'), generateUniqueId('UnitTest'))
+
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()

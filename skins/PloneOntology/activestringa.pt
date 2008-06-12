@@ -14,15 +14,12 @@
       <metal:use use-macro="field_macro | here/widgets/field/macros/edit">
 <div metal:fill-slot="widget_body">
      <tal:block condition="python: request.has_key('reference_source_url')">
-      <a tal:attributes="href python: request.reference_source_url[0]"><tal:block replace="python: here.getTitleOrIdOfReferencedKeyword(request.reference_source_url[0])" /></a>
-      <input type="hidden" name="SearchKWA" tal:attributes="value python: here.getUIDOfReferencedKeyword(request.reference_source_url[0])" />
-      <input type="hidden" name="whatever" tal:attributes="value python: here.setKeywordA(here.getUIDOfReferencedKeyword(request.reference_source_url[0]))" />
+      <a tal:attributes="href python: request.reference_source_url[0]">
+      <tal:block replace="python: here.getTitleOrIdOfReferencedKeyword(request.reference_source_url[0])" /></a>
+      <input type="hidden" name="SearchKWA" tal:attributes="value python: here.getNameOfReferencedKeyword(request.reference_source_url[0])" />
 
      </tal:block>
-     <tal:block condition="python: here.getKeywordA() !='' and not request.has_key('reference_source_url')">     
-      <a tal:attributes="href python: here.getURLOfUID(here.getKeywordA())"><tal:block replace="python: here.getTitleOrIdOfUID(here.getKeywordA())" /></a>
-     </tal:block>
-     <tal:block condition="python: here.getKeywordA() =='' and not request.has_key('reference_source_url')">
+     <tal:block condition="python: not request.has_key('reference_source_url')">
 	<input type="text"
 	       name="SearchKWA"
 	       value=""
@@ -35,8 +32,7 @@
 	                       size widget/size;
 	                       tabindex tabindex/next;"
 	       />
-        <input type="hidden" name="KeywordA" id="KeywordA" tal:attributes="value python: here.getKeywordA()" />
-           <input type="submit" name="form.button.search4" value="Search"/>
+        <input type="submit" name="form.button.search4" value="Search"/>
 	    <tal:block tal:condition="python: request.get('SearchKWA','')">
 	      <tal:block tal:define="results python:here.portal_classification.searchMatchingKeywordsFor(here, request.get('SearchKWA',''), search_kw_proposals='true')">
 
@@ -58,9 +54,9 @@
 
 		<p tal:condition="not:results">No matching keywords found. Please try another search term.</p>
 	      </tal:block>
-	    </tal:block>
+</tal:block>	     </tal:block>
 
-</tal:block>
+
 	<div tal:attributes="id string:activeresult-${fieldName}" style="display: none;">
           <div tal:attributes="id string:activeresult-shadow-${fieldName}">
           </div>

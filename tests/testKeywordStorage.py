@@ -56,7 +56,7 @@ class TestKeywordStorage(PloneTestCase.PloneTestCase):
         # Create template DOM
         self.dom = parseString(owl_skel)
 
-        
+
     def testOWLImport(self):
         """OWL import tests."""
         expected_keywords = [ 'abdominal_ganglion',
@@ -91,12 +91,12 @@ class TestKeywordStorage(PloneTestCase.PloneTestCase):
                                'synonymOf',
                                'relatedTo'
                              ]
-        owl_file = os.path.join(os.path.join(os.path.join(os.path.dirname(__file__), '..'), 'doc'), 'testOntology.owl')
+        owl_file = os.path.join(os.path.dirname(__file__), 'testOntology.owl')
         message  = self.st.importOWL(owl_file)
 
         ### check relations.
         # childOf
-        self.assertEqual(self.ct.relations(self.rl), expected_relations)
+        self.assertEqual(self.ct.relations(self.rl).sort(), expected_relations.sort())
         self.assertEqual(self.ct.getTypes   ('childOf'), ['transitive'])
         self.assertEqual(self.ct.getInverses('childOf'), ['parentOf'])
         self.assertEqual(self.ct.getWeight  ('childOf'), 0.5)
@@ -114,12 +114,12 @@ class TestKeywordStorage(PloneTestCase.PloneTestCase):
         self.assertEqual(self.ct.getWeight  ('relatedTo'), 0.7)
 
         ### check keywords.
-        self.assertEqual(self.ct.keywords(),  expected_keywords)
+        self.assertEqual(self.ct.keywords().sort(),  expected_keywords.sort())
         # title, description, short additional description
         abdominal_ganglion = self.ct.getKeyword('abdominal_ganglion')
         self.assertEqual(abdominal_ganglion.title, 'Abdominal ganglion')
         self.assertEqual(abdominal_ganglion.getKwDescription(), 'The abdominal ganglion is abdominal.')
-        self.assertEqual(abdominal_ganglion.short_additional_description, 'The abdominal ganglion')
+        self.assertEqual(abdominal_ganglion.shortAdditionalDescription, 'The abdominal ganglion')
 
         ### check references.
         # childOf inverseOf parentOf
@@ -140,7 +140,7 @@ class TestKeywordStorage(PloneTestCase.PloneTestCase):
 
     def testOWLExport(self):
         """OWL export tests."""
-        owl_file = os.path.join(os.path.dirname(__file__), '..', 'doc', 'testOntology.owl')
+        owl_file = os.path.join(os.path.dirname(__file__), 'testOntology.owl')
         self.st.importOWL(owl_file)
         owl_string = self.st.exportOWL()
         owl_dom    = parseString(owl_string)
@@ -178,21 +178,21 @@ class TestKeywordStorage(PloneTestCase.PloneTestCase):
             if keyword.title:
                 for label in c.getElementsByTagName('rdfs:label'):
                     self.assertEqual(label.firstChild.data.strip(), keyword.title)
-            if keyword.getShort_additional_description():
+            if keyword.getShortAdditionalDescription():
                 for comment in c.getElementsByTagName('rdfs:comment'):
-                    self.assertEqual(comment.firstChild.data.strip(), keyword.getShort_additional_description())
+                    self.assertEqual(comment.firstChild.data.strip(), keyword.getShortAdditionalDescription())
             if keyword.getKwDescription():
                 for description in c.getElementsByTagName('dc:description'):
                     self.assertEqual(description.firstChild.data.strip(), keyword.getKwDescription())
             for rel in keyword.getRelationships():
                 if rel == 'childOf':
-                    self.assertEqual([superclass.getAttribute('rdf:resource') for superclass in c.getElementsByTagName('rdfs:subClassOf')], ['#' + parent.getId() for parent in keyword.getRefs('childOf')])
+                    self.assertEqual([superclass.getAttribute('rdf:resource') for superclass in c.getElementsByTagName('rdfs:subClassOf')], ['#' + parent.getName() for parent in keyword.getRefs('childOf')])
                 elif rel == 'parentOf':
-                    self.assertEqual([subclass.getAttribute('rdf:ID') for subclass in [cl for cl in owl_classes if '#' + kw in [sc.getAttribute('rdf:resource') for sc in cl.getElementsByTagName('rdfs:subClassOf')]]], [child.getId() for child in keyword.getRefs('parentOf')])
+                    self.assertEqual([subclass.getAttribute('rdf:ID') for subclass in [cl for cl in owl_classes if '#' + kw in [sc.getAttribute('rdf:resource') for sc in cl.getElementsByTagName('rdfs:subClassOf')]]].sort(), [child.getName() for child in keyword.getRefs('parentOf')].sort())
                 elif rel == 'synonymOf':
-                    self.assertEqual([eclass.getAttribute('rdf:resource') for eclass in reduce(lambda x,y: x+y, [cl.getElementsByTagName('owl:equivalentClass') for cl in owl_classes if '#' + kw == cl.getAttribute('rdf:about')])], ['#' + synonym.getId() for synonym in keyword.getRefs('synonymOf')])
+                    self.assertEqual([eclass.getAttribute('rdf:resource') for eclass in reduce(lambda x,y: x+y, [cl.getElementsByTagName('owl:equivalentClass') for cl in owl_classes if '#' + kw == cl.getAttribute('rdf:about')])].sort(), ['#' + synonym.getName() for synonym in keyword.getRefs('synonymOf')].sort())
                 else:
-                    self.assertEqual([el.getAttribute('rdf:resource') for el in c.getElementsByTagName(rel)], ['#' + ref.getId() for ref in keyword.getRefs(rel)])
+                    self.assertEqual([el.getAttribute('rdf:resource') for el in c.getElementsByTagName(rel)], ['#' + ref.getName() for ref in keyword.getRefs(rel)])
 
 def test_suite():
         from unittest import TestSuite, makeSuite

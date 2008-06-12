@@ -1,6 +1,11 @@
 from Products.CMFCore.utils import getToolByName
 from cStringIO import StringIO
 
+def dotifyName(name):
+    """Delete characters from 'name', which are not allowed in dot names.
+    """
+    return name.replace('_', '').replace('-', '').replace('.', '')
+
 class KeywordGraph:
     """Dot code generator for keyword graphs.
     """
@@ -27,13 +32,13 @@ class KeywordGraph:
         splines=true;
         node [shape=box, style="filled", fontname="%s"];
         edge [fontsize=7, fontcolor="#cccccc",fontname="%s"];
-        ''' % (root.getSaneId(), self._font, self._font))
+        ''' % (dotifyName(root.getName()), self._font, self._font))
 
     def graphFooter(self):
         self._text.write("}\n")
 
     def focusNode(self, node):
-        self._text.write('%s [fillcolor="#ff999999", fontsize=11, label="%s", shape="ellipse"];\n' % (node.getSaneId(), node.title_or_id()))
+        self._text.write('%s [fillcolor="#ff999999", fontsize=11, label="%s", shape="ellipse"];\n' % (dotifyName(node.getName()), node.title_or_id()))
 
 
     def firstLevelNode(self, node):
@@ -48,7 +53,7 @@ class KeywordGraph:
         else:
             tooltip = node.title_or_id()
 
-        self._text.write('%s [fontsize=9, fillcolor="#ffcccc", label="%s", URL="%s/keyword_context_view", tooltip="%s"];\n' % (node.getSaneId(), nodelabel, node.absolute_url(), tooltip))
+        self._text.write('%s [fontsize=9, fillcolor="#ffcccc", label="%s", URL="%s/keyword_context_view", tooltip="%s"];\n' % (dotifyName(node.getName()), nodelabel, node.absolute_url(), tooltip))
 
     def secondLevelNode(self, node):
         nodelabel = node.title_or_id()
@@ -62,7 +67,7 @@ class KeywordGraph:
         else:
             tooltip = node.title_or_id()
 
-        self._text.write('%s [fontsize=9, fillcolor="#fff0f0", label="%s", URL="%s/keyword_context_view", tooltip="%s"];\n' % (node.getSaneId(), nodelabel, node.absolute_url(), tooltip))
+        self._text.write('%s [fontsize=9, fillcolor="#fff0f0", label="%s", URL="%s/keyword_context_view", tooltip="%s"];\n' % (dotifyName(node.getName()), nodelabel, node.absolute_url(), tooltip))
 
     def relation(self, node, cnode, rel):
-        self.write('%s -> %s [label="%s"];\n' %(node.getSaneId(), cnode.getSaneId(), rel))
+        self.write('%s -> %s [label="%s"];\n' %(dotifyName(node.getName()), dotifyName(cnode.getName()), rel))

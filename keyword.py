@@ -1,11 +1,13 @@
 from keywordgraph import KeywordGraph
+import keyword
 
 from Products.CMFCore.utils import getToolByName
 from Products.CMFCore.PortalFolder import ContentFilter
 from Products.Archetypes.config import TOOL_NAME as AT_TOOL
 from Products.Archetypes.atapi import *
+from Products.validation.interfaces import ivalidator
 
-from AccessControl.SecurityInfo import ClassSecurityInfo
+from AccessControl.SecurityInfo import ClassSecurityInfo, ModuleSecurityInfo
 from AccessControl import Permissions
 
 from config import PROJECTNAME
@@ -19,11 +21,22 @@ from zExceptions import NotFound
 _marker = []
 
 kwSchema = BaseSchema + Schema((
-    TextField('kwDescription'),
-    StringField('short_additional_description',
+    TextField('kwDescription',
+              widget=TextAreaWidget(label='Description',
+                                    description=''),
+             ),
+    StringField('shortAdditionalDescription',
                 widget=StringWidget(maxlength=25,
-                                    label='short additional description',
-                                    ),
+                                    label='Short additional description',
+                                    description='Used to distinguish homonymous Titles'),
+                ),
+    StringField('name',
+                required=1,
+                default_method="getKwId",
+                validators=('isXMLNCName', 'isUniqueName'),
+                widget=StringWidget(label='Name',
+                                    description='XML NCName identifier in the ontology',
+                                    condition='python: object.getName() != object.getKwId()'),
                 ),
     ImageField("kwMapGraphic"),
     TextField("kwMapData",
@@ -32,6 +45,46 @@ kwSchema = BaseSchema + Schema((
               ),
 
     ))
+
+module_security = ModuleSecurityInfo('keyword')
+
+module_security.declarePublic('generateName')
+def generateName(title, shortDescription=""):
+    """Return a keyword name generated from 'title' and 'shortDescription'.
+
+    The generated name is an XML NCName and 'shortDescription' is used to distinguish homonymous titles.
+    """
+    title = _normalize(title)
+    if shortDescription:
+        shortDescription = _normalize(shortDescription)
+        return title + '_' + shortDescription
+    else:
+        return title
+
+class XMLNCNameValidator:
+    __implements__ = (ivalidator,)
+    def __init__(self, name):
+        self.name = name
+    def __call__(self, value, *args, **kwargs):
+        from Products.PloneOntology.owl import isXMLNCName
+        if not isXMLNCName(value):
+            return ("Validation failed (%s): '%s' is not an XML NCName." % (self.name, value))
+        else:
+            return 1
+
+class UniqueNameValidator:
+    __implements__ = (ivalidator,)
+    def __init__(self, name):
+        self.name = name
+    def __call__(self, value, *args, **kwargs):
+        from Products.CMFCore.utils import getToolByName
+        instance = kwargs.get('instance')
+        ctool = getToolByName(instance, 'portal_classification')
+        used = ctool.isUsedName(value)
+        if used and used != instance:
+            return ("Validation failed (%s): '%s' is already used by %s." % (self.name, value, used))
+        else:
+            return 1
 
 class Keyword(BaseContent):
 
@@ -58,31 +111,45 @@ class Keyword(BaseContent):
     security = ClassSecurityInfo()
     security.declareObjectPublic()
 
-    security.declarePublic('generateId')
-    def generateId(self, id, small_des):
-        """makes id string for keyword generation in workflow"""
-        new_small_des = _normalize(small_des)
-        if small_des!='':
-            return id + '_' + new_small_des
-        else:
-            return id
+    #security.declarePublic('generateId')
+    #def generateId(self, id, small_des):
+        #"""makes id string for keyword generation in workflow"""
+        #new_small_des = _normalize(small_des)
+        #if small_des!='':
+            #return id + '_' + new_small_des
+        #else:
+            #return id
+
+    def getKwId(self):
+        # wrapper method needed for schema name field widget condition logic.
+        return self.id
+
+    security.declarePublic('generateName')
+    def generateName(self, title, shortDescription=""):
+        return keyword.generateName(title, shortDescription)
+
+    def at_post_create_script(self):
+        name = self.getName()
+        if not name or name == self.getId():
+            name = keyword.generateName(self.Title(), self.getShortAdditionalDescription())
+        ctool = getToolByName(self, 'portal_classification')
+        ctool.addKeyword(name, self.title, self.getKwDescription(), self.getShortAdditionalDescription(), self.getId())
+        self.updateKwMap()
+
+    def at_post_edit_script(self):
+        self.reindexObject()
+        self.updateKwMap()
 
     security.declarePublic('title_or_id')
     def title_or_id(self):
         """makes title string with small description.
         """
-        t=''
-        des=''
-        try:
-            t=self.title
-        except:
-            t=self.getSaneId()
-        try:
-            if self.short_additional_description != '':
-             des=' (' + self.short_additional_description + ')'
-        except:
-            des=''
-        return t + des
+        t = self.Title() or self.getName()
+        d = self.getShortAdditionalDescription()
+        if d:
+            return t + ' (' + d + ')'
+        else:
+            return t
 
     security.declarePublic("getLinkedKeywords")
     def getLinkedKeywords(self, type=None):
@@ -214,13 +281,6 @@ class Keyword(BaseContent):
 
         return result
 
-    def getSaneId(self):
-        result = self.getId()
-        result = result.replace('.', '')
-        result = result.replace('_', '')
-        result = result.replace('-', '')
-        return result
-
     def generateGraph(self, levels=2):
         """Generate graph source code for GraphViz.
         """
@@ -302,7 +362,7 @@ class Keyword(BaseContent):
         g = self.generateGraph(levels=levels)
 
         zLOG.LOG(PROJECTNAME, zLOG.INFO,
-                 "Updating graph for %s with layouter %s." % (self.getId(), gvtool.getLayouter()))
+                 "Updating graph for '%s' with layouter %s." % (self.getName(), gvtool.getLayouter()))
 
         (result, error) = gvtool.renderGraph(g, options=["-Tpng",])
         self.setKwMapGraphic(result, mimetype="image/png")

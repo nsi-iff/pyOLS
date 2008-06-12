@@ -25,7 +25,6 @@
 	                       size widget/size;
 	                       tabindex tabindex/next;"
 	       />
-        <input type="hidden" name="KeywordB" id="KeywordB" tal:attributes="value python: here.getKeywordB()" />
            <input type="submit" name="form.button.search5" value="Search"/>
 	    <tal:block tal:condition="python: request.get('SearchKWB','')">
 	      <tal:block tal:define="results python:here.portal_classification.searchMatchingKeywordsFor(here,  request.get('SearchKWB',''), search_kw_proposals='true')">

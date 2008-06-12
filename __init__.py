@@ -1,6 +1,7 @@
 from Products.CMFCore.CMFCorePermissions import AddPortalContent
 from Products.CMFCore.DirectoryView import registerDirectory
 from Products.CMFCore import utils as cmfutils
+from Products.validation import validation
 from config import *
 
 from Products.Archetypes.atapi import process_types, listTypes
@@ -16,6 +17,10 @@ import ontology
 import keyword
 import archive
 import graphviztool
+import owl
+
+validation.register(keyword.XMLNCNameValidator('isXMLNCName'))
+validation.register(keyword.UniqueNameValidator('isUniqueName'))
 
 tools = (ClassificationTool, GraphVizTool)
 

@@ -64,12 +64,12 @@ if sel_button:
 
 if sel2_button:
         context.setSearchKWA(context.archetype_tool.lookupObject(keyworda).title_or_id())
-        context.setKeywordA(keyworda)
+#        context.setKeywordA(keyworda)
         return state.set(portal_status_message='Selected keyword added.')
 
 if sel3_button:
         context.setSearchKWB(context.archetype_tool.lookupObject(keywordb).title_or_id())
-        context.setKeywordB(keywordb)
+#        context.setKeywordB(keywordb)
         return state.set(portal_status_message='Selected keyword added.')
 
 if se3_button: 

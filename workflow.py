@@ -67,7 +67,7 @@ def setupKeywordProposalWorkflow(wf):
         props={'guard_permissions':p_review},
         after_script_name='rejectRelations',
         )
-       
+
 def addScript(wf):
     """
     add a script for triggering Keyword creation
@@ -85,14 +85,14 @@ def addScript(wf):
 ##
 #first make keyword
 kwprop=state_change.object #getattr(context, context.getKPId())
-name=kwprop.generateKwId(kwprop.getKPTitle(),kwprop.getShort_additional_description())
+name=kwprop.generateName(kwprop.getKPTitle(),kwprop.getShortAdditionalDescription())
 
-context.portal_classification.manage_addKeyword(name=name, title=kwprop.getKPTitle(), description=kwprop.getPKWDescription(), short_additional_description=kwprop.getShort_additional_description())
+context.portal_classification.manage_addKeyword(name=name, title=kwprop.getKPTitle(), description=kwprop.getPKWDescription(), shortAdditionalDescription=kwprop.getShortAdditionalDescription())
 srcFldr = kwprop.aq_parent
 
 #then make relations
 storage=context.portal_classification.getStorage()
-newkwhandle=getattr(storage, name)
+newkwhandle=context.portal_classification.getKeyword(name)
 reflist=kwprop.getRefs()
 wf_id="kw_proposal_workflow"
 tool=context.portal_workflow
@@ -103,17 +103,15 @@ new_kws_list=[]
 tool.getInfoFor(kwprop, "review_state", None)
 for thing in reflist:
  if tool.getInfoFor(thing, "review_state") == "pending":
-  relation_object=context.archetype_tool.lookupObject(thing.getKeywordB())
- try:
-   newcontext=getattr(context, relation_object.getId())
-   if relation_object.meta_type == "KeywordProposal":
-    context.portal_classification.manage_addKeyword(name=newcontext.generateKwId(newcontext.getKPTitle(),newcontext.getShort_additional_description()), title=newcontext.getKPTitle(), description=newcontext.getPKWDescription(), short_additional_description=newcontext.getShort_additional_description())
-    new_kws_list.append(getattr(storage, newcontext.generateKwId(newcontext.getKPTitle(),newcontext.getShort_additional_description())))
-    context.portal_classification.addReference(name, relation_object.generateKwId(newcontext.getKPTitle(), newcontext.getShort_additional_description()), thing.getRelation())
- 
- except: 
-  if relation_object.meta_type != "KeywordProposal":
-   context.portal_classification.addReference(name, relation_object.getId(), thing.getRelation())
+  try:
+   relation_object=context.portal_classification.getKeyword(thing.getSearchKWB())
+   id2=relation_object.getName()
+   context.portal_classification.addReference(name, id2, thing.getRelation())
+  except:
+   relation_object=context.portal_classification.getKeywordProposal(thing.getSearchKWB())
+   context.portal_classification.manage_addKeyword(name=relation_object.generateName(relation_object.getKPTitle(),relation_object.getShortAdditionalDescription()), title=relation_object.getKPTitle(), description=relation_object.getPKWDescription(), shortAdditionalDescription=relation_object.getShortAdditionalDescription())
+   new_kws_list.append(context.portal_classification.getKeyword(relation_object.generateName(relation_object.getKPTitle(),relation_object.getShortAdditionalDescription())))
+   context.portal_classification.addReference(name, relation_object.generateName(relation_object.getKPTitle(), relation_object.getShortAdditionalDescription()), thing.getRelation())
  tool.doActionFor(thing, "approve", comment="")
 
 #graphviz support
@@ -134,18 +132,20 @@ for obj in new_kws_list:
  except:
   pass
 
+stay=kwprop.getId()
 context.portal_url.getPortalObject().accepted_kws.manage_pasteObjects(kwprop.getParentNode().manage_cutObjects(kwprop.getId()))
 
-raise state_change.ObjectMoved(getattr(storage, name), srcFldr) 
+raise state_change.ObjectMoved(getattr(context.portal_url.getPortalObject().accepted_kws, stay), srcFldr) 
+
 return ''
-''' 
+'''
 )
 
     script_folder = getattr(wf, 'scripts')
     if script_folder:
         script_folder._setObject("generateKeyword", myscript)
-        
-        
+
+
 def addScript2(wf):
     """
     add a script for triggering Keyword creation
@@ -163,17 +163,20 @@ def addScript2(wf):
 ##
 #this script shall make all the referenced relationproposals of the keywordproposal to move alond with it through the workflow
 tool=context.portal_workflow
-src_obj=getattr(context, context.getKPId()) # this is your object, might be a parameter (source)
+try:
+ src_obj=getattr(context, context.getKPId())
+except:
+ src_obj=state_change.object
 for thing in src_obj.getRefs():
  tool.doActionFor(thing, "submit", comment="")
 return ""
-''' 
+'''
 )
 
     script_folder = getattr(wf, 'scripts')
     if script_folder:
         script_folder._setObject("submitRelations", myscript)
-        
+
 def addScript3(wf):
     """
     add a script for triggering Keyword creation
@@ -191,17 +194,20 @@ def addScript3(wf):
 ##
 #this script shall make all the referenced relationproposals of the keywordproposal to move along with it through the workflow
 tool=context.portal_workflow
-src_obj=getattr(context, context.getKPId()) # this is your object, might be a parameter (source)
+try:
+ src_obj=getattr(context, context.getKPId())
+except:
+ src_obj=state_change.object
 for thing in src_obj.getRefs():
  tool.doActionFor(thing, "reject", comment="")
 return ""
-''' 
+'''
 )
 
     script_folder = getattr(wf, 'scripts')
     if script_folder:
         script_folder._setObject("rejectRelations", myscript)
-        
+
 def createKeywordProposalWorkflow(id):
     ob=DCWorkflowDefinition(id)
     setupKeywordProposalWorkflow(ob)
@@ -221,7 +227,7 @@ def setupRelationProposalWorkflow(wf):
     # add custom states and transitions
     wf.states.addState('approved')
     wf.states.deleteStates(['published'])
-  
+
     wf.transitions.addTransition('approve')
     wf.transitions.deleteTransitions(['publish','retract'])
 
@@ -250,7 +256,7 @@ def setupRelationProposalWorkflow(wf):
         actbox_url='%(content_url)s/content_publish_form',
         props={'guard_permissions':p_review},
         )
-        
+
 def addScript4(wf):
     """
     add a script for triggering Relation creation
@@ -272,27 +278,36 @@ srcFldr = relprop.aq_parent
 storage=context.portal_classification.getStorage()
 one=0
 new_kws_list=[]
-if context.archetype_tool.lookupObject(relprop.getKeywordA()).getParentNode() == storage:
- id=context.archetype_tool.lookupObject(relprop.getKeywordA()).getId()
-else:
- id=context.archetype_tool.lookupObject(relprop.getKeywordA()).generateKwId(context.archetype_tool.lookupObject(relprop.getKeywordA()).getKPTitle(),context.archetype_tool.lookupObject(relprop.getKeywordA()).getShort_additional_description())
-newkwhandle=getattr(storage, id)
+try:
+ kwobj=context.portal_classification.getKeyword(relprop.getSearchKWA())
+ id=kwobj.getName()
+except:
+ proposalobj=context.portal_classification.getKeywordProposal(relprop.getSearchKWA())
+ context.portal_classification.manage_addKeyword(name=proposalobj.generateName(proposalobj.getKPTitle(),proposalobj.getShortAdditionalDescription()), title=proposalobj.title_or_id(), shortAdditionalDescription=proposalobj.getShortAdditionalDescription(), description=proposalobj.getKeywordProposalDescription())
+ kwobj=context.portal_classification.getKeyword(name=proposalobj.generateName(proposalobj.getKPTitle(),proposalobj.getShortAdditionalDescription()))
+ id=kwobj.getName()
 
-#for el in relprop.getRelationsList():
-relation_object=context.archetype_tool.lookupObject(relprop.getKeywordB())
+try:
+ relation_object=context.portal_classification.getKeyword(relprop.getSearchKWB())
+except:
+ proposalobj=context.portal_classification.getKeywordProposal(relprop.getSearchKWB())
+ context.portal_classification.manage_addKeyword(name=proposalobj.generateName(proposalobj.getKPTitle(),proposalobj.getShortAdditionalDescription()), title=proposalobj.title_or_id(), shortAdditionalDescription=proposalobj.getShortAdditionalDescription(), description=proposalobj.getKeywordProposalDescription())
+ relation_object=context.portal_classification.getKeyword(name=proposalobj.generateName(proposalobj.getKPTitle(),proposalobj.getShortAdditionalDescription()))
 try:
  newcontext=getattr(context, relation_object.getId())
  if relation_object.meta_type == 'KeywordProposal':
-  context.portal_classification.manage_addKeyword(name=newcontext.generateKwId(newcontext.getKPTitle(),newcontext.getShort_additional_description()), title=newcontext.getKPTitle(), description=newcontext.getPKWDescription(), short_additional_description=newcontext.getShort_additional_description())
-  new_kws_list.append(getattr(storage, newcontext.generateKwId(newcontext.getKPTitle(),newcontext.getShort_additional_description())))
-  context.portal_classification.addReference(id, relation_object.generateKwId(newcontext.getKPTitle(),newcontext.getShort_additional_description()), relprop.getRelation())
+  context.portal_classification.manage_addKeyword(name=newcontext.generateName(newcontext.getKPTitle(),newcontext.getShortAdditionalDescription()), title=newcontext.getKPTitle(), description=newcontext.getPKWDescription(), shortAdditionalDescription=newcontext.getShortAdditionalDescription())
+  new_kws_list.append(getattr(storage, newcontext.generateName(newcontext.getKPTitle(),newcontext.getShortAdditionalDescription())))
+  context.portal_classification.addReference(id, relation_object.generateName(newcontext.getKPTitle(),newcontext.getShortAdditionalDescription()), relprop.getRelation())
 except:
  if relation_object.meta_type != 'KeywordProposal':
-  context.portal_classification.addReference(id, relation_object.getId(), relprop.getRelation())
+  id2=relation_object.getName()
+  context.portal_classification.addReference(id, id2, relprop.getRelation())
 
 if relprop.getParentNode().meta_type != 'KeywordProposal':
     context.portal_url.getPortalObject().accepted_kws.manage_pasteObjects(relprop.manage_cutObjects(relid))
     one=1
+newkwhandle=context.portal_classification.getKeyword(id)
 
 #graphviz support
 new_kws_list.append(newkwhandle)
@@ -313,7 +328,7 @@ for obj in new_kws_list:
      node.updateKwMap(levels=2)
    except:
      pass
-	 
+
  for node in outernodes:
    try:
      node.updateKwMap(levels=2)
@@ -323,14 +338,14 @@ for obj in new_kws_list:
 if one==1:
  raise state_change.ObjectMoved(getattr(context.portal_url.getPortalObject().accepted_kws, relid), srcFldr) 
 return ""
-''' 
+'''
 )
 
     script_folder = getattr(wf, 'scripts')
     if script_folder:
         script_folder._setObject("generateRelation", myscript)
-        
-        
+
+
 def createRelationProposalWorkflow(id):
     ob=DCWorkflowDefinition(id)
     setupRelationProposalWorkflow(ob)

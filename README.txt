@@ -55,7 +55,9 @@ PloneOntology Readme
       "http://www.graphviz.org/":http://www.graphviz.org/
 
     For the most convenient usage, browser clients should have 
-    javascript enabled.
+    javascript enabled. Also javascript is required when adding
+    References within KeywordProposals. This seems to be a limitation
+    of the addable functionality in the Archetypes ReferenceWidget.
 
   Installation
 
@@ -210,8 +212,9 @@ PloneOntology Readme
     Getting Graphviz to work with PloneOntology
 
       After the Graphviz installation make sure that the graphviz 
-      layouters are found in the system path. If they are not, the
-      full paths have to be inserted into the *toollist* method 
-      within *graphviztool.GraphVizTool* class in the *PloneOntology* 
-      products folder. Also changing the Graphviz Font in the Plone Ontology
-      configuration panel might help to solve some problems.
+      layouters are found in the system path. If they are not, change 
+      the *GV_BIN_PATH* variable in config.py in the *PloneOntology* 
+      products folder (be sure to escape the escape character if
+      using windows). Also changing the Graphviz Font to some font
+      installed on your system in the Plone Ontology configuration
+      panel might help to solve some problems.

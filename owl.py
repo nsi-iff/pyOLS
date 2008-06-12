@@ -4,6 +4,20 @@ from zExceptions import NotFound
 from xml.dom.minidom import parse, parseString, getDOMImplementation
 import re
 
+def parseURIRef(uriRef):
+    # FIXME: Do we see xml entities (for context)?
+    (fragmentContext, fragment) = re.match('([^#]*)#?(.*)', uriRef).groups()
+    return {'fragmentContext':fragmentContext, 'fragment':fragment}
+
+def generateURIRef(fragment, fragmentContext=""):
+    return fragmentContext + '#' + fragment
+
+def isXMLNCName(name):
+    # 'name' is (non-empty) XML NCName
+    # TODO: Use proper unicode character classes. Current version is too
+    # restrictive. See <http://www.w3.org/TR/REC-xml-names/#NT-NCName>.
+    return re.match('^[A-Za-z_][A-Za-z0-9._-]*$', name)
+
 class OWLBase:
     owlTemplate = '''\
     <!DOCTYPE rdf:RDF [
@@ -49,13 +63,6 @@ class OWLBase:
     def getEntities(self):
         return self._entities
 
-    def parseURIRef(self, uriRef):
-        (fragmentContext, fragment) = re.match('([^#]*)#?(.*)', uriRef).groups()
-        return {'fragmentContext':fragmentContext, 'fragment':fragment}
-
-    def generateURIRef(self, fragment, fragmentContext=""):
-        return fragmentContext + '#' + fragment
-
     def ensureEntities(self):
         """Collect XML entities and ensure existance of &owl; and &nip; entities.
         """
@@ -86,7 +93,7 @@ class OWLExporter(OWLBase):
 
         for superclass in superclasses:
             subclassof = self._dom.createElement('rdfs:subClassOf')
-            subclassof.setAttribute('rdf:resource', self.generateURIRef(superclass))
+            subclassof.setAttribute('rdf:resource', generateURIRef(superclass))
             cl.appendChild(subclassof)
 
         for (lang, label) in labels:
@@ -109,7 +116,7 @@ class OWLExporter(OWLBase):
 
         for (prop, propclass) in classproperties:
             p = self._dom.createElement(prop)
-            p.setAttribute('rdf:resource', self.generateURIRef(propclass))
+            p.setAttribute('rdf:resource', generateURIRef(propclass))
             cl.appendChild(p)
 
         self._dom.documentElement.appendChild(cl)
@@ -119,8 +126,8 @@ class OWLExporter(OWLBase):
         """
         eq  = self._dom.createElement('owl:Class')
         eqc = self._dom.createElement('owl:equivalentClass')
-        eq.setAttribute('rdf:about', self.generateURIRef(class1))
-        eqc.setAttribute('rdf:resource', self.generateURIRef(class2))
+        eq.setAttribute('rdf:about', generateURIRef(class1))
+        eqc.setAttribute('rdf:resource', generateURIRef(class2))
         eq.appendChild(eqc)
 
         self._dom.documentElement.appendChild(eq)
@@ -142,7 +149,7 @@ class OWLExporter(OWLBase):
 
         for inverse in inverses:
             i = self._dom.createElement('owl:inverseOf')
-            i.setAttribute('rdf:resource', self.generateURIRef(inverse))
+            i.setAttribute('rdf:resource', generateURIRef(inverse))
             op.appendChild(i)
 
         for domain in domains:
@@ -209,7 +216,7 @@ class OWLImporter(OWLBase):
     def ensureBuiltinProperties(self):
         """Ensure existance of OWL built-in relations.
 
-        rdfs:subClassOf     -- childOf <-> parentOf
+        rdfs:subClassOf     -- childOf <validation.register(PartialUrlValidator('isPartialUrl'))-> parentOf
         owl:equivalentClass -- synonymOf
         """
         ct = getToolByName(self._context, 'portal_classification')
@@ -266,7 +273,7 @@ class OWLImporter(OWLBase):
 
             inverses = []
             for inverse in prop.getElementsByTagName('owl:inverseOf'):
-                inverses.append(self.parseURIRef(inverse.getAttribute('rdf:resource'))['fragment'])
+                inverses.append(parseURIRef(inverse.getAttribute('rdf:resource'))['fragment'])
 
             ct.setInverses(rid, inverses)
 
@@ -309,21 +316,25 @@ class OWLImporter(OWLBase):
             try:
                 kw = ct.getKeyword(kid)
             except NotFound:
-                kw = ct.addKeyword(kid)
-            #FIXME: Catch ValidationException (empty name).
+                try:
+                    kw = ct.addKeyword(kid)
+                except ValidationException, e:
+                    error_string = error_string + "Cannot create keyword '%s': %s" % (kid, e)
+                    return error_string
+                except NameError, e: # this should never happen.
+                    error_string = error_string + "BUG: Cannot create keyword '%s': %s" % (kid, e)
+                    return error_string
 
             for label in cl.getElementsByTagName('rdfs:label'):
                 # ignore language and use first value.
                 if label.firstChild:
                     kw.setTitle(label.firstChild.data.strip())
                     break
-            if not kw.title:
-                kw.setTitle(kw.getId())
 
             for comment in cl.getElementsByTagName('rdfs:comment'):
                 # ignore language and use first value.
                 if comment.firstChild:
-                    kw.setShort_additional_description(comment.firstChild.data.strip())
+                    kw.setShortAdditionalDescription(comment.firstChild.data.strip())
                     break
 
             for description in cl.getElementsByTagName('dc:description'):
@@ -332,15 +343,17 @@ class OWLImporter(OWLBase):
                     kw.setKwDescription(description.firstChild.data.strip())
                     break
 
+            kw.reindexObject()
+
             for superclass in cl.getElementsByTagName('rdfs:subClassOf'):
-                src = kw.getId()
+                src = kw.getName()
                 dsts = []
                 if superclass.hasAttribute('rdf:resource'):
-                    dsts.append(self.parseURIRef(superclass.getAttribute('rdf:resource'))['fragment'])
+                    dsts.append(parseURIRef(superclass.getAttribute('rdf:resource'))['fragment'])
                 else:
                     for cls in superclass.getElementsByTagName('owl:Class'):
                         if cls.hasAttribute('rdf:about'):
-                            dsts.append(self.parseURIRef(cls.getAttribute('rdf:about'))['fragment'])
+                            dsts.append(parseURIRef(cls.getAttribute('rdf:about'))['fragment'])
                         elif cls.hasAttribute('rdf:ID'):
                             dsts.append(cls.getAttribute('rdf:ID'))
 
@@ -354,13 +367,20 @@ class OWLImporter(OWLBase):
 
             for classObjectProperty in self.objectProperties():
                 for prop in cl.getElementsByTagName(classObjectProperty):
-                    src = kw.getId()
-                    dst = self.parseURIRef(prop.getAttribute('rdf:resource'))['fragment']
+                    src = kw.getName()
+                    dst = parseURIRef(prop.getAttribute('rdf:resource'))['fragment']
 
                     try:
-                        dstkw = ct.getKeyword(dst)
+                        ct.getKeyword(dst)
                     except NotFound:
-                        ct.addKeyword(dst)
+                        try:
+                            ct.addKeyword(dst)
+                        except ValidationException, e:
+                            error_string = error_string + "Cannot create keyword '%s': %s" % (dst, e)
+                            continue
+                        except NameError, e: # this should never happen.
+                            error_string = error_string + "BUG: Cannot create keyword '%s': %s" % (dst, e)
+                            continue
 
                     try:
                         ct.addReference(src, dst, prop.tagName)
@@ -371,13 +391,38 @@ class OWLImporter(OWLBase):
 
         if cl.hasAttribute('rdf:about'):
             for equivalentClass in cl.getElementsByTagName('owl:equivalentClass'):
-                src = self.parseURIRef(cl.getAttribute('rdf:about'))['fragment']
-                dst = self.parseURIRef(equivalentClass.getAttribute('rdf:resource'))['fragment']
+                src = parseURIRef(cl.getAttribute('rdf:about'))['fragment']
+                dst = parseURIRef(equivalentClass.getAttribute('rdf:resource'))['fragment']
+
+                try:
+                    ct.getKeyword(src)
+                except NotFound:
+                    try:
+                        ct.addKeyword(src)
+                    except ValidationException, e:
+                        error_string = error_string + "Cannot create keyword '%s': %s" % (src, e)
+                        return error_string
+                    except NameError, e: # this should never happen.
+                        error_string = error_string + "BUG: Cannot create keyword '%s': %s" % (src, e)
+                        return error_string
+
+                try:
+                    ct.getKeyword(dst)
+                except NotFound:
+                    try:
+                        ct.addKeyword(dst)
+                    except ValidationException, e:
+                        error_string = error_string + "Cannot create keyword '%s': %s" % (dst, e)
+                        return error_string
+                    except NameError, e: # this should never happen.
+                        error_string = error_string + "BUG: Cannot create keyword '%s': %s" % (dst, e)
+                        return error_string
+
                 try:
                     ct.addReference(src, dst, 'synonymOf')
                 except ValidationException, e:
                     error_string = error_string + "synonymOf(%s,%s): %s\n" % (src, dst, e.message)
                 except NotFound:
-                    error_string = error_string + "No such relation: synonymOf.\n" % prop.tagName
+                    error_string = error_string + "No such relation: synonymOf.\n"
 
         return error_string

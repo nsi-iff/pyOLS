@@ -127,7 +127,7 @@ class TestOWLImporter(PloneTestCase.PloneTestCase):
             self.fail("Necessary keyword not created on import (superclasses).")
 
         super = kw.getRefs("childOf")
-        super = [x.getId() for x in super]
+        super = [x.getName() for x in super]
         super.sort()
 
         self.assertEqual(["Bar", "Blaz"], super)
@@ -139,12 +139,12 @@ class TestOWLImporter(PloneTestCase.PloneTestCase):
             self.fail("Necessary keyword not created on import (properties).")
 
         syn = kw.getRefs("authorOf")
-        syn = [x.getId() for x in syn]
+        syn = [x.getName() for x in syn]
 
         self.assertEqual(['Bonk'], syn)
 
         syn = kw.getRefs("publisher")
-        syn = [x.getId() for x in syn]
+        syn = [x.getName() for x in syn]
 
         self.assertEqual(['Gargle'], syn)
 
@@ -155,7 +155,7 @@ class TestOWLImporter(PloneTestCase.PloneTestCase):
         cl = self.exporter.getDOM().documentElement.lastChild
         self.importer.importClass(cl)
 
-        self.assertEquals(["Bar"], [x.getId() for x in foo.getRefs('synonymOf')])
+        self.assertEquals(["Bar"], [x.getName() for x in foo.getRefs('synonymOf')])
 
 def test_suite():
         from unittest import TestSuite, makeSuite

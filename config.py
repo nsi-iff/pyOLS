@@ -2,7 +2,7 @@ from Globals import package_home
 from Products.CMFCore import CMFCorePermissions
 from Products.CMFCore.CMFCorePermissions import AddPortalContent
 
- 
+
 view_permission = CMFCorePermissions.ManagePortal
 
 PROJECTNAME = 'PloneOntology'

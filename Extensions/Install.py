@@ -15,7 +15,7 @@ def checkDependencies(portal, out):
     qi = getToolByName(portal, "portal_quickinstaller")
 
     ok = True
-    
+
     for d in DEPENDENCIES:
         if not qi.isProductInstalled(d[0]):
             ok = False
@@ -23,7 +23,7 @@ def checkDependencies(portal, out):
 
     if not ok:
         raise "DEPENDENCY PRODUCTS ARE MISSING\n\n %s" % out.getvalue()
-    
+
 def setupTool(portal, out):
     """
     adds the tool to the portal root folder
@@ -33,26 +33,26 @@ def setupTool(portal, out):
         ctool = getToolByName(portal, 'portal_classification')
     except AttributeError:
         ctool = None
-        
+
     cltypes = []
-    
+
     if ctool is not None:
         # save settings
         try:
             cltypes = ctool.getClassifyTypes()
         except AttributeError:
             pass
-            
+
         portal.manage_delObjects(['portal_classification'])
         out.write('Deleting old classification tool')
-        
+
     addTool = portal.manage_addProduct[PROJECTNAME].manage_addTool
     addTool('Classification Tool', None)
     ctool = getToolByName(portal, 'portal_classification')
 
     ctool.setClassifyTypes(cltypes)
     out.write("\nAdded the classification tool to the portal root folder.\n")
-    
+
     if hasattr(portal, 'graphviz_tool'):
         portal.manage_delObjects(['graphviz_tool'])
         out.write('Deleting old graphviz tool')
@@ -140,7 +140,7 @@ def addCustomFormControllerTransitions(portal, out):
     container.addFormAction('base_edit', 'success','',
                              'add_search', 'traverse_to',
                              'string:classification_edit')
-    
+
 def removeCustomFormControllerTransitions(portal, out):
     fc = getToolByName(portal, 'portal_form_controller')
     #BAAH no Python API for deleting actions in FormController
@@ -206,7 +206,7 @@ def removeCustomFormControllerTransitions(portal, out):
         container.delete(FormActionKey('base_edit', 'success', '',
                                        'add_search', fc))
     except KeyError: pass
-    
+
 def setupKeywordProposalWorkflow(portal, out):
     """the proposal wf"""
     wf_tool = getToolByName(portal, 'portal_workflow')
@@ -248,13 +248,18 @@ def install(portal):
     addClassifyAction(portal)
     setupTool(portal, out)
     wf_tool = getToolByName(portal, 'portal_workflow')
-    print wf_tool
     wf_tool.setChainForPortalTypes(('KeywordProposal',), 'keyword_proposal_workflow ')
-    print 'we made the keywords'
     wf_tool.setChainForPortalTypes(('Keyword',), '(Default)')
     wf_tool.setChainForPortalTypes(('RelationProposal',), 'relation_proposal_workflow ')
     registerConfiguration(portal, out)
     addCustomFormControllerTransitions(portal, out)
+
+    # Make name field searchable
+    cat_tool = getToolByName(portal, 'portal_catalog')
+    if 'name' not in cat_tool.indexes():
+        cat_tool.addIndex('name', 'FieldIndex')
+    if 'name' not in cat_tool.schema():
+        cat_tool.addColumn('name')
 
     return out.getvalue()
 
@@ -263,5 +268,5 @@ def uninstall(portal):
     portal_conf=getToolByName(portal,'portal_controlpanel')
     portal_conf.unregisterConfiglet(PROJECTNAME)
     removeCustomFormControllerTransitions(portal, out)
-    
+
     return out.getvalue()

@@ -1,6 +1,5 @@
 from Products.CMFCore.utils import getToolByName, UniqueObject
 from Products.CMFCore.ActionProviderBase import ActionProviderBase
-
 from AccessControl.SecurityInfo import ClassSecurityInfo
 from AccessControl import getSecurityManager, Unauthorized
 from Acquisition import aq_base, aq_inner, aq_parent
@@ -9,7 +8,9 @@ from Globals import InitializeClass, PersistentMapping
 
 from keyword import Keyword
 from ontology import Ontology
+from utils import generateUniqueId
 from config import *
+import owl
 
 from Products.Relations import interfaces
 from Products.Relations.processor import process
@@ -52,16 +53,16 @@ def _unifyRawResults(results):
 ##                 kws[c[1].id] = (kws[c[1].id][0] + c[0], kws[c[1].id][1])
 
 ##         children = kws.values()
-    
+
 class ClassificationTool(UniqueObject,
                          SimpleItem,
-                         ActionProviderBase): 
+                         ActionProviderBase):
     """A tool to handle content syndication with keywords.
     """
 
-    id = 'portal_classification' 
-    meta_type= 'Classification Tool' 
-    plone_tool = 1 
+    id = 'portal_classification'
+    meta_type= 'Classification Tool'
+    plone_tool = 1
 
     security = ClassSecurityInfo()
     #XXX proper security declarations
@@ -151,29 +152,37 @@ class ClassificationTool(UniqueObject,
 
     def addKeyword(self, name, title="",
                    description="",
-                   short_description=""):
-        """Create a keyword in the current onology.
+                   shortDescription="", uid=""):
+        """Create a keyword in the current ontology. If 'uid' is specified, the referenced keyword is registered as 'name'.
 
         Exceptions:
-            ValidationException : 'name' is empty.
+            ValidationException : 'name' is not a valid XML NCName.
             NameError           : Keyword 'name' already exists in current ontology.
+            AttributeError      : 'uid' references no keyword in current ontology.
         """
-        if not name:
-            raise ValidationException("Empty name for keyword specified")
+        if not owl.isXMLNCName(name):
+            raise ValidationException("Invalid name for keyword specified")
 
-        try:
-            self.getKeyword(name)
-            if self.getKeyword(name).meta_type == 'Keyword':
-                raise NameError, "Keyword '%s' already exists in current ontology" % name
-        except NotFound:
-            pass
+        if self.isUsedName(name):
+            raise NameError, "Keyword '%s' already exists in current ontology" % name
 
         storage = self.getStorage()
-        storage.invokeFactory('Keyword', id=name, title=title, short_additional_description=short_description, kwDescription=description)
+        if not uid:
+            uid = generateUniqueId('Keyword')
+            storage.invokeFactory('Keyword', uid)
+        kw = getattr(storage, uid)
+        if not title:
+            title = name
+        kw.setName(name)
+        kw.setTitle(title)
+        kw.setKwDescription(description)
+        kw.setShortAdditionalDescription(shortDescription)
+        kw.unmarkCreationFlag()
+        kw.reindexObject()
         zLOG.LOG(PROJECTNAME, zLOG.INFO,
                  "Added keyword %s." % name)
 
-        return self.getKeyword(name)
+        return kw
 
     def getKeyword(self, name):
         """Return keyword 'name' from current ontology.
@@ -181,30 +190,56 @@ class ClassificationTool(UniqueObject,
         Exceptions:
             NotFound : There is no keyword 'name' in current ontology.
         """
-        storage = self.getStorage()
+        catalog = getToolByName(self, 'portal_catalog')
 
-        if not hasattr(storage, name):
+        # FIXME: Empty 'name' yields first keyword from whole list ([0]).
+        try:
+            return catalog.searchResults(portal_type='Keyword', name=name)[0].getObject()
+        except:
             raise NotFound, "Keyword '%s' not found in current ontology" % name
 
-        return getattr(storage, name)
+    def isUsedName(self, name):
+        try:
+            return self.getKeyword(name)
+        except NotFound:
+            return False
+
+    def getKeywordProposal(self, name):
+        """Return keywordproposal 'name'
+
+        Exceptions:
+            NotFound : There is no keywordproposal 'name'
+        """
+        catalog = getToolByName(self, 'portal_catalog')
+
+        try:
+            return catalog.searchResults(portal_type='KeywordProposal', Title=name)[0].getObject()
+        except:
+            raise NotFound, "KeywordProposal '%s' not found" % name
 
     def delKeyword(self, name):
         """Remove keyword from ontology.
         """
+
+        try:
+            kw = self.getKeyword(name)
+        except NotFound:
+            return
+
         storage = self.getStorage()
         try:
-            storage._delObject(name)
+            storage._delObject(kw.getId())
             zLOG.LOG(PROJECTNAME, zLOG.INFO,
                      "Removed keyword %s." % name)
         except KeyError:
             pass
 
-    def keywords(self): 
+    def keywords(self):
         """Return a list of all existing keyword names.
         """
-        #XXX use catalog search cause it's faster
-        storage = self.getStorage()
-        return [kw.getId() for kw in storage.objectValues('Keyword')]
+        catalog = getToolByName(self, 'portal_catalog')
+
+        return [kw_res.getObject().getName() for kw_res in catalog.searchResults(portal_type='Keyword')]
 
     def addRelation(self, name, weight=0.0, types=[], inverses=[]):
         """Create a keyword relation 'name' in the Plone Relations library, if non-existant.
@@ -413,7 +448,7 @@ class ClassificationTool(UniqueObject,
 
         Exceptions:
             NotFound            : No relation ruleset 'relation' in library.
-            ValidationException : Reference does not validate in the relation ruleset.
+            ValidationException : Reference does not validate in the relation ruleset or 'src' or 'dst' are invalid XMLNCNames
         """
         zLOG.LOG(PROJECTNAME, zLOG.INFO,
                  "%s(%s,%s)." % (relation, src, dst))
@@ -421,18 +456,12 @@ class ClassificationTool(UniqueObject,
         try:
             kw_src  = self.getKeyword(src)
         except NotFound:
-            try:
-                kw_src  = self.addKeyword(src)
-            except ValidationException:
-                return
+            kw_src  = self.addKeyword(src)
 
         try:
             kw_dst  = self.getKeyword(dst)
         except NotFound:
-            try:
-                kw_dst  = self.addKeyword(dst)
-            except ValidationException:
-                return
+            kw_dst  = self.addKeyword(dst)
 
         process(self, connect=((kw_src.UID(), kw_dst.UID(), relation),))
 
@@ -456,10 +485,10 @@ class ClassificationTool(UniqueObject,
         process(self, disconnect=((kw_src.UID(), kw_dst.UID(), relation),))
 
     # ZMI wrappers.
-    def manage_addKeyword(self, name, title='', short_additional_description='', description='', REQUEST=None):
+    def manage_addKeyword(self, name, title='', shortAdditionalDescription='', description='', REQUEST=None):
         """Add new keyword.
         """
-        self.addKeyword(name, title, description, short_additional_description)
+        self.addKeyword(name, title, description, shortAdditionalDescription)
 
         if REQUEST is not None:
             return self.manage_main(REQUEST)
@@ -595,7 +624,7 @@ class ClassificationTool(UniqueObject,
             return {}
 
         # work with private copy w/t reference linking
-        result = result.copy() 
+        result = result.copy()
 
         # if necessary initialize keyword in result list
         if not result.has_key(kwObj.id):
@@ -607,7 +636,7 @@ class ClassificationTool(UniqueObject,
                 rl = getToolByName(self, 'relations_library')
                 links = self.relations(rl)
             else:
-                links = [links]            
+                links = [links]
 
         children = self._getDirectLinkTargets(kwObj, fac, links, cutoff)
         result = self._getRecursiveContent(kwObj, children, result, links, cutoff)
@@ -634,7 +663,7 @@ class ClassificationTool(UniqueObject,
                                                     result, links, cutoff)
 
                 if recursive.has_key(kwObj.id): #suppress direct backlinks
-                    del recursive[kwObj.id] 
+                    del recursive[kwObj.id]
 
                 for kw in recursive.keys():
                     if not result.has_key(kw):
@@ -660,11 +689,6 @@ class ClassificationTool(UniqueObject,
         catalog = getToolByName(self, 'portal_catalog')
 
         kws = dict(storage.objectItems('Keyword'))
-        kwps = catalog.searchResults(portal_type='KeywordProposal')
-        kwpsdict={}
-        for el in kwps:
-            if el.getObject().getParentNode().getId() != 'accepted_kws':
-             kwpsdict.update({el.getObject().getId():el.getObject()})
 
         for item in storage.objectValues('Keyword'):
             if item.title:
@@ -677,17 +701,21 @@ class ClassificationTool(UniqueObject,
         if search_linked_keywords == 'true':
          [extresult.extend(x.getLinkedKeywords()) for x in result]
 
-        result2 = difflib.get_close_matches(search, kwpsdict.keys(), n=5, cutoff=0.5)
-        result2 = [kwpsdict[x] for x in result2]
 
         if search_kw_proposals=='true':
-            for el in result:
-                for el2 in result2:
-                    if el2.getId()==el.getId():
-                        result2.remove(el2)
-            result.extend(result2)
-
-        result.extend(extresult)
+         kwps = catalog.searchResults(portal_type='KeywordProposal')
+         kwpsdict={}
+         for el in kwps:
+          if el.getObject().getParentNode().getId() != 'accepted_kws':
+           kwpsdict.update({el.getObject().getId():el.getObject()})
+         result2 = difflib.get_close_matches(search, kwpsdict.keys(), n=5, cutoff=0.5)
+         result2 = [kwpsdict[x] for x in result2]
+         for el in result:
+          for el2 in result2:
+           if el2.getId()==el.getId() or el2.title_or_id() == el.title_or_id():
+            result2.remove(el2)
+         result.extend(result2)
+         result.extend(extresult)
 
         #remove duplicates & excludes
 
@@ -695,7 +723,8 @@ class ClassificationTool(UniqueObject,
             exclude = [exclude]
 
         set = []
-        [set.append(i) for i in result if (not i in set) and (i not in exclude)]        
+        [set.append(i) for i in result if (not i in set) and (i not in exclude)]
+        
         if len(set) > 20:
             set = set[0:20]
         return set
