@@ -180,7 +180,11 @@ class Keyword(BaseContent):
         return [x[0] for x in self.classifiedContentItems(filter)]
 
     def _recursiveFindDependent(self, levels, exact=False):
-
+        ctool = getToolByName(self, 'portal_classification')
+        forth = ctool.getForth()
+        back = ctool.getBack()
+        direct = []
+        directback = []
         if levels == 0:
             return [self]
 
@@ -189,13 +193,20 @@ class Keyword(BaseContent):
         else:
             result = [self]
             
-        direct = self.getRefs()
-        for kw in direct:
+        if forth == '1':
+         direct = self.getRefs()
+         for kw in direct:
+            result.extend(kw.findDependent(levels-1, exact))
+
+        if back == '1':
+         directback = self.getBRefs()
+         for kw in directback:
             result.extend(kw.findDependent(levels-1, exact))
 
         if exact and levels>1:
             result = [x for x in result if not x==self]
             result = [x for x in result if not x in direct]
+            result = [x for x in result if not x in directback]
                 
         return result
     
@@ -223,6 +234,8 @@ class Keyword(BaseContent):
         Generate graph source code for GraphViz.
         """
         ctool = getToolByName(self, 'portal_classification')
+        forth = ctool.getForth()
+        back = ctool.getBack()
         storage = ctool.getStorage()
 
         innernodes = self.findDependent(1, exact=True) # level 1 keywords
@@ -243,13 +256,21 @@ class Keyword(BaseContent):
         ### relationships
 
         # from central node
-        for rel in self.getRelationships():
+        if forth == '1':
+         for rel in self.getRelationships():
             obs = self.getRefs(rel)
             for cnode in obs:
                 dot.relation(self, cnode, rel)
+        if back == '1':
+         for backrel in self.getBRelationships():
+            obsback = self.getBRefs(backrel)
+            for cnode in obsback:
+                dot.relation(cnode, self, backrel)
+
 
         # from innernodes w/o back to central
-        for node in innernodes:
+        if forth == '1':
+         for node in innernodes:
             rels = node.getRelationships() 
             for rel in rels:
                 obs = node.getRefs(rel)
@@ -260,6 +281,19 @@ class Keyword(BaseContent):
                 
                 for cnode in obs:
                     dot.relation(node, cnode, rel)
+
+        if back == '1':
+         for node in innernodes:
+            relsback = node.getBRelationships() 
+            for backrel in relsback:
+                obsback = node.getBRefs(backrel)
+                try:
+                    obsback.remove(self)
+                except ValueError: # self not in list
+                    pass
+                
+                for cnode in obsback:
+                    dot.relation(cnode, node, backrel)
 
         dot.graphFooter()
 

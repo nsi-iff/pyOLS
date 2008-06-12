@@ -5,7 +5,7 @@
 ##bind script=script
 ##bind state=state
 ##bind subpath=traverse_subpath
-##parameters=cutoff=0.1, storage='kw_storage', tool='fdp', types=[], font=''
+##parameters=cutoff=0.1, storage='kw_storage', tool='fdp', types=[], font='', forth=0, back=0
 ##title=
 ##
 
@@ -23,6 +23,12 @@ except ValueError:
 
 changes=0
 
+if forth != ctool.getForth():
+    changes=1
+
+if back != ctool.getBack():
+    changes=1
+
 if font != ctool.getGVFont():
     changes=1
 
@@ -30,13 +36,15 @@ if tool != gtool.getLayouter():
     changes=1
 
 ctool.setGVFont(font)
+ctool.setBack(back)
+ctool.setForth(forth)
 gtool.setLayouter(tool)
 
 if changes == 1:
-    try:
+    #try:
         for el in ctool.getStorage().contentValues('Keyword'):
             el.updateKwMap(levels=2)
-    except:
-        return state.set(portal_status_message='Error: keyword graphs could not be updated.')
+    #except:
+    #    return state.set(portal_status_message='Error: keyword graphs could not be updated.')
 
 return state.set(portal_status_message='Properties changed.')

@@ -97,6 +97,17 @@ PloneOntology Readme
         depends on your operating system. Again, changing this value
         may take a while (see Graphviz Layouter for that).
 
+        *Forward Relation*: controlls how the Graph is drawn. Will
+        show all Relations that _go away_ from the central Keyword.
+        Yet again, changing this value may take a while (see Graphviz
+        Layouter for that).
+
+        *Backward Relations*: controlls how the Graph is drawn. Will
+        show all Relations that _point to_ the central Keyword.
+        (If you want both directions, just activate both.) Here again,
+        changing this value may take a while (see Graphviz Layouter for
+        that).
+
         *Types that allow classification*: choose the content types
         that shall support classification, i.e 'ATDocument' if you
         want all standard Documents to be classifiable.

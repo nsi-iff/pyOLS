@@ -1,6 +1,6 @@
 from Products.CMFCore.utils import getToolByName
 from Products.Relations.exception import ValidationException
-
+import zExceptions
 from xml.dom.minidom import parse, parseString, getDOMImplementation
 import re
 

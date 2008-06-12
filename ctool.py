@@ -74,6 +74,8 @@ class ClassificationTool(UniqueObject,
         self._storage = 'kw_storage'
         self._classifytypes = []
         self._gvfont = ''
+        self._forth = '1'
+        self._back = '0'
 
     def getGVFont(self):
         """Return the current gv font"""
@@ -82,6 +84,22 @@ class ClassificationTool(UniqueObject,
     def setGVFont(self, font):
         """Set the font for gv output"""
         self._gvfont=font
+
+    def getBack(self):
+        """Return if Back References should be used in the KeywordMap generation"""
+        return self._back
+
+    def setBack(self, back):
+        """Set the back option"""
+        self._back=back
+        
+    def getForth(self):
+        """Return if Forward References should be used in the KeywordMap generation"""
+        return self._forth
+
+    def setForth(self, forth):
+        """Set the forth option"""
+        self._forth=forth
 
     def reftypes(self):
         """Return a list of all referenceable portal types
