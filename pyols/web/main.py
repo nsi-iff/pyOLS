@@ -29,8 +29,7 @@ class RequestDispatcher(SimpleXMLRPCDispatcher):
     def start_request(self, call_list):
         """ Setup the database, then pass the call list on to dispatch_many
             to handle them. """
-        db = DatabaseManager()
-        db.connect("sqlite:///tmp/test.db")
+        db = DatabaseManager("sqlite:///tmp/test.db")
         db.begin_txn()
         try:
             results = self.dispatch_many(call_list)
@@ -79,8 +78,9 @@ class RequestDispatcher(SimpleXMLRPCDispatcher):
         """ Override SimpleXMLRPCDispatcher's _dispatch method so it will
             call OUR dispatch method. """
         res = self.start_request([{'methodName': method, 'params': params}])
-        if res: return res[0][0]
-        else:   return []
+        if not res:
+            raise PyolsProgrammerError("_dispatch got an empty result: %s" %res)
+        return res[0][0]
 
     def register_multicall_functions(self):
         self.funcs.update({'system.multicall' : self.start_request})
