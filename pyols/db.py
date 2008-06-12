@@ -76,3 +76,8 @@ class DatabaseManager:
         self._txn.rollback()
         self._txn = None
         objectstore.clear()
+
+    def flush(self):
+        """ Flush all changes made to persistant objects to disk.
+            This includes both new, modified and expunged objects. """
+        objectstore.flush()

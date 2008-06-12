@@ -1,4 +1,4 @@
-from pyols.tests import reset_db, run_tests
+from pyols.tests import run_tests, db
 from pyols.web.main import RequestDispatcher
 
 import elixir
@@ -29,7 +29,7 @@ class TestRequestDispatcher:
         self.d = RequestDispatcher(self.f)
 
     def teardown(self):
-        reset_db()
+        db().reset()
 
     def call(self, *calls):
         """ Make a call to the dispatch_many function, called when a

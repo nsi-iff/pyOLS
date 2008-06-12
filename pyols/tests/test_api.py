@@ -1,8 +1,9 @@
 from pyols.api import OntologyTool
 from pyols.model import Keyword, Namespace
-from pyols.tests import run_tests, reset_db
+from pyols.tests import run_tests, db
 from pyols.exceptions import PyolsNotFound
 
+from nose.plugins.skip import SkipTest
 from nose.tools import raises
 
 class TestOntologyTool:
@@ -11,12 +12,13 @@ class TestOntologyTool:
         self.ot = OntologyTool(u"testNS")
 
     def teardown(self):
-        reset_db()
+        db().reset()
 
     def addKeyword(self, name=u"testKW", disambiguation=u"dis",
                    description=u"desc"):
         """ Add a keyword using a call to the OT. """
         self.ot.addKeyword(name, disambiguation, description)
+        db().flush() # Mimic the flush that hapens at the end of each request
 
     def getKeyword(self, name=u"testKW"):
         return self.ot.getKeyword(name)
@@ -41,20 +43,6 @@ class TestOntologyTool:
             Distinct from getKeyword, which makes a call to the OT. """
         return Keyword.get_by(name=name)
 
-    def testAddKeyword(self):
-        self.addKeyword()
-        k = self.keyword_getby()
-        self.checkKeyword(k)
-
-    def testGetKeyword(self):
-        self.keyword_new()
-        k = self.getKeyword()
-        self.checkKeyword(k)
-
-    @raises(PyolsNotFound)
-    def testGetInvalidKeyword(self):
-        self.getKeyword(u"bad keyword")
-
     def testChangeNamespace(self):
         nn = u"newNamespace" # nn => newNamespace
         self.ot.namespace = nn
@@ -69,6 +57,36 @@ class TestOntologyTool:
         # And we should be able to go back to the old NS without an issue
         self.ot.namespace = u"testNS"
         assert self.ot.namespace == "testNS"
+
+    def testAddKeyword(self):
+        self.addKeyword()
+        k = self.keyword_getby()
+        self.checkKeyword(k)
+
+    def testGetKeyword(self):
+        self.keyword_new()
+        k = self.getKeyword()
+        self.checkKeyword(k)
+
+    @raises(PyolsNotFound)
+    def testGetInvalidKeyword(self):
+        self.getKeyword(u"bad keyword")
+
+    def testDelKeyword(self):
+        self.keyword_new()
+        self.ot.delKeyword(u"testKW")
+        db().flush()
+        # The keyword should not exist
+        assert not self.keyword_getby()        
+
+    @raises(PyolsNotFound)
+    def testDelKeywordDoesntExist(self):
+        self.ot.delKeyword(u"IdontExist")
+
+    def testDelKeywordCastcadingDelete(self):
+        # This will eventually make sure that deletes of keywords
+        # castcade to associated relationships and associations
+        raise SkipTest("This one will be finished later.")
 
 
 run_tests(__name__)

@@ -60,6 +60,8 @@ class OntologyTool(object):
         """ Set the current namespace.
             It it does not exist, it will be created. """
         self._namespace = Namespace.get_or_create_by(name=new_namespace)
+        # The namespace is flushed now because there is a good chance
+        # other things will depend on it.
         self._namespace.flush()
 
     def _get_namespace(self):
@@ -76,7 +78,6 @@ class OntologyTool(object):
                             disambiguation=disambiguation,
                             description=description)
         newkw.assert_valid()
-        newkw.flush()
 
     def getKeyword(self, name):
         """ Return keyword 'name' from current ontology.
@@ -84,21 +85,11 @@ class OntologyTool(object):
         return Keyword.fetch_by(name=name)        
 
     def delKeyword(self, name):
-        """Remove keyword from ontology.
-        """
+        """ Remove keyword 'name', along with all dependent associatons
+            and relationships from the current ontology. """
 
-        try:
-            kw = self.getKeyword(name)
-        except NotFound:
-            return
-
-        storage = self.getStorage()
-        try:
-            storage._delObject(kw.getId())
-            zLOG.LOG(PROJECTNAME, zLOG.INFO,
-                     "Removed keyword %s." % name)
-        except KeyError:
-            pass
+        kw = self.getKeyword(name)
+        kw.expunge()
 
     def keywords(self):
         """Return a list of all existing keyword names.

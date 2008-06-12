@@ -5,6 +5,7 @@ from pyols.owl import isXMLNCName
 
 from elixir import *
 from sqlalchemy import UniqueConstraint
+from itertools import chain
 
 class StorageMethods:
     """ This class contains all the methods which each storage class
@@ -92,10 +93,21 @@ class StorageMethods:
                     %(self.__class__.__name__, values))
 
     def flush(self):
-        """ Flush this instance to disk, making it persistant. """
+        """ Flush this instance to disk, making it persistant.
+            In general this method should only be called to resolve
+            dependency issues -- if it's possible, it's better to wait
+            until the db.flush() is called at the end of each request. """
         # Note: Just like get_by, this method is overriden by Elixir, so
         #       this code here will never get called.
 
+    def expunge(self):
+        """ Remove the instance from persistant storage.
+            This may also involve removing dependant objects.
+            Does NOT guarentee that the object or any dependants
+            will hit the disk. """
+        raise NotImplementedError("This method should be implemented in "
+                                  "subclasses so they can clean up any "
+                                  "dangling relations. ")
 
 """
 Namespaces are primarly used to separate ontologies.  For example,
@@ -160,6 +172,17 @@ class Keyword(Entity, StorageMethods):
 
     using_options(tablename='keywords')
     using_table_options(UniqueConstraint('namespace_id', 'name', 'disambiguation'))
+
+    def expunge(self):
+        """ Remove the keyword, along with all KeywordRelationships and
+            KeywordAssociations to which it belongs. """
+        for d in chain(self.right_relations,
+                       self.left_relations,
+                       self.associations):
+            # Delete each dependency that is associated with this KW
+            d.expunge()
+        self.delete()
+
 
 class KeywordAssociation(Entity):
     has_field('path', Unicode(512), primary_key=True)
