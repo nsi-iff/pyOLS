@@ -1,10 +1,13 @@
 from Products.CMFCore.utils import getToolByName
 from cStringIO import StringIO
 
-def dotifyName(name):
-    """Delete characters from 'name', which are not allowed in dot names.
+def dotID(string):
+    """Encode 'string' into a DOT ID usable inside double-quotes.
+
+       DOT ID is "any double-quoted string ("...") possibly containing escaped quotes (\")",
+       see <http://www.graphviz.org/doc/info/lang.html>.
     """
-    return name.replace('_', '').replace('-', '').replace('.', '')
+    return string.replace('"', '\\"').encode('unicode_escape', 'backslashreplace')
 
 class KeywordGraph:
     """Dot code generator for keyword graphs.
@@ -23,22 +26,22 @@ class KeywordGraph:
     def graphHeader(self, root):
         self._text.write('''digraph G{
         size="11,8";
-        ranksep=1.5;
-        rankdir=LR;
-        len=10;
-        w=5;
-        root=%s;
-        overlap=true;
-        splines=true;
-        node [shape=box, style="filled", fontname="%s"];
-        edge [fontsize=7, fontcolor="#cccccc",fontname="%s"];
-        ''' % (dotifyName(root.getName()), self._font, self._font))
+        ranksep="1.5";
+        rankdir="LR";
+        len="10";
+        w="5";
+        root="%s";
+        overlap="true";
+        splines="true";
+        node [shape="box", style="filled", fontname="%s"];
+        edge [fontsize="7", fontcolor="#cccccc", fontname="%s"];
+        ''' % (dotID(root.getName()), dotID(self._font), dotID(self._font)))
 
     def graphFooter(self):
         self._text.write("}\n")
 
     def focusNode(self, node):
-        self._text.write('%s [fillcolor="#ff999999", fontsize=11, label="%s", shape="ellipse"];\n' % (dotifyName(node.getName()), node.title_or_id()))
+        self._text.write('"%s" [fillcolor="#ff999999", fontsize="11", label="%s", shape="ellipse"];\n' % (dotID(node.getName()), dotID(node.title_or_id())))
 
 
     def firstLevelNode(self, node):
@@ -53,7 +56,7 @@ class KeywordGraph:
         else:
             tooltip = node.title_or_id()
 
-        self._text.write('%s [fontsize=9, fillcolor="#ffcccc", label="%s", URL="%s/keyword_context_view", tooltip="%s"];\n' % (dotifyName(node.getName()), nodelabel, node.absolute_url(), tooltip))
+        self._text.write('"%s" [fontsize="9", fillcolor="#ffcccc", label="%s", URL="%s/keyword_context_view", tooltip="%s"];\n' % (dotID(node.getName()), dotID(nodelabel), dotID(node.absolute_url()), dotID(tooltip)))
 
     def secondLevelNode(self, node):
         nodelabel = node.title_or_id()
@@ -67,7 +70,7 @@ class KeywordGraph:
         else:
             tooltip = node.title_or_id()
 
-        self._text.write('%s [fontsize=9, fillcolor="#fff0f0", label="%s", URL="%s/keyword_context_view", tooltip="%s"];\n' % (dotifyName(node.getName()), nodelabel, node.absolute_url(), tooltip))
+        self._text.write('"%s" [fontsize="9", fillcolor="#fff0f0", label="%s", URL="%s/keyword_context_view", tooltip="%s"];\n' % (dotID(node.getName()), dotID(nodelabel), dotID(node.absolute_url()), dotID(tooltip)))
 
     def relation(self, node, cnode, rel):
-        self.write('%s -> %s [label="%s"];\n' %(dotifyName(node.getName()), dotifyName(cnode.getName()), rel))
+        self.write('"%s" -> "%s" [label="%s"];\n' % (dotID(node.getName()), dotID(cnode.getName()), dotID(rel)))
