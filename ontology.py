@@ -39,6 +39,8 @@ class Ontology(BaseBTreeFolder):
     global_allow = 0
     filter_content_types = 1
     allowed_content_types = ('Keyword',)
+    content_icon = "ontology.gif"
+
 
     def getTopLevel(self):
         """try to guess the most 'rootlike' Kewords by looking which KWs are only parents and parent to more than one KW.
