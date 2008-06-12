@@ -66,7 +66,12 @@
                tal:attributes="value value;
                                selected python:test(value == gtool.getLayouter())" />
        </select></td></tr>
-       <tr><td i18n:translate="Ontology_highlight_graphviz_font">Graphviz Font</td><td><input name="font" size="40" type="text" tal:attributes="value ctool/getGVFont" /></td></tr>
+       <tr><td i18n:translate="Ontology_highlight_graphviz_font">Graphviz Font</td><td><select name="font" size="1" tal:define="values python: ctool.getGVFontList()">
+       <option tal:repeat="value values"
+               tal:content="value"
+               tal:attributes="value value;
+                               selected python:test(value == ctool.getGVFont())" />
+       </select></td></tr>
        <tr><td i18n:translate="Ontology_highlight_forward_relations">Forward Relations</td><td><tal:block condition="python: ctool.getForth() == '1'"><input name="forth" type="checkbox" checked value="1" /></tal:block><tal:block condition="python: ctool.getForth() != '1'"><input name="forth" type="checkbox" value="1" /></tal:block></td></tr>
        <tr><td i18n:translate="Ontology_highlight_backward_relations">Backward Relations</td><td><tal:block condition="python: ctool.getBack() == '1'"><input name="back" type="checkbox" checked value="1" /></tal:block><tal:block condition="python: ctool.getBack() != '1'"><input name="back" type="checkbox" value="1" /></tal:block></td></tr>
        <tr><td i18n:translate="Ontology_highlight_types">Types that allow classification</td><td><select name="types" size="7" multiple tal:define="values python: ctool.reftypes()">
