@@ -349,7 +349,7 @@ class Keyword(BaseContent):
             for cnode in obs:
                 dot.relation(self, cnode, rel)
         if back == '1':
-         for backrel in self.getBRelationships():
+         for backrel in self.getBackRelations():
             obsback = self.getBackReferences(backrel)
             for cnode in obsback:
                 dot.relation(cnode, self, backrel)
@@ -371,7 +371,7 @@ class Keyword(BaseContent):
 
         if back == '1':
          for node in innernodes:
-            relsback = node.getBRelationships() 
+            relsback = node.getBackRelations()
             for backrel in relsback:
                 obsback = node.getBackReferences(backrel)
                 try:
