@@ -225,6 +225,283 @@ class ClassificationTool(UniqueObject,
         self._relfont = ''
         self._forth = '1'
         self._back = '0'
+        self._nodeshapes = ['box', 'polygon', 'ellipse', 'circle', 'point', 'egg', 'triangle', 'plaintext', 'diamond', 'trapezium', 'parallelogram', 'house', 'pentagon', 'hexagon', 'septagon', 'octagon', 'doublecircle', 'doubleoctagon', 'tripleoctagon', 'invtriangle', 'invtrapezium', 'invhouse', 'Mdiamond', 'Msquare', 'Mcircle', 'rect', 'rectangle', 'none']
+        self._edgeshapes = ['box', 'crow', 'diamond', 'dot', 'inv', 'none', 'normal', 'tee', 'vee']
+        self._focus_nodeshape = 'ellipse'
+        self._focus_nodecolor = '#eeeeee'
+        self._focus_node_font_color = '#000000'
+        self._focus_node_font_size = 9
+        self._first_nodeshape = 'box'
+        self._first_nodecolor = 'transparent'
+        self._first_node_font_color = '#000000'
+        self._first_node_font_size = 8
+        self._second_nodeshape = 'box'
+        self._second_nodecolor = 'transparent'
+        self._second_node_font_color = '#000000'
+        self._second_node_font_size = 7
+        self._edgeshape = 'normal'
+        self._edgecolor = '#000000'
+        self._edge_font_color = '#111111'
+        self._edge_font_size = 8        
+
+    def getGVNodeShapesList(self):
+        """Return the gv node shape list.
+        """
+        return self._nodeshapes
+
+    def getGVEdgeShapesList(self):
+        """Return the gv edge shape list.
+        """
+        return self._edgeshapes
+    def getFocusNodeShape(self):
+        """Return the current gv focus_nodeshape.
+        """
+        return self._focus_nodeshape
+
+    def setFocusNodeShape(self, focus_nodeshape):
+        """Set the focus_nodeshape for gv output.
+        """
+        self._focus_nodeshape=focus_nodeshape
+        
+    def getFocusNodeColor(self):
+        """Return the current gv focus_nodecolor.
+        """
+        return self._focus_nodecolor
+
+    def setFocusNodeColor(self, focus_nodecolor):
+        """Set the focus_nodecolor for gv output.
+        """
+        self._focus_nodecolor=focus_nodecolor
+        
+    def getFocusNodeFontColor(self):
+        """Return the current gv focus_node_font_color.
+        """
+        return self._focus_node_font_color
+
+    def setFocusNodeFontColor(self, focus_node_font_color):
+        """Set the focus_node_font_color for gv output.
+        """
+        self._focus_node_font_color=focus_node_font_color
+        
+    def getFocusNodeFontColor(self):
+        """Return the current gv focus_node_font_color.
+        """
+        return self._focus_node_font_color
+
+    def setFocusNodeFontColor(self, focus_node_font_color):
+        """Set the focus_node_font_color for gv output.
+        """
+        self._focus_node_font_color=focus_node_font_color
+        
+    def getFocusNodeFontSize(self):
+        """Return the current gv focus_node_font_size.
+        """
+        return self._focus_node_font_size
+
+    def setFocusNodeFontSize(self, focus_node_font_size):
+        """Set the focus_node_font_size for gv output.
+        """
+        self._focus_node_font_size=focus_node_font_size
+                
+    def getFocusNodeShape(self):
+        """Return the current gv focus_nodeshape.
+        """
+        return self._focus_nodeshape
+
+    def setFocusNodeColor(self, focus_nodeshape):
+        """Set the focus_nodeshape for gv output.
+        """
+        self._focus_nodeshape=focus_nodeshape
+        
+    def getFocusNodeColor(self):
+        """Return the current gv focus_nodecolor.
+        """
+        return self._focus_nodecolor
+
+    def setFocusNodeColor(self, focus_nodecolor):
+        """Set the focus_nodecolor for gv output.
+        """
+        self._focus_nodecolor=focus_nodecolor
+        
+    def getFocusNodeFontColor(self):
+        """Return the current gv focus_node_font_color.
+        """
+        return self._focus_node_font_color
+
+    def setFocusNodeFontColor(self, focus_node_font_color):
+        """Set the focus_node_font_color for gv output.
+        """
+        self._focus_node_font_color=focus_node_font_color
+        
+    def getFocusNodeFontColor(self):
+        """Return the current gv focus_node_font_color.
+        """
+        return self._focus_node_font_color
+
+    def setFocusNodeFontColor(self, focus_node_font_color):
+        """Set the focus_node_font_color for gv output.
+        """
+        self._focus_node_font_color=focus_node_font_color
+        
+    def getFocusNodeFontSize(self):
+        """Return the current gv focus_node_font_size.
+        """
+        return self._focus_node_font_size
+
+    def setFocusNodeFontSize(self, focus_node_font_size):
+        """Set the focus_node_font_size for gv output.
+        """
+        self._focus_node_font_size=focus_node_font_size
+                
+    def getFirstNodeShape(self):
+        """Return the current gv first_nodeshape.
+        """
+        return self._first_nodeshape
+
+    def setFirstNodeShape(self, first_nodeshape):
+        """Set the first_nodeshape for gv output.
+        """
+        self._first_nodeshape=first_nodeshape
+        
+    def getFirstNodeColor(self):
+        """Return the current gv first_nodecolor.
+        """
+        return self._first_nodecolor
+
+    def setFirstNodeColor(self, first_nodecolor):
+        """Set the first_nodecolor for gv output.
+        """
+        self._first_nodecolor=first_nodecolor
+        
+    def getFirstNodeFontColor(self):
+        """Return the current gv first_node_font_color.
+        """
+        return self._first_node_font_color
+
+    def setFirstNodeFontColor(self, first_node_font_color):
+        """Set the first_node_font_color for gv output.
+        """
+        self._first_node_font_color=first_node_font_color
+        
+    def getFirstNodeFontColor(self):
+        """Return the current gv first_node_font_color.
+        """
+        return self._first_node_font_color
+
+    def setFirstNodeFontColor(self, first_node_font_color):
+        """Set the first_node_font_color for gv output.
+        """
+        self._first_node_font_color=first_node_font_color
+        
+    def getFirstNodeFontSize(self):
+        """Return the current gv first_node_font_size.
+        """
+        return self._first_node_font_size
+
+    def setFirstNodeFontSize(self, first_node_font_size):
+        """Set the first_node_font_size for gv output.
+        """
+        self._first_node_font_size=first_node_font_size
+        
+    def getSecondNodeShape(self):
+        """Return the current gv second_nodeshape.
+        """
+        return self._second_nodeshape
+
+    def setSecondNodeShape(self, second_nodeshape):
+        """Set the second_nodeshape for gv output.
+        """
+        self._second_nodeshape=second_nodeshape
+        
+    def getSecondNodeColor(self):
+        """Return the current gv second_nodecolor.
+        """
+        return self._second_nodecolor
+
+    def setSecondNodeColor(self, second_nodecolor):
+        """Set the second_nodecolor for gv output.
+        """
+        self._second_nodecolor=second_nodecolor
+        
+    def getSecondNodeFontColor(self):
+        """Return the current gv second_node_font_color.
+        """
+        return self._second_node_font_color
+
+    def setSecondNodeFontColor(self, second_node_font_color):
+        """Set the second_node_font_color for gv output.
+        """
+        self._second_node_font_color=second_node_font_color
+        
+    def getSecondNodeFontColor(self):
+        """Return the current gv second_node_font_color.
+        """
+        return self._second_node_font_color
+
+    def setSecondNodeFontColor(self, second_node_font_color):
+        """Set the second_node_font_color for gv output.
+        """
+        self._second_node_font_color=second_node_font_color
+        
+    def getSecondNodeFontSize(self):
+        """Return the current gv second_node_font_size.
+        """
+        return self._second_node_font_size
+
+    def setSecondNodeFontSize(self, second_node_font_size):
+        """Set the second_node_font_size for gv output.
+        """
+        self._second_node_font_size=second_node_font_size
+   
+    def getEdgeShape(self):
+        """Return the current gv edgeshape.
+        """
+        return self._edgeshape
+
+    def setEdgeShape(self, edgeshape):
+        """Set the edgeshape for gv output.
+        """
+        self._edgeshape=edgeshape
+        
+    def getEdgeColor(self):
+        """Return the current gv edgecolor.
+        """
+        return self._edgecolor
+
+    def setEdgeColor(self, edgecolor):
+        """Set the edgecolor for gv output.
+        """
+        self._edgecolor=edgecolor
+        
+    def getEdgeFontColor(self):
+        """Return the current gv edge_font_color.
+        """
+        return self._edge_font_color
+
+    def setEdgeFontColor(self, edge_font_color):
+        """Set the edge_font_color for gv output.
+        """
+        self._edge_font_color=edge_font_color
+        
+    def getEdgeFontColor(self):
+        """Return the current gv edge_font_color.
+        """
+        return self._edge_font_color
+
+    def setEdgeFontColor(self, edge_font_color):
+        """Set the edge_font_color for gv output.
+        """
+        self._edge_font_color=edge_font_color
+        
+    def getEdgeFontSize(self):
+        """Return the current gv edge_font_size.
+        """
+        return self._edge_font_size
+
+    def setEdgeFontSize(self, edge_font_size):
+        """Set the edge_font_size for gv output.
+        """
+        self._edge_font_size=edge_font_size
 
     def getGVFontList(self):
         """Return the current gv font list.

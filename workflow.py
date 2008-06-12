@@ -111,7 +111,10 @@ for thing in reflist:
    context.portal_classification.manage_addKeyword(name=relation_object.generateName(relation_object.getKPTitle(),relation_object.getShortAdditionalDescription()), title=relation_object.getKPTitle(), description=relation_object.getPKWDescription(), shortAdditionalDescription=relation_object.getShortAdditionalDescription())
    new_kws_list.append(context.portal_classification.getKeyword(relation_object.generateName(relation_object.getKPTitle(),relation_object.getShortAdditionalDescription())))
    context.portal_classification.addReference(name, relation_object.generateName(relation_object.getKPTitle(), relation_object.getShortAdditionalDescription()), thing.getRelation())
- tool.doActionFor(thing, "approve", comment="")
+ try:
+  tool.doActionFor(thing, "approve", comment="")
+ except:
+  pass
 
 #graphviz support
 new_kws_list.append(newkwhandle)
@@ -279,7 +282,7 @@ one=0
 id=""
 new_kws_list=[]
 for el in context.portal_catalog.searchResults(portal_type='Keyword'):
- if el.getObject().Title() == relprop.getSearchKWA():
+ if el.getObject().getName() == relprop.getSearchKWA():
   kwobj=el.getObject()
   id=kwobj.getName()
 if id == "":

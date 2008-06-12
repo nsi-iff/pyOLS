@@ -5,7 +5,7 @@
 ##bind script=script
 ##bind state=state
 ##bind subpath=traverse_subpath
-##parameters=cutoff=0.1, storage='kw_storage', tool='fdp', types=[], font='', relfont='', forth=0, back=0, fontpath=''
+##parameters=cutoff=0.1, storage='kw_storage', tool='fdp', types=[], font='', relfont='', forth=1, back=0, fontpath='', focus_nodeshape = 'ellipse', focus_nodecolor = '#eeeeee', focus_node_font_color = '#000000', focus_node_font_size = '9', first_nodeshape = 'box', first_nodecolor = 'transparent', first_node_font_color = '#000000', first_node_font_size = '8', second_nodeshape = 'box', second_nodecolor = 'transparent', second_node_font_color = '#000000', second_node_font_size = '7', edgeshape = 'normal', edgecolor = '#000000', edge_font_color = '#111111', edge_font_size = '8'
 ##title=
 ##
 
@@ -23,21 +23,65 @@ except ValueError:
 
 changes=0
 
+if focus_nodeshape != ctool.getFocusNodeShape():
+    changes=1
+if first_nodeshape != ctool.getFirstNodeShape():
+    changes=1
+if second_nodeshape != ctool.getSecondNodeShape():
+    changes=1
+if edgeshape != ctool.getEdgeShape():
+    changes=1
 if forth != ctool.getForth():
     changes=1
-
 if back != ctool.getBack():
     changes=1
-
 if font != ctool.getGVFont():
     changes=1
-
 if relfont != ctool.getRelFont():
     changes=1
-    
 if tool != gtool.getLayouter():
     changes=1
+if focus_nodecolor != ctool.getFocusNodeColor():
+    changes=1
+if focus_node_font_color != ctool.getFocusNodeFontColor():
+    changes=1
+if focus_node_font_size != ctool.getFocusNodeFontSize():
+    changes=1
+if first_nodecolor != ctool.getFirstNodeColor():
+    changes=1
+if first_node_font_color != ctool.getFirstNodeFontColor():
+    changes=1
+if first_node_font_size != ctool.getFirstNodeFontSize():
+    changes=1
+if second_nodecolor != ctool.getSecondNodeColor():
+    changes=1
+if second_node_font_color != ctool.getSecondNodeFontColor():
+    changes=1
+if second_node_font_size != ctool.getSecondNodeFontSize():
+    changes=1
+if edgecolor != ctool.getEdgeColor():
+    changes=1
+if edge_font_color != ctool.getEdgeFontColor():
+    changes=1
+if edge_font_size != ctool.getEdgeFontSize():
+    changes=1
 
+ctool.setFocusNodeColor(focus_nodecolor)
+ctool.setFocusNodeFontColor(focus_node_font_color)
+ctool.setFocusNodeFontSize(focus_node_font_size)
+ctool.setFirstNodeColor(first_nodecolor)
+ctool.setFirstNodeFontColor(first_node_font_color)
+ctool.setFirstNodeFontSize(first_node_font_size)
+ctool.setSecondNodeColor(second_nodecolor)
+ctool.setSecondNodeFontColor(second_node_font_color)
+ctool.setSecondNodeFontSize(second_node_font_size)
+ctool.setEdgeColor(edgecolor)
+ctool.setEdgeFontColor(edge_font_color)
+ctool.setEdgeFontSize(edge_font_size)
+ctool.setFocusNodeShape(focus_nodeshape)
+ctool.setFirstNodeShape(first_nodeshape)
+ctool.setSecondNodeShape(second_nodeshape)
+ctool.setEdgeShape(edgeshape)
 ctool.setFontPath(fontpath)
 ctool.setGVFont(font)
 ctool.setRelFont(relfont)
