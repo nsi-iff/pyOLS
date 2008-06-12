@@ -92,7 +92,8 @@ class OntologyTool(object):
         kw.expunge()
 
     def keywords(self):
-        """ Return all the keywords from the current namespace. """
+        """ Return an iterator over all the keywords in the current NS. """
+        return Keyword.query_by(namespace=self._namespace)
 
     def addRelation(self, name, weight=0.0, types=[], inverses=[], uid=""):
         """Create a keyword relation 'name' in the Plone Relations library, if non-existant.

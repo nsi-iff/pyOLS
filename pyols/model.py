@@ -25,6 +25,7 @@ class StorageMethods:
     @classmethod
     def get_by(cls, **kwargs):
         """ Get an instance of the class, given attributes **kwargs.
+            If multiple matching instances exist, the first one is returned.
             >>> n = Namespace.get_by(name='spam')
             >>> Keyword.get_by(namespace=n, name='foo')
             <model.Keyword object at 0x83f730c>
@@ -45,6 +46,12 @@ class StorageMethods:
         obj = cls.get_by(**kwargs)
         if obj: return obj
         raise PyolsNotFound("%s with %r not found." %(cls.__name__, kwargs))
+
+    @classmethod
+    def query_by(cls, **kwargs):
+        """ Identical to get_by, except an iterator over all the matching
+            instances is returned. """
+        return cls.query.filter_by(**kwargs)
 
     @classmethod
     def new(cls, **kwargs):

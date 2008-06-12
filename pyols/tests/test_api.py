@@ -103,5 +103,12 @@ class TestOntologyTool:
         # castcade to associated relationships and associations
         raise SkipTest("This one will be finished later.")
 
+    def testKeywords(self):
+        assert_equal(list(self.ot.keywords()), [])
+
+        for x in range(3):
+            self.keyword_new(name=u"testKW%d"%(x))
+            kws = list(self.ot.keywords())
+            assert_equal(len(kws), x+1)
 
 run_tests(__name__)
