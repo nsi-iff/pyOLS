@@ -208,7 +208,7 @@ class ClassificationTool(UniqueObject,
          if "\\" in el:
           self._fonts.append(el.split("\\")[len(el.split("\\"))-1][:-4])
          elif "/" in el:
-          self._fonts.append(el.split("/")[len(el.split("/"))-1][-4:])
+          self._fonts.append(el.split("/")[len(el.split("/"))-1][:-4])
         self._fonts.sort()
         self._fontpath=''
         self.relevance_factors = PersistentMapping()
@@ -238,14 +238,14 @@ class ClassificationTool(UniqueObject,
           if "\\" in el:
            self._fonts.append(el.split("\\")[len(el.split("\\"))-1][:-4])
           elif "/" in el:
-           self._fonts.append(el.split("/")[len(el.split("/"))-1][-4:])
+           self._fonts.append(el.split("/")[len(el.split("/"))-1][:-4])
         else:
          self._fonts=[]
          for el in findFonts(path):
           if "\\" in el:
            self._fonts.append(el.split("\\")[len(el.split("\\"))-1][:-4])
           elif "/" in el:
-           self._fonts.append(el.split("/")[len(el.split("/"))-1][-4:])
+           self._fonts.append(el.split("/")[len(el.split("/"))-1][:-4])
         self._fonts.sort()
         self._fontpath=path
 
