@@ -817,10 +817,16 @@ class ClassificationTool(UniqueObject,
         except:
             pass
 
-    def relations(self, relations_library):
-        """Return a list of all existing keyword relation names in 'relations_library'.
+    def relations(self, relations_library, plus='0'):
+        """Return a list of all existing keyword relation names in 'relations_library' and add ['noChange', 'deleteAll'] if plus != '0'
         """
-        return [r.Title() for r in relations_library.getRulesets()]
+        rel_list=['noChange', 'deleteAll']
+        if plus != '0':
+         for r in relations_library.getRulesets():
+          rel_list.append(r.Title()) 
+         return rel_list
+        else:
+         return [r.Title() for r in relations_library.getRulesets()]
 
     def getWeight(self, name):
         """Return the weight of keyword relation 'name'.
@@ -866,12 +872,13 @@ class ClassificationTool(UniqueObject,
             if not hasattr(r, 'symmetric'):
                 r.invokeFactory('Inverse Implicator', 'symmetric')
                 r.symmetric.setInverseRuleset(r.UID())
+                r.symmetric.setTitle('Symmetric')
         else:
             try:
                 r.manage_delObjects('symmetric')
             except AttributeError:
                 pass
-
+    
         if 'functional' in t:
             if not hasattr(r, 'functional'):
                 r.invokeFactory('Cardinality Constraint', 'functional')
@@ -912,7 +919,7 @@ class ClassificationTool(UniqueObject,
         result.extend([rule.getId() for rule in ruleset.getComponents(interfaces.IRule) if rule.getId() in ('symmetric', 'functional', 'inversefunctional')])
 
         return result
-
+        
     def setInverses(self, name, i):
         """Set inverse relations of keyword relation 'name'.
 
@@ -968,7 +975,7 @@ class ClassificationTool(UniqueObject,
         """
         ruleset = self.getRelation(name)
         return [rule.getInverseRuleset().Title() for rule in ruleset.getComponents(interfaces.IRule) if rule.getId().startswith('inverseOf_')]
-
+        
     def addReference(self, src, dst, relation, ):
         """Create an Archetype reference of type 'relation' from keyword with name
         'src' to keyword with name 'dst', if non-existant.

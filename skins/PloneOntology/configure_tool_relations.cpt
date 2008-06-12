@@ -62,15 +62,66 @@
 <tal:block tal:condition="relations">
 
 <table>
-<tr><th i18n:translate="Ontology_highlight_relation">RelationName</th><th i18n:translate="Ontology_highlight_relevance_factor">RelevanceFactor</th><th>Transitive</th></tr>
+<tr><th i18n:translate="Ontology_highlight_relation">Relation</th><th i18n:translate="Ontology_highlight_relevance_factor">RelevanceFactor</th>
+<th>T</th>
+<th>S</th>
+<th>F</th>
+<th>IF</th>
+<th>Inverse of</th>
+</tr>
 <tr tal:repeat="rel relations">
-<td><input type="checkbox" name="ids:list:string"
+<td  valign="top"><input type="checkbox" name="ids:list:string"
 tal:attributes="value rel;"/><tal:block tal:replace="rel"/></td>
-<td><input size="5" tal:attributes="value python: ctool.getWeight(rel);
+<td  valign="top"><input size="5" tal:attributes="value python: ctool.getWeight(rel);
          name string:factors.${rel}:record;
-"/></td><td><tal:block condition="python: 'transitive' in ctool.getTypes(rel)"><input tal:attributes="name string:transitive.${rel}:record;" type="checkbox" checked value="1" /></tal:block><tal:block condition="python: 'transitive' not in ctool.getTypes(rel)"><input tal:attributes="name string:transitive.${rel}:record;" type="checkbox" value="0" /></tal:block></td>
+"/></td>
+<td  valign="top">
+ <tal:block condition="python: 'transitive' in ctool.getTypes(rel)">
+  <input tal:attributes="name string:transitive.${rel}:record;" type="checkbox" checked value="1" />
+ </tal:block>
+ <tal:block condition="python: 'transitive' not in ctool.getTypes(rel)">
+  <input tal:attributes="name string:transitive.${rel}:record;" type="checkbox" value="0" />  
+ </tal:block>
+</td>
+<td  valign="top">
+ <tal:block condition="python: 'symmetric' in ctool.getTypes(rel)">
+  <input tal:attributes="name string:symmetric.${rel}:record;" type="checkbox" checked value="1" />
+ </tal:block>
+ <tal:block condition="python: 'symmetric' not in ctool.getTypes(rel)">
+  <input tal:attributes="name string:symmetric.${rel}:record;" type="checkbox" value="0" />  
+ </tal:block>
+</td>
+<td  valign="top">
+ <tal:block condition="python: 'functional' in ctool.getTypes(rel)">
+  <input tal:attributes="name string:functional.${rel}:record;" type="checkbox" checked value="1" />
+ </tal:block>
+ <tal:block condition="python: 'functional' not in ctool.getTypes(rel)">
+  <input tal:attributes="name string:functional.${rel}:record;" type="checkbox" value="0" />  
+ </tal:block>
+</td>
+<td  valign="top">
+ <tal:block condition="python: 'inversefunctional' in ctool.getTypes(rel)">
+  <input tal:attributes="name string:inversefunctional.${rel}:record;" type="checkbox" checked value="1" />
+ </tal:block>
+ <tal:block condition="python: 'inversefunctional' not in ctool.getTypes(rel)">
+  <input tal:attributes="name string:inversefunctional.${rel}:record;" type="checkbox" value="0" />  
+ </tal:block>
+</td>
+<td  valign="top">
+ <select tal:attributes="name string:inverseOf.${rel}:record" size="1" tal:define="values python: ctool.relations(here.relations_library, plus='1')">
+  <option tal:repeat="value values" tal:content="value" tal:attributes="value value" />
+ </select><br />
+ <ul>
+  <li tal:repeat="stuff python: ctool.getInverses(rel)" tal:content="stuff"/>  
+ </ul>
+</td>
 </tr>
 </table>
+T = Transitive<br />  
+S = Symmetric<br />
+F = Functional<br />
+IF = Inversefunctional<br />
+<br />
 <input type="submit" 
        name="form.button.change"
        value="Save Changes"
