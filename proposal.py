@@ -69,6 +69,7 @@ class KeywordProposal(BaseFolder):
     allowed_content_types = ['RelationProposal',]
     meta_type = portal_type = 'KeywordProposal'
     archetype_name = 'Keyword Proposal'
+    content_icon = "kwproposal.gif"
 
     security.declarePublic('setTitle')
     def setTitle(self, value,):
