@@ -49,15 +49,19 @@ class Ontology(BaseBTreeFolder):
     filter_content_types = 1
     allowed_content_types = ('Keyword',)
     content_icon = "ontology.gif"
-    
-    actions = (
-        {'name' : "map View",
-         'id' : "kw_map_view",
-         'action' : "string: ${object_url}/map_view",
-         'category' : "object_tabs",
-         },
 
-        )
+    actions = (
+        {
+            'name'     : "map View",
+            'id'       : "kw_map_view",
+            'action'   : "string: ${object_url}/map_view",
+            'category' : "object_tabs",
+         },
+    )
+    aliases = {
+        '(Default)':'base_view',
+        'view'     :'base_view'
+    }
 
     def updateGraphvizMap(self):
         """Update Map cached images. Returns string containing error messages, empty if none.

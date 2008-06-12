@@ -106,22 +106,29 @@ class Keyword(BaseContent):
 
     schema = kwSchema
     actions = (
-        {'name' : "Related Content",
-         'id' : "relatedContent",
-         'action' : "string: ${object_url}/keyword_contents",
-         'category' : "object_tabs",
+        {
+            'name'     : "Related Content",
+            'id'       : "relatedContent",
+            'action'   : "string: ${object_url}/keyword_contents",
+            'category' : "object_tabs",
+        },
+        {
+            'name'     : "View",
+            'id'       : "view",
+            'action'   : "string: ${object_url}/keyword_context_view",
+            'category' : "object_tabs",
+        },
+        {
+            'name'     : "manage relations",
+            'id'       : "manageRelations",
+            'action'   : "string: ${object_url}/relations_adddelete",
+            'category' : "object_tabs",
          },
-        {'name' : "View",
-         'id' : "view",
-         'action' : "string: ${object_url}/keyword_context_view",
-         'category' : "object_tabs",
-         },
-        {'name' : "manage relations",
-         'id' : "manageRelations",
-         'action' : "string: ${object_url}/relations_adddelete",
-         'category' : "object_tabs",
-         },
-        )
+    )
+    aliases = {
+        '(Default)' : 'keyword_context_view',
+        'view'      : 'keyword_context_view'
+    }
 
     security = ClassSecurityInfo()
     security.declareObjectPublic()
