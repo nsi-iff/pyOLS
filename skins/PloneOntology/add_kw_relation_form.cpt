@@ -20,11 +20,22 @@
         tal:attributes="href string: configure_tool_properties"
         i18n:translate="Ontology_properties">Properties</a>
         </li>
-
         <li class="selected">
         <a href=""
         tal:attributes="href string: ${template/id}"
         i18n:translate="Ontology_relations">Relations</a>
+        </li>
+        <li class="">
+        <a href=""
+           tal:attributes="href string: configure_tool_import"
+           i18n:translate="Ontology_import_export">Import/Export
+        </a>
+        </li>
+        <li class="">
+        <a href=""
+           tal:attributes="href string: configure_tool_readme"
+           i18n:translate="Ontology_readme">ReadMe
+        </a>
         </li>
     </ul>
 

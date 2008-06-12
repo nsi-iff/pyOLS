@@ -43,11 +43,17 @@ PloneOntology Readme
         *Note that PloneOntology may work with Plone 2.0.5, but that
         this is not officially supported.*
 
+      * Relations 0.7 (UNRELEASED) from "http://svn.plone.org":http://svn.plone.org
+      is needed when running Plone 2.5.x -- 
+      "http://svn.plone.org/svn/archetypes/Relations/trunk/":http://svn.plone.org/svn/archetypes/Relations/trunk/
+      
+       * for Plone 2.1.x the latest release Relations 0.6b will do -- 
+       "http://plone.org/products/relations":http://plone.org/products/relations
+      
       * Archetypes 1.3.2. or higher (comes with Plone nowadays) -- 
       "http://sourceforge.net/projects/archetype":http://sourceforge.net/projects/archetype
 
-      * Relations 0.6b or higher (0.5b1 should work too, but that collides with zope 2.7) -- 
-      "http://plone.org/products/relations/psc_project_view":http://plone.org/products/relations/psc_project_view
+      * The latest environment we use consists of Zope 2.9.7, Plone 2.5.3 and Relations 0.7 (UNRELEASED)
 
     optional Software:
 
@@ -67,7 +73,7 @@ PloneOntology Readme
   Installation
 
     In the Plone Setup *Add/Remove Products* portlet install the 
-    required software before installing PloneOntology. If the 
+    required software (Relations) before installing PloneOntology. If the 
     install was successfull one should see an *Add-on Product 
     Configuration* portlet for PloneOntology.
 
@@ -76,48 +82,76 @@ PloneOntology Readme
     PloneOntology Setup:
 
       Tab *properties*:
+      
+       * general
+       
+         *Search Cutoff*: defines how *far* will be searched for 
+         related content. Basicly a cutoff of 1 means that only 
+         related content is shown which has been classified with 
+         the exact same keyword (although this will depend on how 
+         one sets up the relations...see also next section). The 
+         cutoff should lie between 0 (exclusive) and 1. A Low cutoff
+         will yield more related content items. High cutoff will yield
+         less related content items (but this content will be highly
+         related)
 
-        *Search Cutoff*: defines how *far* will be searched for 
-        related content. Basicly a cutoff of 1 means that only 
-        related content is shown which has been classified with 
-        the exact same keyword (although this will depend on how 
-        one sets up the relations...see also next section). The 
-        cutoff should lie between 0 (exclusive) and 1. The lower, the 
-        more related content will be found
+         *Keyword Storage*: the id of the folder which holds the 
+         keywords. This folder is a special folder which comes with 
+         PloneOntology and will be automatically created upon first
+         access. Note that this behaviour will change in the future
+         as a nasty quickinstaller bug that forced this, vanished
+         in newer versions.
+         
+         *Types that Allow Classification*: choose the content types
+         that shall support classification, i.e 'ATDocument' if you
+         want all standard Documents to be classifiable.
 
-        *Keyword Storage*: the id of the folder which holds the 
-        keywords. This folder is a special folder which comes with 
-        PloneOntology and will be automatically created upon first
-        access. Note that this behaviour will change in the future
-        as a nasty quickinstaller bug that forced this, vanished
-        in newer versions.
+       * graphviz general
+       
+         *Forward Relation*: controlls how the Graph is drawn. Will
+         show all Relations that _go away_ from the central Keyword.
+         Yet again, changing this value may take a while (see Graphviz
+         Layouter for that).
 
-        *Graphviz Layouter*: choose the layout algorithm for the
-        automatic graph generation of the keyword map. You can test
-        different layouts to find which represents your keywordbase
-        best. Note though that this may take a while on sites with 
-        many Keywords, as all the Keyword Graphs are redrawn. Probably
-        it is best to try this on a test site first...
+         *Backward Relations*: controlls how the Graph is drawn. Will
+         show all Relations that _point to_ the central Keyword.
+         (If you want both directions, just activate both.) Here again,
+         changing this value may take a while (see Graphviz Layouter for
+         that).
 
-        *Graphviz Font*: change the Graphviz font. When left blank
-        Graphviz uses its default font. What fonts can be used here, 
-        depends on your operating system. Again, changing this value
-        may take a while (see Graphviz Layouter for that).
+         *Graphviz Layouter*: choose the layout algorithm for the
+         automatic graph generation of the keyword map. You can test
+         different layouts to find which represents your keywordbase
+         best. Note though that this may take a while on sites with 
+         many Keywords, as all the Keyword Graphs are redrawn. Probably
+         it is best to try this on a test site first...
+         
+         *Keyword Font*: set the font in which the keywords are displayed
+         in the graph generated by graphviz.
+         
+         *Arrow Font*: set the font in which name of the relations between
+         the keywords are displayed in the graph generated by graphviz.
 
-        *Forward Relation*: controlls how the Graph is drawn. Will
-        show all Relations that _go away_ from the central Keyword.
-        Yet again, changing this value may take a while (see Graphviz
-        Layouter for that).
-
-        *Backward Relations*: controlls how the Graph is drawn. Will
-        show all Relations that _point to_ the central Keyword.
-        (If you want both directions, just activate both.) Here again,
-        changing this value may take a while (see Graphviz Layouter for
-        that).
-
-        *Types that allow classification*: choose the content types
-        that shall support classification, i.e 'ATDocument' if you
-        want all standard Documents to be classifiable.
+       * focus keyword appearance, first keyword appearance, second keyword appearance, arrow appearance
+       
+         The following settings concern the graphviz output for the
+         displayed keywords and relations between them (arrows). When
+         browsing the ontology, the focus keyword is the one you are just
+         viewing. The first keywords are the ones directly related to the
+         focus keyword. The second keywords are the keywords directly
+         related to the first keyword (but not directly to the focus keyword).
+         
+         *Shape*: select the shape of the arrow or the shape
+         that surrounds the keywordname in the graph.
+         
+         *Fillcolor*: set the color that fills the *shape*. Use either
+         words or the html color coding starting with "#" (i.e. "blue" 
+         or "#0000ff")
+         
+         *Fontcolor*: set the fontcolor. The usage is the same as for
+         fillcolor.
+         
+         *Fontsize*: set the fontsize in pixel.
 
       Tab *relations*:
 
@@ -129,7 +163,7 @@ PloneOntology Readme
         other way around. Content classified with keyword A is thus 
         VERY closely related to content classified with keyword B, so 
         the relevance factor should be 1.
-
+        
       Tab *import/export*:
 
         An existing Ontology in the OWL format

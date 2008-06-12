@@ -22,7 +22,7 @@ import difflib
 
 from types import *
 
-import os.path
+import os.path, sys, os, glob, re
 
 from warnings import warn
 
@@ -54,9 +54,10 @@ def _unifyRawResults(results):
 
 ##         children = kws.values()
 
-###the following code has been taken from TTF Query from Michael C. Fletcher ToDO: include copyright notice
+###the following code has been taken from TTF Query from Michael C. Fletcher to find Windows Fonts for the GV output.
+###for Linux Fonts fc-list is used before we use this code
+###ToDO: include copyright notice
 """Find system fonts (only works on Linux and Win32 at the moment)"""
-import sys, os, glob, re
 
 def win32FontDirectory( ):
 	"""Get User-specific font directory on Win32"""
@@ -186,7 +187,9 @@ def findFonts(paths = None):
 			files[os.path.abspath(file)] = 1
 	return files.keys()
 
-####END TTFQuery
+###
+###
+###END TTFQuery
 
 class ClassificationTool(UniqueObject,
                          SimpleItem,
@@ -203,19 +206,19 @@ class ClassificationTool(UniqueObject,
     security.declareObjectPublic()
 
     def __init__(self):
+        self._fontpath=''
         self._fonts=[]
-        try:
-         data = os.popen('fc-list').readlines()
+        data = os.popen('fc-list').readlines()
+        if data != []:
          for el in data:
           self._fonts.append(el.split(":style")[0])
-        except:
+        else:
          for el in findFonts():
           if "\\" in el:
            self._fonts.append(el.split("\\")[len(el.split("\\"))-1][:-4])
           elif "/" in el:
            self._fonts.append(el.split("/")[len(el.split("/"))-1][:-4])
         self._fonts.sort()
-        self._fontpath=''
         self.relevance_factors = PersistentMapping()
         self._cutoff = 0.1
         self._use_gv_tool = 0
@@ -533,7 +536,7 @@ class ClassificationTool(UniqueObject,
            self._fonts.append(el.split("/")[len(el.split("/"))-1][:-4])
         self._fonts.sort()
         self._fontpath=path
-
+        
     def getGVFont(self):
         """Return the current gv font.
         """
