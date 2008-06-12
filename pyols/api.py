@@ -1,9 +1,8 @@
 from pyols.model import Keyword, Namespace
+from pyols.fonts import findFonts
 
 import difflib
 from types import *
-import os.path, sys, os, glob, re
-from warnings import warn
 
 def _unifyRawResults(results):
     """unify result list and add scores for unique objects.
@@ -23,153 +22,6 @@ def _unifyRawResults(results):
 
     return result
 
-#ALTERNATIVE unify with help of dict
-##         kws = {}
-##         for c in children:
-##             if not kws.has_key(c[1].id):
-##                 kws[c[1].id] = cExcept
-##             else:
-##                 kws[c[1].id] = (kws[c[1].id][0] + c[0], kws[c[1].id][1])
-
-##         children = kws.values()
-
-###the following code has been taken from TTF Query from Michael C. Fletcher to find Windows Fonts for the GV output.
-###for Linux Fonts fc-list is used before we use this code
-###ToDO: include copyright notice
-"""Find system fonts (only works on Linux and Win32 at the moment)"""
-
-def win32FontDirectory( ):
-	"""Get User-specific font directory on Win32"""
-	try:
-		import _winreg
-	except ImportError:
-		return os.path.join(os.environ['WINDIR'], 'Fonts')
-	else:
-		k = _winreg.OpenKey(
-			_winreg.HKEY_CURRENT_USER,
-			r"Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
-		)
-		try:
-			# should check that k is valid? How?
-			return _winreg.QueryValueEx( k, "Fonts" )[0]
-		finally:
-			_winreg.CloseKey( k )
-
-def win32InstalledFonts( fontDirectory = None ):
-	"""Get list of explicitly *installed* font names"""
-	import _winreg
-	if fontDirectory is None:
-		fontDirectory = win32FontDirectory()
-	k = None
-	items = {}
-	for keyName in (
-		r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts",
-		r"SOFTWARE\Microsoft\Windows\CurrentVersion\Fonts",
-	):
-		try:
-			k = _winreg.OpenKey(
-				_winreg.HKEY_LOCAL_MACHINE,
-				keyName
-			)
-		except OSError, err:
-			pass
-	if not k:
-		# couldn't open either WinNT or Win98 key???
-		return glob.glob( os.path.join(fontDirectory, '*.ttf'))
-	try:
-		# should check that k is valid? How?
-		for index in range( _winreg.QueryInfoKey(k)[1]):
-			key,value,_ = _winreg.EnumValue( k, index )
-			if not os.path.dirname( value ):
-				value = os.path.join( fontDirectory, value )
-			value = os.path.abspath( value ).lower()
-			if value[-4:] == '.ttf':
-				items[ value ] = 1
-		return items.keys()
-	finally:
-		_winreg.CloseKey( k )
-	
-
-def linuxFontDirectories( ):
-	"""Get system font directories on Linux/Unix
-	
-	Uses /usr/sbin/chkfontpath to get the list
-	of system-font directories, note that many
-	of these will *not* be truetype font directories.
-
-	If /usr/sbin/chkfontpath isn't available, uses
-	returns a set of common Linux/Unix paths
-	"""
-	executable = '/usr/sbin/chkfontpath'
-	if os.path.isfile( executable ):
-		data = os.popen( executable ).readlines()
-		match = re.compile( '\d+: (.+)')
-		set = []
-		for line in data:
-			result = match.match( line )
-			if result:
-				set.append(result.group(1))
-		return set
-	else:
-		directories = [
-			# what seems to be the standard installation point
-			"/usr/X11R6/lib/X11/fonts/TTF/",
-			"/usr/share/X11/fonts/TTF/",
-			# common application, not really useful
-			"/usr/lib/openoffice/share/fonts/truetype/",
-			"/usr/lib/openoffice.org2.0/share/fonts/truetype/",
-			# documented as a good place to install new fonts...
-			"/usr/share/fonts",
-			# okay, now the OS X variants...
-			"~/Library/Fonts/",
-			"/Library/Fonts/",
-			"/Network/Library/Fonts/",
-			"/System/Library/Fonts/",
-			"System Folder:Fonts:",
-		]
-		
-		set = []
-		def add( arg, directory, files):
-			set.append( directory )
-		for directory in directories:
-			try:
-				if os.path.isdir( directory ):
-					os.path.walk(directory, add, ())
-			except (IOError, OSError, TypeError, ValueError):
-				pass
-		return set
-
-def findFonts(paths = None):
-	"""Find fonts in paths, or the system paths if not given
-
-	XXX Doesn't current support OS-X system paths
-	"""
-	files = {}
-	if paths is None:
-		if sys.platform == 'win32':
-			fontDirectory = win32FontDirectory()
-			paths = [
-				fontDirectory,
-			]
-			# now get all installed fonts directly...
-			for f in win32InstalledFonts(fontDirectory):
-				# yes, it's inefficient, the interface
-				# for win32InstalledFonts really should be
-				# using sets, not lists
-				files[f] = 1
-		else:
-			paths = linuxFontDirectories()
-	elif isinstance( paths, (str, unicode)):
-		paths = [paths]
-	for path in paths:
-		for file in glob.glob( os.path.join(path, '*.ttf')):
-			files[os.path.abspath(file)] = 1
-	return files.keys()
-
-###
-###
-###END TTFQuery
-
 class OntologyTool(object):
     def __init__(self, namespace):
         # Set the namespace we will use for convinience, but it can be changed
@@ -177,18 +29,7 @@ class OntologyTool(object):
         self.namespace = namespace
 
         self._fontpath=''
-        self._fonts=[]
-        data = os.popen('fc-list').readlines()
-        if data != []:
-            for el in data:
-                self._fonts.append(el.split(":style")[0])
-        else:
-            for el in findFonts():
-                if "\\" in el:
-                    self._fonts.append(el.split("\\")[len(el.split("\\"))-1][:-4])
-                elif "/" in el:
-                    self._fonts.append(el.split("/")[len(el.split("/"))-1][:-4])
-        self._fonts.sort()
+        self._fonts=findFonts()
         self._cutoff = 0.1
         self._use_gv_tool = 0
         self._gvfont = ''
@@ -1006,28 +847,6 @@ class OntologyTool(object):
         """
         return self._fontpath
 
-    def setFontPath(self, path=''):
-        """set the systems font path manually.
-        """
-        if path == '':
-            for el in findFonts():
-                if "\\" in el:
-                    self._fonts.append(el.split("\\")[len(el.split("\\"))-1][:-4])
-                elif "/" in el:
-                    self._fonts.append(el.split("/")[len(el.split("/"))-1][:-4])
-        else:
-            self._fonts=[]
-            for el in findFonts(path):
-                if "\\" in el:
-                    self._fonts.append(el.split("\\")[len(el.split("\\"))-1][:-4])
-                elif "/" in el:
-                    self._fonts.append(el.split("/")[len(el.split("/"))-1][:-4])
-        try:
-            self._fonts.sort()
-        except:
-            pass
-        self._fontpath=path
-        
     def getGVFont(self):
         """Return the current gv font.
         """
@@ -1077,5 +896,4 @@ class OntologyTool(object):
         """
         self._encoding = encoding
 
-
-#def \(getGVNodeShapesList\|getGVEdgeShapesList\|getFocusNodeShape\|setFocusNodeShape\|getFocusNodeColor\|setFocusNodeColor\|getFocusNodeFontColor\|setFocusNodeFontColor\|getFocusNodeFontColor\|setFocusNodeFontColor\|getFocusNodeFontSize\|setFocusNodeFontSize\|getFocusNodeShape\|setFocusNodeColor\|getFocusNodeColor\|setFocusNodeColor\|getFocusNodeFontColor\|setFocusNodeFontColor\|getFocusNodeFontColor\|setFocusNodeFontColor\|getFocusNodeFontSize\|setFocusNodeFontSize\|getFirstNodeShape\|setFirstNodeShape\|getFirstNodeColor\|setFirstNodeColor\|getFirstNodeFontColor\|setFirstNodeFontColor\|getFirstNodeFontColor\|setFirstNodeFontColor\|getFirstNodeFontSize\|setFirstNodeFontSize\|getSecondNodeShape\|setSecondNodeShape\|getSecondNodeColor\|setSecondNodeColor\|getSecondNodeFontColor\|setSecondNodeFontColor\|getSecondNodeFontColor\|setSecondNodeFontColor\|getSecondNodeFontSize\|setSecondNodeFontSize\|getEdgeShape\|setEdgeShape\|getEdgeColor\|setEdgeColor\|getEdgeFontColor\|setEdgeFontColor\|getEdgeFontColor\|setEdgeFontColor\|getEdgeFontSize\|setEdgeFontSize\|getGVFontList\|getFontPath\|setFontPath\|getGVFont\|setGVFont\|getRelFont\|setRelFont\|getBack\|setBack\|getForth\|setForth\|getEncoding\|setEncoding\|addKeyword\|getKeyword\|delKeyword\|keywords\|addRelation\|getRelation\|delRelation\|relations\|getWeight\|setWeight\|setTypes\|getTypes\|setInverses\|getInverses\|addReference\|delReference\|search\|searchFor\|getRelatedKeywords\|_getDirectLinkTargets\|_getRecursiveContent\|setSearchCutoff\|getSearchCutoff\|searchMatchingKeywordsFor\|useGraphViz\|generateGraphvizMap\)
+#def \(getGVNodeShapesList\|getGVEdgeShapesList\|getFocusNodeShape\|setFocusNodeShape\|getFocusNodeColor\|setFocusNodeColor\|getFocusNodeFontColor\|setFocusNodeFontColor\|getFocusNodeFontColor\|setFocusNodeFontColor\|getFocusNodeFontSize\|setFocusNodeFontSize\|getFocusNodeShape\|setFocusNodeColor\|getFocusNodeColor\|setFocusNodeColor\|getFocusNodeFontColor\|setFocusNodeFontColor\|getFocusNodeFontColor\|setFocusNodeFontColor\|getFocusNodeFontSize\|setFocusNodeFontSize\|getFirstNodeShape\|setFirstNodeShape\|getFirstNodeColor\|setFirstNodeColor\|getFirstNodeFontColor\|setFirstNodeFontColor\|getFirstNodeFontColor\|setFirstNodeFontColor\|getFirstNodeFontSize\|setFirstNodeFontSize\|getSecondNodeShape\|setSecondNodeShape\|getSecondNodeColor\|setSecondNodeColor\|getSecondNodeFontColor\|setSecondNodeFontColor\|getSecondNodeFontColor\|setSecondNodeFontColor\|getSecondNodeFontSize\|setSecondNodeFontSize\|getEdgeShape\|setEdgeShape\|getEdgeColor\|setEdgeColor\|getEdgeFontColor\|setEdgeFontColor\|getEdgeFontColor\|setEdgeFontColor\|getEdgeFontSize\|setEdgeFontSize\|getGVFontList\|getFontPath\|getGVFont\|setGVFont\|getRelFont\|setRelFont\|getBack\|setBack\|getForth\|setForth\|getEncoding\|setEncoding\|addKeyword\|getKeyword\|delKeyword\|keywords\|addRelation\|getRelation\|delRelation\|relations\|getWeight\|setWeight\|setTypes\|getTypes\|setInverses\|getInverses\|addReference\|delReference\|search\|searchFor\|getRelatedKeywords\|_getDirectLinkTargets\|_getRecursiveContent\|setSearchCutoff\|getSearchCutoff\|searchMatchingKeywordsFor\|useGraphViz\|generateGraphvizMap\)
