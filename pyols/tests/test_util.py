@@ -1,5 +1,5 @@
 from pyols.tests import run_tests
-from pyols.util import create_methods, curried
+from pyols.util import create_methods, curried, Container
 
 from nose.tools import assert_equal, assert_raises
 
@@ -62,6 +62,11 @@ def test_curried():
     # function call.
     c = curried(lambda: 42, 21, a=21, b='eggs')
     assert_equal(repr(c), "<curried <lambda>(21, a=21, b='eggs')>")
+
+def test_container():
+    c = Container()
+    c.foo = 1
+    assert_equal(repr(c), "<Container foo=1>")
 
 
 run_tests(__name__)

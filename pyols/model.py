@@ -2,6 +2,7 @@
 
 from pyols.exceptions import *
 from pyols.owl import isXMLNCName
+from pyols.util import Container
 
 from elixir import *
 from sqlalchemy import UniqueConstraint
@@ -66,43 +67,66 @@ class StorageMethods:
 
     def has_required_fields(self):
         """ Assert that all the required fields have been filled out. """
-        required_fields = [f.name for f in self.c if not f.nullable]
+        required_fields = [c.name for c in self.list_columns() if c.required]
         for field in required_fields:
-            # The ID field is set automatically and can be ignored
-            # The endswith test is because linked objects may have IDs too
-            # (eg, namespace_id)
-            if field.endswith('id'): continue
             field_val = getattr(self, field)
             if not field_val:
                 raise PyolsValidationError(
-                        "Field %s of %s null (%r) when it must be non-null"
+                        "Field %s of %s is null (%r) when it must be non-null"
                         %(field, self, field_val))
 
     def assert_unique(self):
         """ Raise an exception if the instance is not unique with
             respect to it's unique constraints.
             NOTE: This does not check for PK constraints (see #12). """
-        constraints = [x for x in self.table.constraints
-                               if isinstance(x, UniqueConstraint)]
-
-        if len(constraints) > 1:
-            raise PyolsProgrammerError(
-                    "assert_unique will not behave correctly if there is more "
-                    "than one unique constraint on a table.")
-
-        if not constraints:
-            # There are no unique constraints.
-            return
-
         query = {}
-        for col in constraints[0].columns.keys():
+        for col in [c.name for c in self.list_columns() if c.required]:
             query[col] = getattr(self, col)
 
+        print query
         if self.get_by(**query):
             vals = ", ".join(["=".join(map(str, a)) for a in query.items()])
             raise PyolsValidationError(
                     "A %s already exists with %s."
                     %(self.__class__.__name__, vals))
+
+    @classmethod
+    def list_columns(self):
+        """ List all the columns in an entity, including their
+            names, default values, types and if they are required.
+            > x = list_columns()[0]
+            > x.required
+            True
+            > x.type
+            unicode
+            > x.name
+            'name' """
+        # Ug.  This is an ugly method.  Sorry :(
+        type_map = (('Integer', int), ('Unicode', unicode),
+                    ('Float', float))
+        cols = []
+        for b in self._descriptor.builders:
+            if b.name == 'id': continue
+
+            c = Container()
+            c.name = b.name
+            c.default = b.kwargs.get('default', None)
+
+            if hasattr(b, 'of_kind'):
+                col_type = globals()[b.of_kind]
+            else:
+                for (name, type) in type_map:
+                    if name in repr(b.type):
+                        col_type = type
+            c.type = col_type
+
+            c.required = b.kwargs.get('primary_key', False)\
+                         or not b.kwargs.get('nullable', True)\
+                         or (hasattr(b, 'column_kwargs')\
+                             and (not b.column_kwargs.get('nullable', True)
+                                   or b.column_kwargs.get('primary_key', False)))
+            cols.append(c)
+        return cols
 
     def flush(self):
         """ Flush this instance to disk, making it persistant.
@@ -226,9 +250,8 @@ class Relation(Entity, StorageMethods):
                 new_types.remove(type.name)
 
         for type in new_types:
-            type = RelationType.new(name=type)
+            type = RelationType.new(name=type, relation=self)
             type.assert_valid()
-            self._types.append(type)
     types = property(_get_types, _set_types)
 
     def remove(self):

@@ -69,6 +69,18 @@ def _create_methods(name, classes, func):
         class_locals[name % (class_.__name__, )] = new_func
     return func
 
+class Container:
+    def __init__(self):
+        self._set = []
+
+    def __setattr__(self, attr, val):
+        if attr != "_set": self._set.append(attr)
+        self.__dict__[attr] = val
+
+    def __repr__(self):
+        vals = " ".join(["%s=%r" %(a, getattr(self, a)) for a in self._set])
+        return "<Container %s>" %(vals)
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()

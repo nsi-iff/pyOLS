@@ -78,10 +78,7 @@ class OntologyTool(object):
     def _generic_add(self, class_, *args, **kwargs):
         """ Add a %(class_name)s to the ontology.  It is an error
             to add duplicate items.  The new instance is returned. """
-
-        # Note that namespace_id must be used, otherwise
-        # assert_unique may fail.
-        new = class_.new(namespace_id=self._namespace.id, **kwargs)
+        new = class_.new(namespace=self._namespace, **kwargs)
         new.assert_valid()
         return new
 
@@ -107,7 +104,7 @@ class OntologyTool(object):
                 # problems when it's set as the inverse of the other relation
                 inverse.flush()
 
-        newrel = Relation.new(namespace_id=self._namespace.id,
+        newrel = Relation.new(namespace=self._namespace,
                               name=name, weight=weight, types=types)
         newrel.assert_valid()
         newrel.flush()

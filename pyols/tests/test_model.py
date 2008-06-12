@@ -120,4 +120,25 @@ class TestRelation:
         assert_equal(set([kw.name for kw in Keyword.query_by()]),
                      set(["kw0", "kw1"]))
 
+
+class TestStorageMethods:
+    def test_list_columns(self):
+        kw_cols = Keyword.list_columns()
+        expected = [('namespace', None, Namespace, True),
+                    ('name', None, unicode, True),
+                    ('disambiguation', u'', unicode, False),
+                    ('description', u'', unicode, False),
+                    ('associations', None, KeywordAssociation, False),
+                    ('left_relations', None, KeywordRelationship, False),
+                    ('right_relations', None, KeywordRelationship, False)]
+
+        for (id, col) in enumerate(kw_cols):
+            for (name, val) in zip(('name', 'default', 'type', 'required'),
+                                    expected[id]):
+                col_val = getattr(col, name)
+                assert_equal(val, col_val,
+                             "Error on col %s: %s: %s != %s."
+                              %(col.name, name, col_val, val))
+
+
 run_tests(__name__)
