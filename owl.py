@@ -216,11 +216,15 @@ class OWLImporter(OWLBase):
 
         try:
             ct.getRelation('childOf')
+        except ValueError:
+            ct.addRelation('childOf'  , 1.0, ['transitive'], ['parentOf'])
         except NotFound:
             ct.addRelation('childOf'  , 1.0, ['transitive'], ['parentOf'])
 
         try:
             ct.getRelation('synonymOf')
+        except ValueError:
+            ct.addRelation('synonymOf', 1.0, ['transitive', 'symmetric'])
         except NotFound:
             ct.addRelation('synonymOf', 1.0, ['transitive', 'symmetric'])
 
@@ -243,6 +247,8 @@ class OWLImporter(OWLBase):
         if  self.domainAndRangeAreClasses(prop):
             try:
                 rel = ct.getRelation(rid)
+            except ValueError:
+                rel = ct.addRelation(rid)
             except NotFound:
                 rel = ct.addRelation(rid)
 

@@ -7,7 +7,13 @@ from cStringIO import StringIO
 from xml.sax.saxutils import escape, unescape
 import re
 
-import zExceptions, zLOG, transaction
+import zExceptions, zLOG
+try:
+    import transaction
+except ImportError:
+    # for Zope 2.7
+    from Products.CMFCore.utils import transaction
+
 from Products.Relations.exception import ValidationException
 
 from owl import OWLExporter, OWLImporter

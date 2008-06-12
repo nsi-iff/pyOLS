@@ -373,6 +373,8 @@ class ClassificationTool(UniqueObject,
         for inverse in new:
             try:
                 self.getRelation(inverse)
+            except ValueError:
+                self.addRelation(inverse)
             except NotFound:
                 self.addRelation(inverse)
 

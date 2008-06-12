@@ -37,7 +37,7 @@ PloneOntology Readme
 
     required Software:
 
-      * Zope 2.8 or higher with Plone 2.1 or higher -- 
+      * Zope 2.7, 2.8 or higher with Plone 2.1 or higher -- 
       "http://plone.org/products/plone/":http://plone.org/products/plone/
 
         *Note that PloneOntology may work with Plone 2.0.5, but that
@@ -46,7 +46,7 @@ PloneOntology Readme
       * Archetypes 1.3.2. or higher (comes with Plone nowadays) -- 
       "http://sourceforge.net/projects/archetype":http://sourceforge.net/projects/archetype
 
-      * Relations 0.5b1 or higher -- 
+      * Relations 0.6b or higher (0.5b1 should work too, but that collides with zope 2.7) -- 
       "http://plone.org/products/relations/psc_project_view":http://plone.org/products/relations/psc_project_view
 
     optional Software:
