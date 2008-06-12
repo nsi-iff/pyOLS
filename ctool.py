@@ -220,6 +220,21 @@ class ClassificationTool(UniqueObject,
         self._forth = '1'
         self._back = '0'
 
+    def getFCList(self):
+        """Return font list.
+        """
+        executable = 'fc-list'
+        if os.path.isfile( executable ):
+          data = os.popen( executable ).readlines()
+#          match = re.compile( '\d+: (.+)')
+    #      set = []
+   #       for line in data:
+  #          result = match.match( line )
+ #           if result:
+#              set.append(result.group(1))
+          return data
+#return self._fonts
+
     def getGVFontList(self):
         """Return the current gv font list.
         """
