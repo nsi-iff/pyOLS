@@ -40,9 +40,9 @@ ctool.setBack(back)
 ctool.setForth(forth)
 gtool.setLayouter(tool)
 
+msg = ''
 if changes == 1:
     try:
-        msg = ''
         for el in ctool.getStorage().contentValues('Keyword'):
             msg = msg + el.updateKwMap(levels=2)
     except:
