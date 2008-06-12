@@ -32,7 +32,7 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
         self.ctool = self.portal.portal_classification
         self.storage = self.ctool.getStorage()
 
-        self.relations_version = float(open(os.path.join(Products.Relations.__path__[0], 'version.txt')).readline().strip('\n\t b'))
+        self.relations_version = float(re.match('^[0-9]+\.[0-9]+', open(os.path.join(Products.Relations.__path__[0], 'version.txt')).readline()).group(0))
 
     ###### The tests ##########
 

@@ -13,6 +13,7 @@ ZopeTestCase.installProduct('PloneOntology')
 from Products.PloneOntology.owl import OWLExporter, OWLImporter
 from zExceptions import NotFound
 import Products.Relations
+import re
 
 class TestOWLImporter(PloneTestCase.PloneTestCase):
     """Test the KeywordStorage class."""
@@ -28,7 +29,7 @@ class TestOWLImporter(PloneTestCase.PloneTestCase):
         self.exporter = OWLExporter()
         self.importer = OWLImporter(self.portal)
 
-        self.relations_version = float(open(os.path.join(Products.Relations.__path__[0], 'version.txt')).readline().strip('\n\t b'))
+        self.relations_version = float(re.match('^[0-9]+\.[0-9]+', open(os.path.join(Products.Relations.__path__[0], 'version.txt')).readline()).group(0))
 
     def testOWLImporterObjectProperty(self):
         owl = self.exporter.getEntities()['owl']
