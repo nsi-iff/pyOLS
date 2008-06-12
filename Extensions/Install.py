@@ -95,6 +95,12 @@ def addCustomFormControllerTransitions(portal, out):
     # pt = st.archetypes.base_edit
     container = getToolByName(portal, 'portal_form_controller')
 
+    container.addFormAction('relations_adddelete', 'success','',
+                            'Save', 'traverse_to',
+                            'string:updateMap')
+    container.addFormAction('relations_adddelete', 'failure','',
+                            'Save', 'traverse_to',
+                            'string:updateMap')
     container.addFormAction('base_edit', 'success','',
                             'search', 'traverse_to',
                             'string:base_edit')
