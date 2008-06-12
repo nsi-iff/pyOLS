@@ -102,7 +102,7 @@ class Keyword(BaseContent):
     meta_type = portal_type = archetype = "Keyword"
 
     global_allow = 0
-    content_icon = "workflow_icon.gif"
+    content_icon = "keyword.gif"
 
     schema = kwSchema
     actions = (

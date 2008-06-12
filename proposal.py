@@ -282,6 +282,7 @@ class RelationProposal(BaseContent):
     schema = schema
     meta_type = portal_type = 'RelationProposal'
     archetype_name = 'Relation Proposal'
+    content_icon = "relationproposal.gif"
 
     def pre_validate(self, REQUEST, errors):
         """
