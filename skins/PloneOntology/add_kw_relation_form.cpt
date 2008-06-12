@@ -38,7 +38,7 @@
 
       <form method="POST" tal:attributes="action string:${here/absolute_url}/${template/getId}">
 
-        <span i18n:translate="Ontology_label_id">Id</span> 
+        <span i18n:translate="Ontology_label_id">Name</span> 
         <input name="id" />
 
         <br />

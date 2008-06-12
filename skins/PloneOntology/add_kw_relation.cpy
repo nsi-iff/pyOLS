@@ -5,7 +5,7 @@
 ##bind script=script
 ##bind state=state
 ##bind subpath=traverse_subpath
-##parameters=name,factor=1
+##parameters=id,factor=1
 ##title=Classification handler
 ##
 
@@ -13,7 +13,7 @@ from Products.Relations.exception import ValidationException
 
 ctool = context.portal_classification
 try:
-    ctool.addRelation(name, factor)
+    ctool.addRelation(id, factor)
 except ValidationException:
     return state.set(portal_status_message='Name has to be an XML NCName (e.g. no spaces).')
 except NameError:
