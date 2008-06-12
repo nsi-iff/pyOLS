@@ -73,7 +73,7 @@ def registerConfiguration(portal, out):
                                    #(Plone,Products,Members) 
                                    , 1                    # visibility
                                    , PROJECTNAME                                  
-                                   , 'logoIcon.gif' # icon in control_panel, put your own icon in the 
+                                   , 'po_configlet.gif' # icon in control_panel, put your own icon in the 
                                    # /skins folder of your product and change 
                                    #'site_icon.gif' to 'yourfile'
                                    , 'Sitewide configuration of the classification tool'
