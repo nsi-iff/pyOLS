@@ -97,7 +97,8 @@ if changes == 1:
     except:
         pass # ignore NotFound exception for silent operation without graphviz
     #    return state.set(portal_status_message='Error: keyword graphs could not be updated.')
-
+    ctool.getStorage().updateGraphvizMap()
+    
 if msg:
     return state.set(portal_status_message=msg)
 else:

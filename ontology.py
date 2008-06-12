@@ -28,6 +28,13 @@ myschema = Schema((LinesField('rootKeywords',
                               description_msgid='Ontology_help_rootkws',
                               i18n_domain='Ontology',
                               ),
+                   ImageField("MapGraphic",
+                              widget=ImageWidget(visible={'view': 'invisible', 'edit': 'invisible' })),
+                   TextField("MapData",
+                            default_content_type="text/html",
+                            default_output_type="text/html",
+                            widget=StringWidget(visible={'view': 'invisible', 'edit': 'invisible' }),
+                            ),
                   ))
 
 
@@ -42,6 +49,35 @@ class Ontology(BaseBTreeFolder):
     filter_content_types = 1
     allowed_content_types = ('Keyword',)
     content_icon = "ontology.gif"
+    
+    actions = (
+        {'name' : "map View",
+         'id' : "kw_map_view",
+         'action' : "string: ${object_url}/map_view",
+         'category' : "object_tabs",
+         },
+
+        )
+
+    def updateGraphvizMap(self):
+        """Update Map cached images. Returns string containing error messages, empty if none.
+        """
+        print "generating Map of all Keywords"
+        ctool = getToolByName(self, 'portal_classification')
+        gvtool = getToolByName(self, 'graphviz_tool')
+
+        if not gvtool.isLayouterPresent():
+            raise NotFound(gvtool.getLayouter())
+
+        g = ctool.generateGraphvizMap()
+
+        (result, error) = gvtool.renderGraph(g, options=["-Tpng",])
+        self.setMapGraphic(result, mimetype="image/png")
+
+        (result, error) = gvtool.renderGraph(g, options=["-Tcmap",])
+        self.setMapData(result, mimetype="text/html")
+
+        return error
 
     def getKeywordNames(self):
         """Return list of all existing keyword names in ontology. Vocabulary wrapper for schema above.
@@ -61,6 +97,7 @@ class Ontology(BaseBTreeFolder):
         return [kw.getName() for kw in self.getTopLevel()]
 
     def at_post_create_script(self):
+        self.updateGraphvizMap()    
         if not self.rootKeywords:
             self.rootKeywords = self.idsOfTopLevel()
 
