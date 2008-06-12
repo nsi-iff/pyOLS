@@ -1,28 +1,34 @@
 from setuptools import setup, find_packages
+import sys
+
+install_requires = [
+    'SQLAlchemy >= 0.3.9',
+    'Elixir >= 0.5.2',
+    ]
+
+if sys.version_info < (2, 5):
+    # Python 2.5 and up comes with sqlite
+    install_requires.append('pysqlite >= 2.2')
+
 
 setup(
     name = 'PROnto',
 
-    version = "",
+    version = "0.1a",
 
-    description = '',
+    description = 'Python Remote Ontology provides functions for creating, '
+                  'searching and graphing ontologies over XML-RPC.',
 
     long_description = """
     """,
-    
-    classifiers = [
-    ],
 
-    author = '',
+    author = 'David Wolever',
     
-    author_email = '',
+    author_email = 'david@wolever.net',
     
     url = '',
     
-    install_requires = [
-        'SQLAlchemy >= 0.3.9',
-        'Elixir >= 0.5.2',
-    ],
+    install_requires = install_requires,
     
     tests_require = [
         'nose >= 0.10.1',
