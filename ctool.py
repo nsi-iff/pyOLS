@@ -73,6 +73,15 @@ class ClassificationTool(UniqueObject,
         self._use_gv_tool = 0
         self._storage = 'kw_storage'
         self._classifytypes = []
+        self._gvfont = ''
+
+    def getGVFont(self):
+        """Return the current gv font"""
+        return self._gvfont
+
+    def setGVFont(self, font):
+        """Set the font for gv output"""
+        self._gvfont=font
 
     def reftypes(self):
         """Return a list of all referenceable portal types

@@ -1,11 +1,13 @@
+from Products.CMFCore.utils import getToolByName
 from cStringIO import StringIO
 
 class KeywordGraph:
     """Dot code generator for keyword graphs"""
     
-    def __init__(self):
+    def __init__(self, font):
         self._text = StringIO()
-
+        self._font = font
+        
     def write(self, text):
         self._text.write(text)
         
@@ -22,9 +24,9 @@ class KeywordGraph:
         root=%s;
         overlap=true;
         splines=true;
-        node [shape=box, style="filled", fontname="luxisr"];
-        edge [fontsize=7, fontcolor="#cccccc",fontname="luxisr"];
-        ''' % root.getSaneId())
+        node [shape=box, style="filled", fontname="%s"];
+        edge [fontsize=7, fontcolor="#cccccc",fontname="%s"];
+        ''' % (root.getSaneId(), self._font, self._font))
 
     def graphFooter(self):
         self._text.write("}\n")

@@ -3,13 +3,22 @@
       metal:use-macro="here/main_template/macros/master"
       i18n:domain="plone">
 
- <body>
-
-  <tal:block metal:fill-slot="main"
+  <body>
+    
+    <tal:block metal:fill-slot="main"
        tal:define="kw_search python: request.get('kw_search','');
 	           skw python: request.get('skw','');
 	     	  ">
-
+      <script type="text/javascript" charset="iso-8859-1"
+              tal:attributes="src python:here.absolute_url() + '/sarissa.js'">
+      </script>
+      <script type="text/javascript" charset="iso-8859-1"
+              tal:attributes="src python:here.absolute_url() + '/activestring.js'">
+      </script>
+      <script type="text/javascript" charset="iso-8859-1"
+              tal:attributes="src python:here.absolute_url() + '/sarissa_ieemu_xpath.js'">
+      </script>
+    
     <form name="classify_form"
           method="post"
           enctype="multipart/form-data"
@@ -20,8 +29,8 @@
     <tal:block tal:define="results python:here.portal_classification.searchMatchingKeywordsFor(here, kw_search,);
                            existing_refs python:here.getRefs(relationship='classifiedAs',)">
 
-<fieldset><legend>search for new keywords for referencing</legend>
-      <input type="text"
+ <fieldset><legend>search for new keywords for referencing</legend>
+         <input type="text"
 	    name="kw_search"
 	    value=""
 	    id="kw_search"
@@ -31,11 +40,16 @@
             onkeypress="activeStringStart(this)"
 	    />
 
+	<div tal:attributes="id string:activeresult-kw_search" style="display: none;">
+          <div tal:attributes="id string:activeresult-shadow-kw_search">
+          </div>
+        </div>
 	<input type="hidden" 
-               name="id"
-               tal:attributes="value here/id" />
+               name="kw_active_search"
+               id="kw_active_search"
+               value="" />
 
-     <input type="submit" name="form.button.kw_search" value="Search"/>
+     <input type="submit" name="form.button.kw_search" value="Add/Search"/>
 		<div tal:condition="results">
 		  <table> <!-- Table Header ??? -->
 		    <tr tal:repeat="item results">

@@ -86,14 +86,20 @@ PloneOntology Readme
         in newer versions.
 
         *Graphviz Layouter*: choose the layout algorithm for the
-        automatic graph generation of the keyword map. You can try 
-        around with this to find the layout which is optimal for a 
-        site. Note though that this may take a while on sites with 
-        many Keywords. Probably it is best to try this on a test site 
-        first...
+        automatic graph generation of the keyword map. You can test
+        different layouts to find which represents your keywordbase
+        best. Note though that this may take a while on sites with 
+        many Keywords, as all the Keyword Graphs are redrawn. Probably
+        it is best to try this on a test site first...
+
+        *Graphviz Font*: change the Graphviz font. When left blank
+        Graphviz uses its default font. What fonts can be used here, 
+        depends on your operating system. Again, changing this value
+        may take a while (see Graphviz Layouter for that).
 
         *Types that allow classification*: choose the content types
-        that shall support classification.
+        that shall support classification, i.e 'ATDocument' if you
+        want all standard Documents to be classifiable.
 
       Tab *relations*:
 
@@ -182,8 +188,11 @@ PloneOntology Readme
     Making a content type classifiable:
 
       To make a custom Archetypes content type classifiable select it
-      in the list of content types within the Plone Ontology
-      configuration panel.
+      in the list of content types within the Plone Ontology configuration
+      panel. In order to make your own custom content types referencable,
+      they should be based on Archetypes (and thus be referencable).Of course
+      you will have to select them also in the Plone Ontology configuration
+      panel.
 
     Getting Graphviz to work with PloneOntology
 
@@ -191,4 +200,5 @@ PloneOntology Readme
       layouters are found in the system path. If they are not, the
       full paths have to be inserted into the *toollist* method 
       within *graphviztool.GraphVizTool* class in the *PloneOntology* 
-      products folder.
+      products folder. Also changing the Graphviz Font in the Plone Ontology
+      configuration panel might help to solve some problems.

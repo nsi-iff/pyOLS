@@ -4,17 +4,7 @@
 ##bind namespace=
 ##bind script=script
 ##bind subpath=traverse_subpath
-##parameters=field, searchTerm='', categories=[]
-
-#possibleItems = ('small car', 'large car', 'small truck', 'large truck', 'van', 'suv')
-
-
-## for el in context.portal_classification.searchMatchingKeywordsFor(context, search=searchTerm, search_kw_proposals='true', search_linked_keywords='false'):
-##     items.append(el.title_or_id())
-
-#for x in possibleItems:
-#    if x.find(searchTerm) > -1:
-#        items.append(x)
+##parameters=field='', searchTerm='', categories=[]
 
 field2=''
 if field=='SearchKWA':
@@ -23,6 +13,9 @@ if field=='SearchKWA':
 elif field=='SearchKWB':
     field2='KeywordB'
     items = context.portal_classification.searchMatchingKeywordsFor(context, search=searchTerm, search_kw_proposals='true', search_linked_keywords='true')
+elif field=='kw_search':
+    field2='kw_active_search'
+    items = context.portal_classification.searchMatchingKeywordsFor(context, search=searchTerm, search_kw_proposals='false', search_linked_keywords='true')
 else:
     field2= 'skw'
     items = context.portal_classification.searchMatchingKeywordsFor(context, search=searchTerm, search_kw_proposals='false', search_linked_keywords='true')

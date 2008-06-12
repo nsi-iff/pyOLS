@@ -5,7 +5,7 @@
 ##bind script=script
 ##bind state=state
 ##bind subpath=traverse_subpath
-##parameters=cutoff=0.1, storage='kw_storage', tool='fdp', types=[]
+##parameters=cutoff=0.1, storage='kw_storage', tool='fdp', types=[], font=''
 ##title=
 ##
 
@@ -21,8 +21,18 @@ try:
 except ValueError:
     return state.set(portal_status_message='Error: Enter a positive float value.')
 
+changes=0
+
+if font != ctool.getGVFont():
+    changes=1
+
 if tool != gtool.getLayouter():
-    gtool.setLayouter(tool)
+    changes=1
+
+ctool.setGVFont(font)
+gtool.setLayouter(tool)
+
+if changes == 1:
     try:
         for el in ctool.getStorage().contentValues('Keyword'):
             el.updateKwMap(levels=2)

@@ -12,7 +12,7 @@
 kw_search = context.REQUEST.get('form.button.kw_search',None)
 del_ref = context.REQUEST.get('form.button.del_ref',None)
 add_ref = context.REQUEST.get('form.button.add_ref',None)
-
+active_search_result = context.REQUEST.get('kw_active_search',None)
 
 if add_ref:
     kws=''
@@ -37,6 +37,11 @@ if del_ref:
 
 
 
-if kw_search: 
+if kw_search:
+   if active_search_result != '' and active_search_result != None:
+	context.reference_catalog.addReference(context, active_search_result, 'classifiedAs')
+        return state.set(portal_status_message='added refernece')
+
+   else:
         return state.set()
  

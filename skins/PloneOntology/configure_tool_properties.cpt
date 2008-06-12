@@ -55,7 +55,7 @@
 
       <form method="POST" tal:attributes="action string:${here/absolute_url}/${template/getId}"
       tal:define="cutoff ctool/getSearchCutoff|python:0.1;
-                  storage python: ctool.getStorageId();">
+                  storage python: ctool.getStorageId(); ">
       
 <table><tr><td>Search Cutoff</td><td><input name="cutoff:float" size="5" tal:attributes="value cutoff"/></td></tr>
        <tr><td>Keyword Storage</td><td><input name="storage" tal:attributes="value storage"/></td></tr>
@@ -65,12 +65,14 @@
                tal:attributes="value value;
                                selected python:test(value == gtool.getLayouter())" />
        </select></td></tr>
+       <tr><td>Graphviz Font</td><td><input name="font" size="40" type="text" tal:attributes="value ctool/getGVFont" /></td></tr>
        <tr><td>Types that allow classification</td><td><select name="types" size="7" multiple tal:define="values python: ctool.reftypes()">
        <option tal:repeat="value values"
                tal:content="value"
                tal:attributes="value value;
                                selected python:test(value in ctool.getClassifyTypes())" />
        </select></td></tr><table>
+<font color="#ff0000"><i><small>Be aware that changing the Font and/or the Layouter results in redrawing of the Keyword Graphs and thus may be very time consuming.</small></i></font><br />
       <input type="submit" name="form.button.change" value="Save Changes"/>
       <input type="hidden" name="form.submitted" value="1" />
       </form>

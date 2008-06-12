@@ -26,12 +26,6 @@ registerWidget(ActiveStringWidget,
 
 registerPropertyType('dataurl', 'string', ActiveStringWidget)
 
-class ClassificationWidget(TypesWidget):
-    _properties = TypesWidget._properties.copy()
-    _properties.update({
-        'macro' : "widget_classification",
-        })
-    
 class SearchKWWidget(ActiveStringWidget):
     _properties = ActiveStringWidget._properties.copy()
     _properties.update({
