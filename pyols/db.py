@@ -1,4 +1,5 @@
 from pyols.exceptions import PyolsProgrammerError
+from pyols import config
 
 from elixir import metadata, session, setup_all, objectstore
 
@@ -46,3 +47,10 @@ class DatabaseManager:
                                         "cannot about a non-existent txn!")
         self._txn.rollback()
         objectstore.clear()
+
+
+def get_db():
+    """ Return a DatabaseManager connected to the database
+        defined in config.db.uri. """
+    # This method is mostly here to make testing easier
+    return DatabaseManager(config.get('db', 'uri'))

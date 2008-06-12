@@ -1,23 +1,20 @@
-from Globals import package_home
-from Products.CMFCore import CMFCorePermissions
-from Products.CMFCore.CMFCorePermissions import AddPortalContent
+# XXX: This is not done yet.  Do it :)
 
+_config = {'db': {'uri': 'sqlite:///tmp/test.sqlite'}}
 
-view_permission = CMFCorePermissions.ManagePortal
+def _get(path, config=_config):
+    (section, subsection) = (path[0], path[1:])
+    if subsection:
+        return _get(subsection, config[section])
+    else:
+        return config[section]
 
-PROJECTNAME = 'PloneOntology'
-GLOBALS = globals()
-SKINS_DIR = 'skins'
-ADD_CONTENT_PERMISSION = AddPortalContent
-
-# Dependency products
-# format is (productname, URL)
-DEPENDENCIES = (
-	("Relations", "http://plone.org/products/relations"),
-	)
-
-
-### graphviz configuration
-
-# path to the graphviz layouter binaries (i.e. dot, neato, ...)
-GV_BIN_PATH = ''
+def get(*path):
+    """ Return config option stored in path.
+        For example, given the config:
+        [db]
+        uri = sqlite:///tmp/123
+        >>> config.get('db', 'uri')
+        'sqlite:///tmp/123'
+        >>> """
+    return _get(path)

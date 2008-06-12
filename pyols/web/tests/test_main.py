@@ -2,6 +2,8 @@ from pyols.web.tests import reset_db
 from pyols.web.main import RequestDispatcher
 
 import elixir
+from nose.tools import raises
+from xmlrpclib import Fault
 
 class RPCFunctions:
     def __init__(self):
@@ -14,6 +16,10 @@ class RPCFunctions:
     def hello(self, who='World'):
         self.called += 1
         return 'Hello, %s!' %(who,)
+    
+    def exception(self):
+        assert True == False, "Darn, True != False"
+
 
 class TestRequestDispatcher:
     def setup(self):
@@ -49,3 +55,22 @@ class TestRequestDispatcher:
 
         r = self.call(('add', 1, 2), ('hello', 'NSI'), ('hello', )) 
         assert r == [[3], ['Hello, NSI!'], ['Hello, World!']]
+
+    def testExceptionHandling(self):
+        # If an exception is raised, an error should be returned and
+        # no subsequent functions should be called.
+        # Additionally, the DB should be rolled back.
+
+        try: r = self.call(('add', 1, 2), ('exception', ), ('hello', ))
+        except AssertionError: pass # This is expected
+        else: raise Exception("An exception was expected but none was raised.")
+
+        assert self.f.called == 1, "Only one RPC function should have been "\
+                                   "called before the exception was raised."
+
+    @raises(Fault)
+    def testUnsupportedMethod(self):
+        self.call_one('unsupported')
+
+import nose
+nose.main(argv=["", "-d"])
