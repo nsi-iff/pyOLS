@@ -596,9 +596,16 @@ class ClassificationTool(UniqueObject,
         return self._classifyRelationship
 
     def setClassifyRelationship(self, relationship):
-        """Set the name of the Archetype References relationship used for referencing keywords from classified content objects.
+        """Set the name of the Archetype References relationship used for referencing keywords from classified content objects. On change update all existing classification references.
         """
-        self._classifyRelationship = relationship
+        oldRelationship = self.getClassifyRelationship()
+        if relationship != oldRelationship:
+            for keywordName in self.keywords():
+                keyword = self.getKeyword(keywordName)
+                for classifiedContent in keyword.getBRefs(oldRelationship):
+                    classifiedContent.deleteReference(keyword, oldRelationship)
+                    classifiedContent.   addReference(keyword, relationship)
+            self._classifyRelationship = relationship
 
     def reftypes(self):
         """Return a list of all referenceable portal types.

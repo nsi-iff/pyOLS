@@ -65,6 +65,11 @@
           <td><input name="storage" tal:attributes="value storage"/></td>
          </tr>
          <tr>
+          <td><span i18n:translate="Ontology_highlight_classify_reference">AT Reference for Classification</span>
+          </td>
+          <td><input name="classify" tal:attributes="value python: ctool.getClassifyRelationship()"/></td>
+         </tr>
+         <tr>
           <td valign="top"><span i18n:translate="Ontology_highlight_types">Types that Allow Classification</span>
           </td>
           <td>
