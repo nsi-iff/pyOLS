@@ -23,6 +23,8 @@ myschema = Schema((LinesField('RootKWs',
                               description='Top level keywords for the ontology view',
                               multivalued=1,
                               widget=LinesWidget(),
+                              description_msgid='Ontology_help_rootkws',
+                              i18n_domain='Ontology',
                               ),
                   ))
 

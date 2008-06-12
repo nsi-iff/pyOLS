@@ -15,6 +15,9 @@ MyBaseSchema = BaseSchema.copy()
 MyBaseSchema['title'].widget=ActiveStringWidget() 
 MyBaseSchema['title'].widget.label = 'New Keyword' 
 MyBaseSchema['title'].widget.description = "Can contain capital letters, spaces etc."
+MyBaseSchema['title'].widget.label_msgid = 'Ontology_label_new_keyword'
+MyBaseSchema['title'].widget.description_msgid = "Ontology_help_new_keyword"
+MyBaseSchema['title'].widget.i18n_domain = 'Ontology'
 MyBaseSchema['title'].mutator='setTitle'
 MyBaseSchema['id'].widget.visible = {'view':'invisible',
                                       'edit':'invisible'}
@@ -24,12 +27,22 @@ schema = MyBaseSchema +Schema((
                 default='',
                 widget=StringWidget(maxlength=25,
                                     label='short additional description',
-                                    description='in case there are two completely different meanings for a keyword, please specify e.g. Neuron (the cell) or Neuron (the simulation software)',),),
+                                    description='in case there are two completely different meanings for a keyword, please specify e.g. Neuron (the cell) or Neuron (the simulation software)',
+                                    label_msgid='Ontology_label_description',
+                                    description_msgid='Ontology_help_description',
+                                    i18n_domain='Ontology',
+                                    ),
+               ),
 
     TextField('keywordProposalDescription',
               default='',
               widget=TextAreaWidget(label="description of new keyword",
-                                    description="description of new keyword",),),
+                                    description="description of new keyword",
+                                    label_msgid='Ontology_label_kp_description',
+                                    description_msgid='Ontology_help_kp_description',
+                                    i18n_domain='Ontology',
+                                   ),
+             ),
 
     ReferenceField('RelationProposals',
                    relationship='hasRelation',
@@ -39,7 +52,11 @@ schema = MyBaseSchema +Schema((
                    widget = MyRefWidget(label="RelationProposals",
                                         addable = True,
                                         destination_types=('RelationProposal',),
-                                        destination = '.',),),
+                                        destination = '.',
+                                        label_msgid='Ontology_label_relation',
+                                        i18n_domain='Ontology',
+                                        ),
+                  ),
     ))
 
 class KeywordProposal(BaseFolder):
@@ -222,7 +239,10 @@ schema = MyBaseSchema +Schema((
                 searchable=0,
                 required=1,
                 widget=SearchKWAWidget(label='KeywordA',
-                                       condition='python:object.showKWA()',),
+                                       condition='python:object.showKWA()',
+                                       label_msgid='Ontology_label_keyworda',
+                                       i18n_domain='Ontology',
+                                      ),
                 enforceVocabulary=0,
                 ),
     StringField('relation',
@@ -231,6 +251,9 @@ schema = MyBaseSchema +Schema((
                multivalued=0,
                widget=SelectionWidget(label='Relation',
                                   description="How keyword a is related to keyword b",
+                                  label_msgid='Ontology_label_relation',
+                                  description_msgid='Ontology_help_relation',
+                                  i18n_domain='Ontology',
                ),
                vocabulary="definedRelations",
                ),
@@ -239,7 +262,10 @@ schema = MyBaseSchema +Schema((
                 searchable=0,
                 mutator='setSearchKWB',
                 required=1,
-                widget=SearchKWBWidget(label='KeywordB',),
+                widget=SearchKWBWidget(label='KeywordB',
+                                       label_msgid='Ontology_label_keywordb',
+                                       i18n_domain='Ontology',
+                                      ),
                 enforceVocabulary=0,
                 ),
     ))

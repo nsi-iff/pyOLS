@@ -1,6 +1,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US"
     lang="en-US"
-    metal:use-macro="here/prefs_main_template/macros/master">
+    metal:use-macro="here/prefs_main_template/macros/master"
+    i18n:domain="Ontology">
 
 <tal:block metal:fill-slot="head_slot">
 <tal:block tal:define="dummy python:request.set('disable_border',1)" />
@@ -22,25 +23,25 @@
         <li class="">
         <a href=""
         tal:attributes="href string: configure_tool_properties"
-        i18n:translate="">Properties</a>
+        i18n:translate="Ontology_properties">Properties</a>
         </li>
 
         <li class="selected">
         <a href=""
         tal:attributes="href string: ${template/id}"
-        i18n:translate="">Relations</a>
+        i18n:translate="Ontology_relations">Relations</a>
         </li>
 
 	<li class="">
         <a href=""
         tal:attributes="href string: configure_tool_import"
-        i18n:translate="">Import/Export</a>
+        i18n:translate="Ontology_import_export">Import/Export</a>
         </li>
 
         <li class="">
         <a href=""
         tal:attributes="href string: configure_tool_readme"
-        i18n:translate="">ReadMe</a>
+        i18n:translate="Ontology_readme">ReadMe</a>
         </li>
     </ul>
 
@@ -50,9 +51,9 @@
     <!-- End of tabs -->
 
     <div class="documentContent">
-      <h1>Classificator Management</h1>
+      <h1 i18n:translate="Ontology_label_classificator">Classificator Management</h1>
 
-      <p>When following links between keywords, the value of the linked keyword is estimated as the product of the source value and a specific relevance factor for the link. That way it is possible to give links different weights.</p>
+      <p i18n:translate="Ontology_relation_description">When following links between keywords, the value of the linked keyword is estimated as the product of the source value and a specific relevance factor for the link. That way it is possible to give links different weights.</p>
 
 
 
@@ -61,7 +62,7 @@
 <tal:block tal:condition="relations">
 
 <table>
-<tr><th>Relation</th><th>Relevance Factor</th></tr>
+<tr><th i18n:translate="Ontology_highlight_relation">Relation</th><th i18n:translate="Ontology_highlight_relevance_factor">Relevance Factor</th></tr>
 <tr tal:repeat="rel relations">
 <td><input type="checkbox" name="ids:list:string"
 tal:attributes="value rel;"/><tal:block tal:replace="rel"/></td>
@@ -71,18 +72,32 @@ tal:attributes="value rel;"/><tal:block tal:replace="rel"/></td>
 </tr>
 </table>
 
-<input type="submit" name="form.button.change" value="Save Changes"/>
-<input type="submit" name="form.button.delete" value="Delete"/>
+<input type="submit" 
+       name="form.button.change" 
+       value="Save Changes"
+       i18n:attributes="value" />
+<input type="submit" 
+       name="form.button.delete" 
+       value="Delete"
+       i18n:attributes="value" />
 
 </tal:block>
 
-<tal:block tal:condition="not: relations">
+<tal:block tal:condition="not: relations"
+           i18n:translate="Ontology_no_relations">
 No relations are defined between keywords.
 </tal:block>
 
 
-<input type="submit" value="Add Relation" name="form.button.add"/>
-<input type="hidden" name="form.submitted" value="1" />
+<input type="submit" 
+       value="Add Relation" 
+       name="form.button.add"
+       i18n:attributes="value" />
+
+<input type="hidden" 
+       name="form.submitted" 
+       value="1" />
+
 </form>
 
      </div>

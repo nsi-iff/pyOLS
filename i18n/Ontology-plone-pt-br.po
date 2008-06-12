@@ -1,0 +1,94 @@
+# translation of PloneOntology-plone-pt-br.po to Brazilian Portuguese
+# Gettext Message File for PloneOntology.
+# Português do Brasil translation team <tchezope@yahoogroups.com>
+msgid ""
+msgstr ""
+"Project-Id-Version: PloneOntology\n"
+"POT-Creation-Date: Sun Apr 1 15:40:24 2007\n"
+"PO-Revision-Date: Sun Apr 1 15:40:24 2007\n"
+"Last-Translator: Rafahela Bazzanella <rafabazzanella@yahoo.com.br>\n"
+"Language-Team: Português do Brasil <tchezope@yahoogroups.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+"Language-Code: pt-br\n"
+"Language-Name: Português do Brasil\n"
+"Preferred-Encodings: latin1 utf-8\n"
+"Domain: plone\n"
+
+#. Default: "Relation Proposal"
+msgid "Relation Proposal"
+msgstr "Relação Proposta"
+
+#. Default: "Keyword Proposal"
+msgid "Keyword Proposal"
+msgstr "Palavra-chave Proposta"
+
+#. Default: "Keyword"
+msgid "Keyword"
+msgstr "Palavra-chave"
+
+#. Default: "Non-visible and editable only by owner"
+msgid "Non-visible and editable only by owner"
+msgstr "Visível e editável somente pelo dono"
+
+#. Default: "Approved"
+msgid "Approved"
+msgstr "Aprovado"
+
+#. Default: "approved"
+msgid "approved"
+msgstr "Aprovado"
+
+#. Default: "approve"
+msgid "approve"
+msgstr "Aprovar"
+
+#. Default: "Approve"
+msgid "Approve"
+msgstr "Aprovar"
+
+#. Default: "Add Relation Proposal"
+msgid "Add Relation Proposal"
+msgstr "Adicionar Relação Proposta"
+
+#. Default: "Related Content"
+msgid "Related Content"
+msgstr "Conteúdo Relacionado"
+
+#. Default: "Search"
+msgid "Search"
+msgstr "Buscar"
+
+#. Default: "PloneOntology"
+msgid "PloneOntology"
+msgstr "Configuração da Ontologia"
+
+#. Default: "New keyword relation added."
+msgid "New keyword relation added."
+msgstr "Nova relação de palavra-chave adicionada."
+
+#. Default: "Removed selected relations."
+msgid "Removed selected relations."
+msgstr "Removidas relações selecionadas."
+
+#. Default: "Reference Added."
+msgid "Reference Added."
+msgstr "Referência Adicionada."
+
+#. Default: "New Reference Created."
+msgid "New Reference Created."
+msgstr "Nova Referência Criada."
+
+#. Default: "Accepted KW Proposals"
+msgid "Accepted KW Proposals"
+msgstr "Propostas Aceitas de Palavras-chaves"
+
+#. Default: "Classify"
+msgid "Classify"
+msgstr "Classificar"
+
+#. Default: "Relevance factors changed."
+msgid "Relevance factors changed."
+msgstr "Fatores relevantes alterados."

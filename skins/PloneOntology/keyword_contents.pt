@@ -5,7 +5,7 @@
       xmlns:tal="http://xml.zope.org/namespaces/tal"
       xmlns:metal="http://xml.zope.org/namespaces/metal"
       xmlns:i18n="http://xml.zope.org/namespaces/i18n"
-      i18n:domain="archetypes">
+      i18n:domain="Ontology">
   <head><title></title></head>
   <body>
 
@@ -14,7 +14,7 @@
                  content python:ctool.search(here.getId());
              ">
 
-     <h1>Content related to "<it tal:content="here/title_or_id"/>"</h1>
+     <h1 i18n:translate="">Content related to <span tal:content="here/title_or_id" i18n:name="content_title"/></h1>
      <dl tal:condition="content">
        <metal:block tal:repeat="item content">
 	   <tal:block tal:define="obj python:item[1];
@@ -68,7 +68,8 @@
 		    </metal:block>
             </dl>
 
-	 <span tal:condition="not: content">No content is classified for this keyword</span>
+	 <span tal:condition="not: content"
+               i18n:translate="Ontology_no_content">No content is classified for this keyword</span>
 
     </div>
 

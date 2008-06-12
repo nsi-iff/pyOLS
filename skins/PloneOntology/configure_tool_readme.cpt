@@ -1,6 +1,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US"
     lang="en-US"
-    metal:use-macro="here/prefs_main_template/macros/master">
+    metal:use-macro="here/prefs_main_template/macros/master"
+    i18n:domain="Ontology">
 
 <tal:block metal:fill-slot="head_slot">
 <tal:block tal:define="dummy python:request.set('disable_border',1)" />
@@ -21,25 +22,25 @@
         <li class="">
         <a href=""
         tal:attributes="href string: configure_tool_properties"
-        i18n:translate="">Properties</a>
+        i18n:translate="Ontology_properties">Properties</a>
         </li>
 
         <li class="">
         <a href=""
         tal:attributes="href string: configure_tool_relations"
-        i18n:translate="">Relations</a>
+        i18n:translate="Ontology_relations">Relations</a>
         </li>
 
         <li class="">
         <a href=""
         tal:attributes="href string:${template/id}"
-        i18n:translate="">Import/Export</a>
+        i18n:translate="Ontology_import_export">Import/Export</a>
         </li>
 
         <li class="selected">
         <a href=""
         tal:attributes="href string: configure_tool_readme"
-        i18n:translate="">ReadMe</a>
+        i18n:translate="Ontology_readme">ReadMe</a>
         </li>
     </ul>
 

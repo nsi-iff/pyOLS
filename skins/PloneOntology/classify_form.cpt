@@ -1,7 +1,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
       lang="en"
       metal:use-macro="here/main_template/macros/master"
-      i18n:domain="plone">
+      i18n:domain="Ontology">
 
   <body>
     
@@ -30,8 +30,8 @@
                            kw_active_search python: request.get('kw_active_search','');
                            kw_search python: request.get('kw_search','')">
 
- <fieldset><legend>search for new keywords for referencing</legend>
-<div class="formHelp">if your browser has javascript enabled, a drop down box should appear while you type. select a keyword and press the button. if javascript does not work, the box functions as a search box</div>
+ <fieldset><legend i18n:translate="Ontology_search_kw">search for new keywords for referencing</legend>
+<div class="formHelp" i18n:translate="Ontology_help_search_kw">if your browser has javascript enabled, a drop down box should appear while you type. select a keyword and press the button. if javascript does not work, the box functions as a search box</div>
          <input type="text"
 	    name="kw_search"
 	    value=""
@@ -51,7 +51,11 @@
                id="kw_active_search"
                value="" />
 
-     <input type="submit" name="form.button.kw_search" value="Add/Search"/>
+     <input type="submit" 
+            name="form.button.kw_search" 
+            value="Add/Search"
+            i18n:attributes="value"
+            />
 		<div tal:condition="kw_search">
                 <tal:block tal:define="results python:here.portal_classification.searchMatchingKeywordsFor(here, kw_search,)">
 		<div tal:condition="python: kw_active_search==''">
@@ -68,13 +72,19 @@
 		      </tal:block>
 		    </tr>
 		  </table>
-		  <input type="submit" name="form.button.add_ref" value="Add References"/></div></div>
-		<p tal:condition="not:results">No matching keywords found. Please try another search term.</p>
+		  <input type="submit" 
+                         name="form.button.add_ref" 
+                         value="Add References" 
+                         i18n:attributes="value"
+                         />
+                </div>
+                </div>
+		<p tal:condition="not:results" i18n:translate="Ontology_no_keywords">No matching keywords found. Please try another search term.</p>
 </tal:block></div>
 
 	 </fieldset>
 		<span tal:condition="python: existing_refs!=[]">
-<fieldset><legend>current refenced keywords</legend>
+                <fieldset><legend i18n:translate="Ontology_label_current_reference">current refenced keywords</legend>
 		  <table> <!-- Table Header ??? -->
 		    <tr tal:repeat="item existing_refs">
 		      <tal:block tal:define="cururl request/URL; 
@@ -87,7 +97,14 @@
 		      </tal:block>
 		    </tr>
 		  </table>
-<input type="submit" name="form.button.del_ref" value="Remove References"/></fieldset>     </span>      <input type="hidden" name="form.submitted" value="1" />
+                  <input type="submit" 
+                         name="form.button.del_ref" 
+                         value="Remove References"
+                         i18n:attributes="value"
+                         />
+                </fieldset>
+                </span>
+                <input type="hidden" name="form.submitted" value="1" />
 
 	      </tal:block>
           <input type="hidden" name="form.submitted" value="1" />

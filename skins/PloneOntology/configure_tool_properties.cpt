@@ -1,6 +1,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US"
     lang="en-US"
-    metal:use-macro="here/prefs_main_template/macros/master">
+    metal:use-macro="here/prefs_main_template/macros/master"
+    i18n:domain="Ontology">
 
 <tal:block metal:fill-slot="head_slot">
 <tal:block tal:define="dummy python:request.set('disable_border',1)" />
@@ -23,25 +24,25 @@
         <li class="selected">
         <a href=""
         tal:attributes="href string:${template/id}"
-        i18n:translate="">Properties</a>
+        i18n:translate="Ontology_properties">Properties</a>
         </li>
 
         <li class="">
         <a href=""
         tal:attributes="href string: configure_tool_relations"
-        i18n:translate="">Relations</a>
+        i18n:translate="Ontology_relations">Relations</a>
         </li>
 
 	<li class="">
         <a href=""
         tal:attributes="href string: configure_tool_import"
-        i18n:translate="">Import/Export</a>
+        i18n:translate="Ontology_import_export">Import/Export</a>
         </li>
 
         <li class="">
         <a href=""
         tal:attributes="href string: configure_tool_readme"
-        i18n:translate="">ReadMe</a>
+        i18n:translate="Ontology_readme">ReadMe</a>
         </li>
     </ul>
 
@@ -51,31 +52,34 @@
     <!-- End of tabs -->
 
     <div class="documentContent">
-      <h1>Classificator Management</h1>
+      <h1 i18n:translate="Ontology_label_classificator">Classificator Management</h1>
 
       <form method="POST" tal:attributes="action string:${here/absolute_url}/${template/getId}"
       tal:define="cutoff ctool/getSearchCutoff|python:0.1;
                   storage python: ctool.getStorageId(); ">
       
-<table><tr><td>Search Cutoff</td><td><input name="cutoff:float" size="5" tal:attributes="value cutoff"/></td></tr>
-       <tr><td>Keyword Storage</td><td><input name="storage" tal:attributes="value storage"/></td></tr>
-       <tr><td>Graphviz Layouter</td><td><select name="tool" size="1" tal:define="values python: gtool.toollist()">
+<table><tr><td i18n:translate="Ontology_highlight_search_cutoff">Search Cutoff</td><td><input name="cutoff:float" size="5" tal:attributes="value cutoff"/></td></tr>
+       <tr><td i18n:translate="Ontology_highlight_keyword_storage">Keyword Storage</td><td><input name="storage" tal:attributes="value storage"/></td></tr>
+       <tr><td i18n:translate="Ontology_highlight_graphviz_layouter">Graphviz Layouter</td><td><select name="tool" size="1" tal:define="values python: gtool.toollist()">
        <option tal:repeat="value values"
                tal:content="value"
                tal:attributes="value value;
                                selected python:test(value == gtool.getLayouter())" />
        </select></td></tr>
-       <tr><td>Graphviz Font</td><td><input name="font" size="40" type="text" tal:attributes="value ctool/getGVFont" /></td></tr>
-       <tr><td>Forward Relations</td><td><tal:block condition="python: ctool.getForth() == '1'"><input name="forth" type="checkbox" checked value="1" /></tal:block><tal:block condition="python: ctool.getForth() != '1'"><input name="forth" type="checkbox" value="1" /></tal:block></td></tr>
-       <tr><td>Backward Relations</td><td><tal:block condition="python: ctool.getBack() == '1'"><input name="back" type="checkbox" checked value="1" /></tal:block><tal:block condition="python: ctool.getBack() != '1'"><input name="back" type="checkbox" value="1" /></tal:block></td></tr>
-       <tr><td>Types that allow classification</td><td><select name="types" size="7" multiple tal:define="values python: ctool.reftypes()">
+       <tr><td i18n:translate="Ontology_highlight_graphviz_font">Graphviz Font</td><td><input name="font" size="40" type="text" tal:attributes="value ctool/getGVFont" /></td></tr>
+       <tr><td i18n:translate="Ontology_highlight_forward_relations">Forward Relations</td><td><tal:block condition="python: ctool.getForth() == '1'"><input name="forth" type="checkbox" checked value="1" /></tal:block><tal:block condition="python: ctool.getForth() != '1'"><input name="forth" type="checkbox" value="1" /></tal:block></td></tr>
+       <tr><td i18n:translate="Ontology_highlight_backward_relations">Backward Relations</td><td><tal:block condition="python: ctool.getBack() == '1'"><input name="back" type="checkbox" checked value="1" /></tal:block><tal:block condition="python: ctool.getBack() != '1'"><input name="back" type="checkbox" value="1" /></tal:block></td></tr>
+       <tr><td i18n:translate="Ontology_highlight_types">Types that allow classification</td><td><select name="types" size="7" multiple tal:define="values python: ctool.reftypes()">
        <option tal:repeat="value values"
                tal:content="value"
                tal:attributes="value value;
                                selected python:test(value in ctool.getClassifyTypes())" />
        </select></td></tr><table>
-<font color="#ff0000"><i><small>Be aware that changing the Font, the Layouter and/or the Directions of the Relations results in redrawing of the Keyword Graphs and thus may be very time consuming.</small></i></font><br />
-      <input type="submit" name="form.button.change" value="Save Changes"/>
+<font color="#ff0000"><i><small i18n:translate="Ontology_note">Be aware that changing the Font, the Layouter and/or the Directions of the Relations results in redrawing of the Keyword Graphs and thus may be very time consuming.</small></i></font><br />
+      <input type="submit" 
+             name="save"
+             value="Save Changes"
+             i18n:attributes="value" />
       <input type="hidden" name="form.submitted" value="1" />
       </form>
     </div>
