@@ -94,13 +94,17 @@ class OntologyTool(object):
         for col in class_.list_columns():
             if col.name == 'namespace':
                 query['namespace'] = self._namespace
-            elif col.required:
-                if col.type.__module__ == 'pyols.model':
-                    args.insert(0, self._generic_get(col.type, args.pop(0)))
-                query[col.name] = args.pop(0)
+                continue
+
+            if col.required and args:
+                to_add = args.pop(0)
             else:
-                if col.name in kwargs:
-                    query[col.name] = kwargs[col.name]
+                if col.name not in kwargs: continue
+                to_add = kwargs[col.name]
+
+            if col.type.__module__ == 'pyols.model':
+                to_add = self._generic_get(col.type, to_add)
+            query[col.name] = to_add
         return query
 
     @create_methods('add%s', (obj_with_args(Keyword),
@@ -143,57 +147,33 @@ class OntologyTool(object):
         newrel.inverse = inverse
         return newrel
 
-    @create_methods('get%s', (Keyword, Relation))
+    @create_methods('get%s', (obj_with_args(Keyword),
+                              obj_with_args(Relation)))
     def _generic_get(self, class_, name):
         """ Get a %(class_name)s from the ontology.  It is an
             error to request an item which does not exist. """
+        # This does not use _generic_query because it doesn't need to.  
         return class_.fetch_by(name=name, namespace=self._namespace)
 
-    @create_methods('del%s', (Keyword, Relation))
-    def _generic_del(self, class_, name):
+    @create_methods('del%s', (obj_with_args(Keyword),
+                              obj_with_args(Relation),
+                              obj_with_args(KeywordAssociation),
+                              obj_with_args(KeywordRelationship)))
+    def _generic_del(self, class_, *args, **kwargs):
         """ Remove %(class_name)s, along with all dependencies,
             from the current ontology. """
-        i = self._generic_get(class_, name=name)
+        i = self._generic_get(class_, *args, **kwargs)
         i.remove()
 
-    @create_methods("query%ss", (Keyword, Relation))
+    @create_methods("query%ss", (obj_with_args(Keyword),
+                                 obj_with_args(Relation),
+                                 obj_with_args(KeywordAssociation),
+                                 obj_with_args(KeywordRelationship)))
     def _generic_query(self, class_, **kwargs):
         """ Return an iterator over all the %(class_name)ss in the current
             namespace matching kwargs.  kwargs may be empty. """
+        query = self._generate_query(class_, [], kwargs)
         return class_.query_by(namespace=self._namespace, **kwargs)
-
-    def delRelationship(self, left, relation, right):
-        """ Destroy the relationship of kind 'relation' between keywords 
-            'left' and 'right'. """
-        left = self.getKeyword(left)
-        right = self.getKeyword(right)
-        relation = self.getRelation(relation)
-        kwr = KeywordRelationship.fetch_by(left=left,
-                                           relation=relation,
-                                           right=right)
-        kwr.remove()
-
-    def getAssociations(self, keyword=None, path=None):
-        """ Get an iterable of  associations for either the specified 'keyword'
-            or the specified 'path'.  It is not an error to supply both.  It
-            just doesn't make a lot of sense. """
-        query = {}
-        if keyword is not None:
-            query['keyword'] = self.getKeyword(keyword)
-        if path is not None:
-            query['path'] = path
-
-        if not query:
-            raise PyolsProgrammerError("Neither a keyword or a path was given "
-                                       "to getAssociations")
-
-        return KeywordAssociation.query_by(**query)
-
-    def delAssociations(self, keyword, path):
-        """ Remove the association between keyword and path. """
-        keyword = self.getKeyword(keyword)
-        kwa = KeywordAssociation.fetch_by(keyword=keyword, path=path)
-        kwa.remove()
 
     def search(self, kwName, links="all"):
         """ Search Content for a given keyword with name 'kwName'.
