@@ -274,6 +274,7 @@ class ClassificationTool(UniqueObject,
             inverses = [inverses]
 
         self.setInverses(name, inverses)
+        getToolByName(self, 'portal_catalog').reindexObject(ruleset)
 
         return ruleset
 
@@ -281,12 +282,19 @@ class ClassificationTool(UniqueObject,
         """Return the relation ruleset from the Plone Relations library.
 
         Exceptions:
-            NotFound   : No relation ruleset 'name' in library. (Products.Relations version <  0.6)
-            ValueError : No relation ruleset 'name' in library. (Products.Relations version >= 0.6)
+            ValueError : No ruleset with title or id 'name'
         """
-
         relations_library = getToolByName(self, 'relations_library')
-        return relations_library.getRuleset(name)
+        x=0
+        for r in relations_library.getRulesets():
+            if r.getId() == name:
+             x=1
+             return r
+            elif r.title_or_id() == name:           
+             x=1
+             return r
+        if x==0:
+             raise ValueError, "No ruleset with title or id %r" % name
 
     def delRelation(self, name):
         """Remove the keyword relation 'name' from 'relations_library', if it exists.
@@ -300,7 +308,7 @@ class ClassificationTool(UniqueObject,
     def relations(self, relations_library):
         """Return a list of all existing keyword relation names in 'relations_library'.
         """
-        return [r.getId() for r in relations_library.getRulesets()]
+        return [r.title_or_id() for r in relations_library.getRulesets()]
 
     def getWeight(self, name):
         """Return the weight of keyword relation 'name'.
