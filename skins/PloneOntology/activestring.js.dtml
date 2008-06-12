@@ -171,10 +171,11 @@ function setActive(inputId, pos) {
 	active[inputId] = pos;
 
 	/* the following is for debugging the active selection */
-	set = document.getElementById(ACTIVERESULT_SHADOW+"-"+input.name).getElementsByTagName('li');
+	set = document.getElementById(ACTIVERESULT_SHADOW+"-"+inputId).getElementsByTagName('li');
 	if (oldPos != null)
 		set[oldPos].style.background = 'none';
-	set[pos].style.background = 'red';		
+        if (pos != null)
+	        set[pos].style.background = 'red';		
 }
 
 function launchSearch(inputId) {
@@ -214,7 +215,7 @@ function httpRequestChangeHandler() {
 
 		var response = activeStringReq;
 		var domDoc = Sarissa.getDomDocument();
-		domDoc.loadXML(activeStringReq.responseText);
+                domDoc = (new DOMParser()).parseFromString(activeStringReq.responseText, "text/xml");
 		var el = domDoc.selectSingleNode('//html/body/h1');
 		var inputId = Sarissa.getText(el, 1);
 
