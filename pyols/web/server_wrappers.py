@@ -164,4 +164,4 @@ class SCGIServer(object):
     def serve(self):
         self._server.serve()
 
-server_classes = {'scgi': SCGIServer, 'standalone': StandaloneServer, 'cgi': CGIServer}
+wrappers = {'scgi': SCGIServer, 'standalone': StandaloneServer, 'cgi': CGIServer}
