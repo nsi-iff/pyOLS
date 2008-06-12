@@ -1,16 +1,9 @@
 #!/usr/bin/env python
 from pyols.web.server_wrappers import wrappers
+from pyols.web.main import get_dispatcher
 
 import sys
 from optparse import OptionParser
-
-class RPCFunctions(object):
-    """ A little class, used for testing. """
-    def add(self, a, b):
-        return a + b
-
-    def hello(self, who='World'):
-        return 'Hello, %s!' %(who,)
 
 
 def run():
@@ -29,7 +22,7 @@ def run():
         sys.exit(1)
     wrapper = wrappers[options.wrapper]
 
-    w = wrapper(RPCFunctions())
+    w = wrapper(get_dispatcher())
     w.serve()
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from pyols.web import autoreload
+from pyols import log
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer, CGIXMLRPCRequestHandler, \
                                SimpleXMLRPCDispatcher
@@ -39,15 +40,15 @@ class StandaloneServer(object):
 
     def serve(self):
         """ A "fake" serve function, for the benefit of autoreload. """
+        log.info("Starting standalone server on port %s" %(self._port, ))
         autoreload.main(self._serve, self._modification_callback)
 
     def _serve(self):
         """ The "actual" serve function. """
-        print "Starting standalone server on port %s" %(self._port, )
         _StandaloneServer(self._obj, self._port).serve()
 
     def _modification_callback(self, file):
-        print "%s was modified.  Restarting." %(file, )
+        log.info("%s was modified.  Restarting." %(file, ))
 
 
 class CGIServer(CGIXMLRPCRequestHandler):
@@ -68,7 +69,7 @@ class SCGIHandler(scgi_server.SCGIHandler, SimpleXMLRPCDispatcher):
 
         scgi_server.SCGIHandler.__init__(self, parent_fd)
 
-        SimpleXMLRPCDispatcher.__init__(self, False, None)
+        SimpleXMLRPCDispatcher.__init__(self, allow_none, encoding)
         self.register_instance(self.rpc_obj)
 
     def write(self, text, nl='\r\n'):
