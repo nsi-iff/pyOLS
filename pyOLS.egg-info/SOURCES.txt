@@ -4,7 +4,6 @@ pyOLS.egg-info/PKG-INFO
 pyOLS.egg-info/SOURCES.txt
 pyOLS.egg-info/dependency_links.txt
 pyOLS.egg-info/entry_points.txt
-pyOLS.egg-info/paster_plugins.txt
 pyOLS.egg-info/requires.txt
 pyOLS.egg-info/top_level.txt
 pyols/__init__.py
