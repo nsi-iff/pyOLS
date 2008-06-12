@@ -1,0 +1,3 @@
+[actions]
+action.success..upgrade = traverse_to:string:upgradeNames
+action.success          = traverse_to:string:configure_tool_upgrade
