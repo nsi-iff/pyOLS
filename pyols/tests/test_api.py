@@ -8,6 +8,7 @@ from nose.tools import raises, assert_raises, assert_equal, ok_
 
 class TestOntologyTool:
     def setup(self):
+        db().begin_txn()
         # ot => OntologyTool
         self.ot = OntologyTool(u"_sanity_check_ns")
         # Add a couple keywords to this other namespace in the
@@ -18,7 +19,7 @@ class TestOntologyTool:
         self.ot.namespace = u"testNS"
 
     def teardown(self):
-        db().reset()
+        db().abort_txn()
 
     def addKeyword(self, name=u"testKW", disambiguation=u"dis",
                    description=u"desc"):

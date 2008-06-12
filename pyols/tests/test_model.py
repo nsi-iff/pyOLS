@@ -7,11 +7,12 @@ from nose.tools import raises, assert_raises, assert_equal, ok_
 
 class TestRelation:
     def setup(self):
+        db().begin_txn()
         self.ns = Namespace.new(name=u"testNS")
         self.ns.flush()
 
     def teardown(self):
-        db().reset()
+        db().abort_txn()
 
     def relation_new(self, name=u"testRel", revelance=1.0, types=[], inverse=None):
         r = Relation.new(namespace=self.ns, name=name, revelance=revelance,
