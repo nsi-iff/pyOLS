@@ -81,6 +81,12 @@ class TestRelation:
         assert_equal(set(rel.types), set(['transitive', 'symmetric']))
 
     def testRemove(self):
+        # Make sure a "naked" relation with no dependencies works
+        for types in ([], ['transitive', 'symmetric']):
+            rel = self.relation_new(types=types)
+            rel.remove()
+            db().flush()
+
         rel = self.relation_new(types=['transitive', 'symmetric'])
         kw0 = Keyword.new(namespace=self.ns, name=u"kw0")
         kw1 = Keyword.new(namespace=self.ns, name=u"kw1")
