@@ -78,7 +78,7 @@ class KeywordGraph:
 
         desc = node.getKwDescription()
         if desc:
-            tooltip = node.title_or_id() + r"\n\n" + desc
+            tooltip = node.title_or_id() + "&#13;&#10;" + desc
         else:
             tooltip = node.title_or_id()
 
@@ -92,7 +92,7 @@ class KeywordGraph:
 
         desc = node.getKwDescription()
         if desc:
-            tooltip = node.title_or_id() + r"\n\n" + desc
+            tooltip = node.title_or_id() + "&#13;&#10;" + desc
         else:
             tooltip = node.title_or_id()
 
