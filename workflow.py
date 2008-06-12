@@ -271,6 +271,8 @@ except NotFound:
     pass
 
 context.portal_classification.addReference(srcName, dstName, relation)
+context.portal_classification.getKeyword(srcName).updateKwMap()
+context.portal_classification.getKeyword(dstName).updateKwMap()
 
 if not relationProposal.hasKeywordProposal():
     accepted_kws = context.portal_url.getPortalObject().accepted_kws
