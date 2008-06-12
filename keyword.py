@@ -184,14 +184,14 @@ class Keyword(BaseContent):
              if relobj.getId() == r:
               if relobj.getId() != relobj.title_or_id():
                rel=relobj.title_or_id()
-             
+
             for o in obs:
                 if not o in objects:
                     objects.append(o)
                     result.append((o, [rel]))
                 else: #just append relationship
                     try:
-                        idx = objects.find(o)
+                        idx = objects.index(o)
                         entry = result[idx]
                         entry[1].append(rel)
                     except:
