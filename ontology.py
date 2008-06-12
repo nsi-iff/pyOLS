@@ -19,7 +19,7 @@ from Products.Relations.exception import ValidationException
 from owl import OWLExporter, OWLImporter
 
 myschema = Schema((LinesField('rootKeywords',
-                              vocabulary='getKeywordNames',
+                              vocabulary='getKeywordTitlesOrNames',
                               default='',
                               label='Root Keywords',
                               description='Top level keywords for the ontology view',
@@ -79,11 +79,11 @@ class Ontology(BaseBTreeFolder):
 
         return error
 
-    def getKeywordNames(self):
-        """Return list of all existing keyword names in ontology. Vocabulary wrapper for schema above.
+    def getKeywordTitlesOrNames(self):
+        """Return list of all existing keyword titles or names in ontology. Vocabulary wrapper for schema above.
         """
         ctool = getToolByName(self, 'portal_classification')
-        return ctool.keywords()
+        return [ctool.getKeyword(name).title_or_id() for name in ctool.keywords()]
 
     def getTopLevel(self):
         """Return the root keywords which have no parents.
@@ -91,32 +91,33 @@ class Ontology(BaseBTreeFolder):
         ctool = getToolByName(self, 'portal_classification')
         return [kw for kw in [ctool.getKeyword(name) for name in ctool.keywords()] if not 'childOf' in kw.getRelations()]
 
-    def idsOfTopLevel(self):
-        """Return names of top level keywords.
+    def getTopLevelTitlesOrNames(self):
+        """Return titles or names of top level keywords.
         """
-        return [kw.getName() for kw in self.getTopLevel()]
+        return [kw.title_or_id() for kw in self.getTopLevel()]
 
     def at_post_create_script(self):
-        self.updateGraphvizMap()    
+        self.updateGraphvizMap()
         if not self.rootKeywords:
-            self.rootKeywords = self.idsOfTopLevel()
+            self.rootKeywords = self.getTopLevelTitlesOrNames()
 
     def at_post_edit_script(self):
         if not self.rootKeywords:
-            self.rootKeywords = self.idsOfTopLevel()
+            self.rootKeywords = self.getTopLevelTitlesOrNames()
 
-    def objectOfIds(self):
-        """
-        """
-        kwstorage = getToolByName(self, 'portal_classification').getStorage()
-        objList=[]
-        for el in self.rootKeywords:
-            objList.append(getattr(kwstorage, el))
-        if objList==[]:
-            objList=self.getTopLevel()
-        if objList==[]:
-            objList=getToolByName(self, 'portal_classification').getStorage().contentValues()
-        return objList
+    ### DELETE
+    #def objectOfIds(self):
+    #    """
+    #    """
+    #    kwstorage = getToolByName(self, 'portal_classification').getStorage()
+    #    objList=[]
+    #    for el in self.rootKeywords:
+    #        objList.append(getattr(kwstorage, el))
+    #    if objList==[]:
+    #        objList=self.getTopLevel()
+    #    if objList==[]:
+    #        objList=getToolByName(self, 'portal_classification').getStorage().contentValues()
+    #    return objList
 
     def exportVocabulary(self):
         """XML Serialization.
@@ -319,7 +320,7 @@ class Ontology(BaseBTreeFolder):
 
         # Set root keywords
         if not self.rootKeywords:
-                self.rootKeywords = self.idsOfTopLevel()
+                self.rootKeywords = self.getTopLevelTitlesOrNames()
 
         return error_string
 

@@ -90,7 +90,15 @@ for keyword in keywords:
     keyword.setName(newName)
     if not keyword.Title():
         keyword.setTitle(newName)
+    try:
+        oldShortDescription = keyword.short_additional_description
+        # FIXME This yields a TypeError (attribute-less object): del keyword.short_additional_description
+        if oldShortDescription:
+            keyword.setShortAdditionalDescription(oldShortDescription)
+    except AttributeError:
+        pass
     keyword.setId(newId)
+    keyword.unmarkCreationFlag()
     keyword.reindexObject()
     logger.info("ID for keyword '%s' changed to generated '%s'." % (keyword.getName(), keyword.getId()))
     upgradedKeywords += 1
