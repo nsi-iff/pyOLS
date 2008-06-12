@@ -71,32 +71,29 @@
                  tal:condition="python:not field.required and multiVal"
                  tal:attributes="name string:$fieldName:default:list"
                  />
-
-            <!-- checkbox or radio for short vocabs -->
+           <ul>     
             <tal:item repeat="item vocab">
               <tal:block tal:define="item_tabindex tabindex/next;
                                    item_id string:${fieldName}_${item_tabindex};
                                    no_ref python: value is None and item == ''">
              <tal:block condition="python:test((item in uids) or no_ref)">
-                <input class="noborder"
+                <li><input class="noborder"
                        tabindex=""
-                       type="radio"
+                       type="hidden"
                        tal:attributes="name fieldName;
-                                       checked python:test((item in uids) or no_ref, 'checked', nothing);
                                        tabindex item_tabindex;
                                        value item;
-                                       id item_id;
-                                       type python:multiVal and 'checkbox' or 'radio'"
+                                       id item_id;"
                        />
 
                 <label tal:attributes="for item_id"
                        tal:content="python: here.archetype_tool.lookupObject(item).title_or_id()" />
 
 
-                <br/>
+                </li>
               </tal:block>
              </tal:block>
-            </tal:item>
+            </tal:item></ul>
 
 
          <metal:addable metal:use-macro="here/widgets/addable_support/macros/addable"/>
