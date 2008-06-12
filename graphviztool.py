@@ -66,11 +66,11 @@ class GraphVizTool(UniqueObject, PloneFolder,
         self.setLayouter(tool)
 
     def isLayouterPresent(self, layouter=""):
-        """Check if specified or current layouter is present on the system.
+        """Check if current or specified layouter is present on the system.
         """
 
         if not layouter:
-            layouter = self._layouter
+            layouter = self.getLayouter()
 
         layouter = os.path.join(GV_BIN_PATH, layouter)
 
@@ -84,9 +84,9 @@ class GraphVizTool(UniqueObject, PloneFolder,
     def renderGraph(self, graph, tool='', options=[]):
         """Renders the given graph.
 
-        Returns file like object with result. Type is dependable on options.
+        Returns file like object with result which type is dependable on options and an error string, empty if none.
         """
-        if tool == '':
+        if not tool:
             tool = self.getLayouter()
 
         tool = os.path.join(GV_BIN_PATH, tool)
@@ -94,14 +94,15 @@ class GraphVizTool(UniqueObject, PloneFolder,
         options = " ".join(options)
 
         # 2006-08-03 Seperate streams for output and error. Avoids problems with fonts not found.
-        # TODO: Return error messages.
         (pout, pin, perr) = popen2.popen3(cmd = "%s %s" % (tool, options), mode = "b")
         pin.write(graph)
         pin.close()
 
-        data = pout.read()
+        data  = pout.read()
         pout.close()
+        error = perr.read()
+        perr.close()
 
-        return data
+        return (data, error)
 
 InitializeClass(GraphVizTool)

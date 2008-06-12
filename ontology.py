@@ -272,8 +272,11 @@ class Ontology(BaseBTreeFolder):
 
         # Update keyword graph images
         ct = getToolByName(self, 'portal_classification')
-        for el in ct.getStorage().contentValues():
-            el.updateKwMap(levels=2)
+        try:
+            for el in ct.getStorage().contentValues():
+                error_string = error_string + el.updateKwMap(levels=2)
+        except zExceptions.NotFound:
+                pass # ignore NotFound exception for silent operation without graphviz
 
         return error_string
 

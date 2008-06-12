@@ -41,10 +41,15 @@ ctool.setForth(forth)
 gtool.setLayouter(tool)
 
 if changes == 1:
-    #try:
+    try:
+        msg = ''
         for el in ctool.getStorage().contentValues('Keyword'):
-            el.updateKwMap(levels=2)
-    #except:
+            msg = msg + el.updateKwMap(levels=2)
+    except:
+        pass # ignore NotFound exception for silent operation without graphviz
     #    return state.set(portal_status_message='Error: keyword graphs could not be updated.')
 
-return state.set(portal_status_message='Properties changed.')
+if msg:
+    return state.set(portal_status_message=msg)
+else:
+    return state.set(portal_status_message='Properties changed.')

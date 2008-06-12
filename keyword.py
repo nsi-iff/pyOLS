@@ -14,6 +14,8 @@ from utils import _normalize
 from types import StringType
 import zLOG, string
 
+from zExceptions import NotFound
+
 _marker = []
 
 kwSchema = BaseSchema + Schema((
@@ -289,24 +291,26 @@ class Keyword(BaseContent):
         return dot.getValue()
 
     def updateKwMap(self, levels=2):
-        """update kwMap cached images.
+        """Update kwMap cached images. Returns string containing error messages, empty if none.
         """
         ctool = getToolByName(self, 'portal_classification')
         gvtool = getToolByName(self, 'graphviz_tool')
 
         if not gvtool.isLayouterPresent():
-            return
+            raise NotFound(gvtool.getLayouter())
 
         g = self.generateGraph(levels=levels)
 
         zLOG.LOG(PROJECTNAME, zLOG.INFO,
-                 "Updating graph for %s" % self.getId())
+                 "Updating graph for %s with layouter %s." % (self.getId(), gvtool.getLayouter()))
 
-        result = gvtool.renderGraph(g, options=["-Tpng",])
+        (result, error) = gvtool.renderGraph(g, options=["-Tpng",])
         self.setKwMapGraphic(result, mimetype="image/png")
 
-        result = gvtool.renderGraph(g, options=["-Tcmap",])
+        (result, error) = gvtool.renderGraph(g, options=["-Tcmap",])
         self.setKwMapData(result, mimetype="text/html")
+
+        return error
 
 ## def modify_fti(fti):
 ##     fti['allow_discussion'] = 1
