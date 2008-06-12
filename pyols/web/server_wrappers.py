@@ -7,6 +7,7 @@ from SimpleXMLRPCServer import SimpleXMLRPCServer, CGIXMLRPCRequestHandler, \
                                SimpleXMLRPCDispatcher
 from scgi import scgi_server
 import BaseHTTPServer
+from os import environ
 
 class ServerInterface(object):
     def __init__(self, obj, *args, **kwargs):
@@ -40,7 +41,11 @@ class StandaloneServer(object):
 
     def serve(self):
         """ A "fake" serve function, for the benefit of autoreload. """
-        log.info("Starting standalone server on port %s" %(self._port, ))
+        # Note that, becuse of the way the autorestarter works, all the code
+        # which executes up to here is run twice (except, that is, for the
+        # code in this block)
+        if "RUN_MAIN" in environ:
+            log.info("Starting standalone server on port %s" %(self._port, ))
         autoreload.main(self._serve, self._modification_callback)
 
     def _serve(self):
