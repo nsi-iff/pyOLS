@@ -93,7 +93,8 @@ class ClassificationTool(UniqueObject,
 
         try:
             self.getKeyword(name)
-            raise NameError, "Keyword '%s' already exists in current ontology" % name
+            if self.getKeyword(name).meta_type == 'Keyword':
+                raise NameError, "Keyword '%s' already exists in current ontology" % name
         except KeyError:
             pass
 
@@ -107,7 +108,7 @@ class ClassificationTool(UniqueObject,
     def getKeyword(self, name):
         """Return keyword 'name' from current ontology."""
         storage = self.getStorage()
-        
+
         if not hasattr(storage, name):
             raise KeyError, "Keyword '%s' not found in current ontology" % name
 
