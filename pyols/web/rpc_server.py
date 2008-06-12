@@ -43,6 +43,7 @@ class StandaloneServer(object):
 
     def _serve(self):
         """ The "actual" serve function. """
+        print "Starting standalone server on port %s" %(self._port, )
         _StandaloneServer(self._obj, self._port).serve()
 
     def _modification_callback(self, file):
