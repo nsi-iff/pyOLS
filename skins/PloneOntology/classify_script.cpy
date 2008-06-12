@@ -23,7 +23,7 @@ if add_ref:
         keyword = getattr(storage, el)
         newUID = keyword.UID()
 	context.reference_catalog.addReference(context, newUID, 'classifiedAs')
-    return state.set(portal_status_message='added referneces: ' + kws)
+    return state.set(portal_status_message='added references: ' + kws)
 
 if del_ref:
     kws=''
@@ -33,14 +33,14 @@ if del_ref:
         keyword = getattr(storage, el)
         newUID = keyword.UID()
 	context.reference_catalog.deleteReference(context, newUID, 'classifiedAs')
-    return state.set(portal_status_message='removed following referneces: ' + kws)
+    return state.set(portal_status_message='removed following references: ' + kws)
 
 
 
 if kw_search:
    if active_search_result != '' and active_search_result != None:
 	context.reference_catalog.addReference(context, active_search_result, 'classifiedAs')
-        return state.set(portal_status_message='added refernece')
+        return state.set(portal_status_message='added reference')
 
    else:
         return state.set()
