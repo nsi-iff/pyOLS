@@ -280,7 +280,7 @@ class Keyword(BaseContent):
                     obsback.remove(self)
                 except ValueError: # self not in list
                     pass
-                
+
                 for cnode in obsback:
                     dot.relation(cnode, node, backrel)
 
@@ -293,6 +293,10 @@ class Keyword(BaseContent):
         """
         ctool = getToolByName(self, 'portal_classification')
         gvtool = getToolByName(self, 'graphviz_tool')
+
+        if not gvtool.isLayouterPresent():
+            return
+
         g = self.generateGraph(levels=levels)
 
         zLOG.LOG(PROJECTNAME, zLOG.INFO,

@@ -94,7 +94,7 @@ class ClassificationTool(UniqueObject,
     def setBack(self, back):
         """Set the back option"""
         self._back=back
-        
+
     def getForth(self):
         """Return if Forward References should be used in the KeywordMap generation"""
         return self._forth

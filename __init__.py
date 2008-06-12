@@ -19,21 +19,21 @@ import graphviztool
 
 tools = (ClassificationTool, GraphVizTool)
 
-def initialize(context):    
+def initialize(context):
     content_types, constructors, ftis = process_types(
        listTypes(PROJECTNAME),
         PROJECTNAME)
-    
+
     cmfutils.ToolInit(PROJECTNAME, tools=tools,
                    product_name=PROJECTNAME, icon='tool.gif',
                    ).initialize( context )
 
     cmfutils.registerIcon(ontology.Ontology,
                        'storage.png', globals())
-    
+
     cmfutils.registerIcon(ClassificationTool,
                        'tool.png', globals())
-    
+
     cmfutils.ContentInit(
         PROJECTNAME + ' Content',
         content_types      = content_types,

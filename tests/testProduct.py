@@ -15,11 +15,11 @@ class TestProductInstallation(PloneTestCase.PloneTestCase):
 
     def classify(self, obj, keyword):
         newUID = keyword.UID()
-        
+
         val = obj.getCategories()
         val.append(newUID)
         obj.setCategories(val)
-        
+
     def afterSetUp(self):
         self.setRoles(['Manager'])
         self.qi = self.portal.portal_quickinstaller
@@ -32,14 +32,14 @@ class TestProductInstallation(PloneTestCase.PloneTestCase):
                                          ['Reviewer'], [])
         self.portal.acl_users._doAddUser('manager', 'secret',
                                          ['Manager'], [])
-        
+
         self.ctool = self.portal.portal_classification
         self.storage = self.ctool.getStorage()
-        
+
         #create playground
         kws = ["Mammal", "Vertebrate", "Animal",
                "Hair", "Bone", "Structure"]
-        
+
         docs = ["A","B","C","D","E","F","G","H"]
 
         self.obs = {}
@@ -57,13 +57,12 @@ class TestProductInstallation(PloneTestCase.PloneTestCase):
 
         self.obs["Bone"].addReference(self.obs["Vertebrate"], 'relatedTo')
         self.obs["Vertebrate"].addReference(self.obs["Bone"], 'relatedTo')
-        
 
         #content (must support IReferenceable)
         for doc in docs:
             self.folder.invokeFactory('ClassificationExample', id=doc)
             self.obs[doc] = getattr(self.folder, doc)
-        
+
         #classification
         self.classify(self.obs["A"], self.obs["Mammal"])
         self.classify(self.obs["A"],self.obs["Hair"])
@@ -78,7 +77,7 @@ class TestProductInstallation(PloneTestCase.PloneTestCase):
         st = self.portal.portal_skins
 
         self.failUnless('PloneOntology' in st.objectIds())
-    
+
     def testPreserveKeywordsOnReinstall(self):
         self.qi.uninstallProducts(['PloneOntology'])
 
@@ -100,9 +99,9 @@ class TestProductInstallation(PloneTestCase.PloneTestCase):
         self.failUnless("Hair" in storage.objectIds())
         self.failUnless("Vertebrate" in storage.objectIds())
         self.failUnless("Structure" in storage.objectIds())
-        
+
     ###### The tests ##########
-        
+
 if __name__ == '__main__':
     framework()
 else:

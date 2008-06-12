@@ -215,7 +215,7 @@ class KeywordProposal(BaseFolder):
                               REQUEST.get('nextrelation',None))
             if REQUEST.form.get('nextrelation',None):
                 del REQUEST.form['nextrelation']
-        
+
 registerType(KeywordProposal, PROJECTNAME)
 
 MyBaseSchema = BaseSchema.copy()
@@ -319,7 +319,7 @@ class RelationProposal(BaseContent):
             return self.keywordProposalDescription
         else:
             return ''
-        
+
     def getUIDOfReferencedKeyword(self, url=''):
         liste=[]
         at=getToolByName(self, 'archetype_tool', None)

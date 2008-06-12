@@ -16,8 +16,8 @@ class GraphVizTool(UniqueObject, PloneFolder,
                          ActionProviderBase): 
     """A tool to provide graph rendering.
 
-    Based on the GraphViz layout programs (URL here)
-    """ 
+    Based on the GraphViz layout programs (http://www.graphviz.org)
+    """
 
     id = 'graphviz_tool' 
     meta_type= 'GraphViz Tool'
@@ -64,6 +64,22 @@ class GraphVizTool(UniqueObject, PloneFolder,
         warn("setTool() is deprecated. Please use setLayouter() instead.",
              DeprecationWarning)
         self.setLayouter(tool)
+
+    def isLayouterPresent(self, layouter=""):
+        """Check if specified or current layouter is present on the system.
+        """
+
+        if not layouter:
+            layouter = self._layouter
+
+        layouter = os.path.join(GV_BIN_PATH, layouter)
+
+        (pout,pin) = popen2.popen4(cmd = "%s -V" % layouter)
+        pin.close()
+        output = pout.read()
+        pout.close()
+
+        return "version" in output
 
     def renderGraph(self, graph, tool='', options=[]):
         """Renders the given graph.

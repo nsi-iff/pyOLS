@@ -18,7 +18,7 @@ def setupKeywordProposalWorkflow(wf):
     # add custom states and transitions
     wf.states.addState('approved')
     wf.states.deleteStates(['published'])
-  
+
     wf.transitions.addTransition('approve')
     wf.transitions.deleteTransitions(['publish','retract'])
 
