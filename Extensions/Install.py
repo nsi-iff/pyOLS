@@ -29,39 +29,38 @@ def setupTool(portal, out):
     adds the tool to the portal root folder
     creates kw_storage if necessary
     """
-    if hasattr(portal, 'portal_classification'):
+    try:
+        ctool = getToolByName(portal, 'portal_classification')
+    except AttributeError:
+        ctool = None
+        
+    cltypes = []
+    
+    if ctool is not None:
+        # save settings
+        try:
+            cltypes = ctool.getClassifyTypes()
+        except AttributeError:
+            pass
+            
         portal.manage_delObjects(['portal_classification'])
         out.write('Deleting old classification tool')
         
     addTool = portal.manage_addProduct[PROJECTNAME].manage_addTool
     addTool('Classification Tool', None)
-
-    #default keyword relations
     ctool = getToolByName(portal, 'portal_classification')
-#    ctool.registerKeywordRelation('parentOf', factor=0.5)
-#    ctool.registerKeywordRelation('childOf', factor=0.5)
-#    ctool.registerKeywordRelation('synonymOf', factor=1)
-#    ctool.registerKeywordRelation('relatedTo', factor=0.7)
 
+    ctool.setClassifyTypes(cltypes)
     out.write("\nAdded the classification tool to the portal root folder.\n")
+    
     if hasattr(portal, 'graphviz_tool'):
         portal.manage_delObjects(['graphviz_tool'])
         out.write('Deleting old graphviz tool')
 
-    addTool = portal.manage_addProduct[PROJECTNAME].manage_addTool
     addTool('GraphViz Tool', None)
 
     out.write("\nAdded the graphviz tool to the portal root folder.\n")
 
-def deleteTool(portal, out):
-    """
-    removes the tool from the portal root folder
-    """
-    if hasattr(portal, 'portal_classification'):
-        ctool = getToolByName(portal, 'portal_classification')
-
-        portal.manage_delObjects(['portal_classification'])
-        out.write('Removing the classification tool from the portal root folder.')
 
 def registerConfiguration(portal, out):
     portal_conf=getToolByName(portal,'portal_controlpanel')
@@ -262,6 +261,5 @@ def uninstall(portal):
     portal_conf=getToolByName(portal,'portal_controlpanel')
     portal_conf.unregisterConfiglet(PROJECTNAME)
     removeCustomFormControllerTransitions(portal, out)
-    deleteTool(portal, out)
     
     return out.getvalue()

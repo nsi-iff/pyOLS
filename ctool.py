@@ -75,7 +75,8 @@ class ClassificationTool(UniqueObject,
         self._classifytypes = []
 
     def reftypes(self):
-        '''returns a list of all archetype (and hopefully this includes all referencable) portal types'''
+        """Return a list of all referenceable portal types
+        """
         at = getToolByName(self, 'archetype_tool')
         typeslist=[]
         for el in at.listRegisteredTypes():
@@ -84,13 +85,25 @@ class ClassificationTool(UniqueObject,
         return typeslist
 
     def getClassifyTypes(self):
-        '''returns a list of all the types which are set as classifyable'''
+        """Return a list of all the types which are set as classifyable"""
         return self._classifytypes
 
     def setClassifyTypes(self, types):
-        '''set the list of the classifyable types'''
+        """Set the list of the classifyable types"""
         self._classifytypes=types
 
+    def addClassifyType(self, type):
+        """Add a type to the list of classifyable types"""
+        if not type in self._classifytypes:
+            self._classifytypes.append(type)
+
+    def removeClassifyType(self, type):
+        """Remove a type from the list of classifyable types"""
+        try:
+            self._classifytypes.remove(type)
+        except ValueError:
+            pass
+        
     def returnReadMe(self):
         """Return README file for display in configlet"""
         from config import GLOBALS
