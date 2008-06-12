@@ -131,25 +131,13 @@ class OntologyTool(object):
         return Relation.fetch_by(name=name, namespace_id=self._namespace.id)
 
     def delRelation(self, name):
-        """Remove the keyword relation 'name' from current ontology, if it exists.
-        """
-        relations_library = getToolByName(self, 'relations_library')
-        try:
-            relations_library.manage_delObjects(self.getRelation(name).getId())
-            zLOG.LOG(PROJECTNAME, zLOG.INFO, "Removed relation %s." % name)
-        except:
-            pass
+        """ Remove Relation name and all dependant associations. """
+        rel = self.getRelation(name)
+        rel.expunge()
 
-    def relations(self, relations_library, plus='0'):
-        """Return a list of all existing keyword relation names in 'relations_library' and add ['noChange', 'deleteAll'] if plus != '0'
-        """
-        rel_list=['noChange', 'deleteAll']
-        if plus != '0':
-         for r in relations_library.getRulesets():
-          rel_list.append(r.Title()) 
-         return rel_list
-        else:
-         return [r.Title() for r in relations_library.getRulesets()]
+    def relations(self):
+        """ Return an iterator over all the relations in the current NS. """
+        return Relation.query_by(namespace=self._namespace)
 
     def getWeight(self, name):
         """Return the weight of keyword relation 'name'.

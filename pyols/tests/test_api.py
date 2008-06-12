@@ -131,4 +131,8 @@ class TestOntologyTool:
         assert_equal(relD.types, ['transitive'])
         assert_equal(relD.weight, 0.5)
 
+    def testDelRelation(self):
+        # When all the other bits are in place, then I can test this easily.
+        raise SkipTest("Later...")
+
 run_tests(__name__)
