@@ -71,6 +71,12 @@ class KeywordProposal(BaseFolder):
     archetype_name = 'Keyword Proposal'
     content_icon = "kwproposal.gif"
 
+    def at_post_create_script(self):
+        self.name = self.generateName(self.getKPTitle(), self.getShortAdditionalDescription())
+
+    def at_post_edit_script(self):
+        self.name = self.generateName(self.getKPTitle(), self.getShortAdditionalDescription())
+
     security.declarePublic('setTitle')
     def setTitle(self, value,):
         """custom mutator to change the id and title as well"""
@@ -83,18 +89,12 @@ class KeywordProposal(BaseFolder):
     security.declarePublic('title_or_id')
     def title_or_id(self):
         """makes title string with small description"""
-        t=''
-        des=''
-        try:
-            t=self.title
-        except:
-            t=self.getId()
-        try:
-            if self.short_additional_description != '':
-             des=' (' + self.short_additional_description + ')'
-        except:
-            des=''
-        return t + des
+        t = self.Title() or self.getId()
+        d = self.getShortAdditionalDescription()
+        if d:
+            return t + ' (' + d + ')'
+        else:
+            return t
 
     security.declarePublic('generateName')
     def generateName(self, title, shortDescription=""):
@@ -112,13 +112,14 @@ class KeywordProposal(BaseFolder):
               x=x+1
         return new_id
 
-    def getPKWDescription(self):
-        """
-        """
-        if self.keywordProposalDescription:
-            return self.keywordProposalDescription
-        else:
-            return ''
+#DELETE    security.declarePublic('getPKWDescription')
+    #def getPKWDescription(self):
+        #"""
+        #"""
+        #if self.keywordProposalDescription:
+            #return self.keywordProposalDescription
+        #else:
+            #return ''
 
     security.declarePublic('getKPId')
     def getKPId(self):
@@ -138,11 +139,11 @@ class KeywordProposal(BaseFolder):
         """
         return self.title
 
-    security.declarePublic('makeTitlefromKw')
-    def makeTitlefromKw(self):
-        """make compatible keyword title
-        """
-        return string.replace(string.capitalize(string.lower(self.getKeywordProposal())),'_',' ',)
+#DELETE    security.declarePublic('makeTitlefromKw')
+#    def makeTitlefromKw(self):
+#        """make compatible keyword title
+#        """
+#        return string.replace(string.capitalize(string.lower(self.getKeywordProposal())),'_',' ',)
 
     security.declarePublic('definedRelations')
     def definedRelations(self):
@@ -237,11 +238,11 @@ MyBaseSchema['title'].widget.visible = {'view':'invisible',
                                          'edit':'invisible'}
 schema = MyBaseSchema +Schema((
     StringField('SearchKWA',
-                default='',
+                default_method='getKeywordA',
                 searchable=0,
                 required=1,
-                widget=SearchKWAWidget(label='KeywordA',
-                                       condition='python:object.showKWA()',
+                widget=SearchKWAWidget(label='Keyword A',
+                                       condition='python: not object.hasKeywordProposal()',
                                        label_msgid='Ontology_label_keyworda',
                                        i18n_domain='Ontology',
                                       ),
@@ -264,7 +265,7 @@ schema = MyBaseSchema +Schema((
                 searchable=0,
                 mutator='setSearchKWB',
                 required=1,
-                widget=SearchKWBWidget(label='KeywordB',
+                widget=SearchKWBWidget(label='Keyword B',
                                        label_msgid='Ontology_label_keywordb',
                                        i18n_domain='Ontology',
                                       ),
@@ -284,49 +285,76 @@ class RelationProposal(BaseContent):
     archetype_name = 'Relation Proposal'
     content_icon = "relationproposal.gif"
 
-    def pre_validate(self, REQUEST, errors):
-        """
-        """
-        if self.getParentNode().meta_type == 'KeywordProposal' and REQUEST.get('SearchKWA',None) == None:
-         REQUEST.form['SearchKWA'] = 'Keyword Proposal'
+    #DELETE: def pre_validate(self, REQUEST, errors):
+        #"""
+        #"""
+        #if self.getParentNode().meta_type == 'KeywordProposal' and REQUEST.get('SearchKWA',None) == None:
+         #REQUEST.form['SearchKWA'] = 'Keyword Proposal'
 
-    security.declarePublic('generateKwId')
-    def generateKwId(self, id, small_des):
-        '''makes id string for keyword generation in workflow'''
-        new_small_des = _normalize(small_des)
-        if small_des!='':
-            return id + '_' + new_small_des
+    def hasKeywordProposal(self):
+        parent = self.getParentNode()
+        if parent.meta_type == 'KeywordProposal':
+            return parent
         else:
-            return id
+            return False
 
-    security.declarePublic('getSearchKWA')
-    def getSearchKWA(self):
-        '''get value of SearchKWA or get the parent KeywordProposal'''
-        if self.getParentNode().meta_type != 'KeywordProposal':
-         return self.SearchKWA
+    def getKeywordA(self):
+        """get the default for keyword A."""
+        kwProp = self.hasKeywordProposal()
+        if kwProp:
+            try:
+                title = kwProp.REQUEST['title']
+                short = kwProp.REQUEST['shortAdditionalDescription']
+            except KeyError:
+                title = kwProp.getKPTitle()
+                short = kwProp.getShortAdditionalDescription()
+            return kwProp.generateName(title, short)
         else:
-         return self.getParentNode().title
+            return ''
+
+    #DELETE: security.declarePublic('getSrcName')
+    #def getSrcName(self):
+        #"""Return the source keyword name.
+        #"""
+        #return self.srcName
+
+    #security.declarePublic('setSrcName')
+    #def setSrcName(self, name):
+        #"""Set the source keyword name to 'name'.
+        #"""
+        #self.srcName = name
+
+    #security.declarePublic('getDstName')
+    #def getDstName(self):
+        #"""Return the destination keyword object.
+        #"""
+        #return self.dstName
+
+    #security.declarePublic('setDstName')
+    #def setDstName(self, name):
+        #"""Set the destination keyword name to 'name'.
+        #"""
+        #self.dstName = name
+
+    #DELETE: security.declarePublic('getSearchKWA')
+    #def getSearchKWA(self):
+    #    '''get value of SearchKWA or get 'title (short desc)' of the parent KeywordProposal'''
+    #    if self.getParentNode().meta_type == 'KeywordProposal':
+    #        return self.getParentNode().title_or_id()
+    #    else:
+    #        pu=getToolByName(self, 'plone_utils')
+    #        return self.SearchKWA.encode(pu.getSiteEncoding())
 
     security.declarePublic('setSearchKWB')
     def setSearchKWB(self, value):
         '''set value of SearchKWB + make a title out of it'''
-        if self.getParentNode().meta_type != 'KeywordProposal':
-         self.SearchKWB=value
-        else:
-         self.SearchKWB=value
-        self.title=self.title_or_id()
+        self.SearchKWB = value
+        self.title = self.title_or_id()
 
     security.declarePublic('title_or_id')
     def title_or_id(self):
         '''makes title string out of the relation'''
-        ct=getToolByName(self, 'portal_classification', None)
-        try:
-            a=self.getSearchKWA()
-            if self.getSearchKWA() == 'Keyword Proposal':
-             a=''
-        except:
-            a=''
-        return a+' '+self.getRelation()+' '+self.getSearchKWB()
+        return self.getSearchKWA() + ' ' + self.getRelation() + ' '+self.getSearchKWB()
 
     security.declarePublic('getPKWDescription')
     def getPKWDescription(self):
@@ -362,11 +390,8 @@ class RelationProposal(BaseContent):
 
     security.declarePublic('showKWA')
     def showKWA(self):
-        '''shows SearchKWA Field unless we have a Relation within a KWProposal'''
-        if self.getParentNode().meta_type != 'KeywordProposal':
-         return 1
-        else:
-         return 0
+        """shows SearchKWA Field unless we have a Relation within a KWProposal"""
+        return self.getParentNode().meta_type != 'KeywordProposal'
 
     security.declarePublic('definedRelations')
     def definedRelations(self):

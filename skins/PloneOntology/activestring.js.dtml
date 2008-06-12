@@ -26,7 +26,7 @@ var activeStringLast = "";
 var activeStringQueryTarget = "searchVocabulary?field=";
 
 var searchForm = null;
-var searchInput = null; 
+var searchInput = null;
 var active = new Array();
 
 var isIE = false;

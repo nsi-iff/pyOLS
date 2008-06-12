@@ -42,7 +42,7 @@ class TestRelationProposalWF(PloneTestCase.PloneTestCase):
         self.wf.doActionFor(prop, 'submit', wf_id, )
         self.assertEqual(self.wf.getHistoryOf(wf_id, prop)[-1]['review_state'], 'pending')
         #test if we don't have Relationships yet:
-        self.assertEqual(len(self.portal.portal_catalog.searchResults(portal_type='Keyword')[0].getObject().getRelationships()), 0)
+        self.assertEqual(len(self.portal.portal_catalog.searchResults(portal_type='Keyword')[0].getObject().getRelations()), 0)
         print "RelationProposal submitted"
         self.wf.doActionFor(prop, 'reject', wf_id, )
         self.assertEqual(self.wf.getHistoryOf(wf_id, prop)[-1]['review_state'], 'private')
@@ -54,9 +54,9 @@ class TestRelationProposalWF(PloneTestCase.PloneTestCase):
         self.assertEqual(self.wf.getHistoryOf(wf_id, prop)[-1]['review_state'], 'approved')
         print "RelationProposal approved"
         #test if we do have Relationships now, after going through the workflow:
-        self.assertEqual(self.portal.portal_catalog.searchResults(portal_type='Keyword')[0].getObject().getRelationships()[0], 'testOf')
-        self.assertEqual(self.portal.portal_catalog.searchResults(portal_type='Keyword')[1].getObject().getBRelationships()[0], 'testOf')
-        self.assertEqual(self.portal.portal_catalog.searchResults(portal_type='Keyword')[0].getObject().getRefs()[0], self.portal.portal_catalog.searchResults(portal_type='Keyword')[1].getObject())
+        self.assertEqual(self.portal.portal_catalog.searchResults(portal_type='Keyword')[0].getObject().getRelations()[0], 'testOf')
+        self.assertEqual(self.portal.portal_catalog.searchResults(portal_type='Keyword')[1].getObject().getBackRelations()[0], 'testOf')
+        self.assertEqual(self.portal.portal_catalog.searchResults(portal_type='Keyword')[0].getObject().getReferences()[0], self.portal.portal_catalog.searchResults(portal_type='Keyword')[1].getObject())
         
 
 def test_suite():

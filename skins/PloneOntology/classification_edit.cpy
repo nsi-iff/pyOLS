@@ -63,13 +63,21 @@ if sel_button:
         return state.set(portal_status_message='No keywords selected.')
 
 if sel2_button:
-        context.setSearchKWA(context.archetype_tool.lookupObject(keyworda).title_or_id())
-#        context.setKeywordA(keyworda)
+        kwA = context.archetype_tool.lookupObject(keyworda)
+        if kwA.meta_type == "KeywordProposal":
+            nameA = kwA.generateName(kwA.getKPTitle(), kwA.getShortAdditionalDescription())
+        else:
+            nameA = kwA.getName()
+        context.setSearchKWA(nameA)
         return state.set(portal_status_message='Selected keyword added.')
 
 if sel3_button:
-        context.setSearchKWB(context.archetype_tool.lookupObject(keywordb).title_or_id())
-#        context.setKeywordB(keywordb)
+        kwB = context.archetype_tool.lookupObject(keywordb)
+        if kwB.meta_type == "KeywordProposal":
+            nameB = kwB.generateName(kwB.getKPTitle(), kwB.getShortAdditionalDescription())
+        else:
+            nameB = kwB.getName()
+        context.setSearchKWB(nameB)
         return state.set(portal_status_message='Selected keyword added.')
 
 if se3_button: 

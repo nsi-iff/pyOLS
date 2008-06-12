@@ -38,7 +38,7 @@
 		      <td><input type="radio" name="keywordb" tal:attributes="value python: item.UID()"/></td>
 
 		      <td><a tal:attributes="href newurl" tal:content="item/title_or_id"/></td>
-		      <td><span tal:replace="item/description|nothing"/></td>
+		      <td><span tal:replace="item/getKwDescription|item/getKeywordProposalDescription|nothing"/></td>
 		      </tal:block>
 		    </tr>
 		  </table>

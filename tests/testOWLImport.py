@@ -13,7 +13,6 @@ ZopeTestCase.installProduct('PloneOntology')
 from Products.PloneOntology.owl import OWLExporter, OWLImporter
 from zExceptions import NotFound
 import Products.Relations
-import re
 
 class TestOWLImporter(PloneTestCase.PloneTestCase):
     """Test the KeywordStorage class."""
@@ -28,8 +27,6 @@ class TestOWLImporter(PloneTestCase.PloneTestCase):
 
         self.exporter = OWLExporter()
         self.importer = OWLImporter(self.portal)
-
-        self.relations_version = float(re.match('^[0-9]+\.[0-9]+', open(os.path.join(Products.Relations.__path__[0], 'version.txt')).readline()).group(0))
 
     def testOWLImporterObjectProperty(self):
         owl = self.exporter.getEntities()['owl']
@@ -58,7 +55,8 @@ class TestOWLImporter(PloneTestCase.PloneTestCase):
         self.assert_('symmetric' in self.ct.getTypes('synonymOf'))
         self.assertEqual(['foo'], self.ct.getInverses('synonymOf'))
         self.assertAlmostEqual(0.7, self.ct.getWeight('synonymOf'))
-        self.assertEqual("footitle", rel.Title())
+        # titles are used as names, labels are ignored, see owl.py
+        self.assertEqual("synonymOf", rel.Title())
         self.assertEqual("foodescription", rel.Description())
 
     def testOWLImporterObjectPropertyIgnoreNonOWLClassDomain(self):
@@ -66,22 +64,14 @@ class TestOWLImporter(PloneTestCase.PloneTestCase):
         self.exporter.generateObjectProperty("foo1", domains=[owl+'Instance'], ranges=[owl+'Class'])
         prop = self.exporter.getDOM().documentElement.lastChild
         self.importer.importObjectProperty(prop)
-
-        if self.relations_version < 0.6:
-            self.assertRaises(NotFound, self.ct.getRelation, "foo1")
-        else:
-            self.assertRaises(ValueError, self.ct.getRelation, "foo1")
+        self.assertRaises(NotFound, self.ct.getRelation, "foo1")
 
     def testOWLImporterObjectPropertyIgnoreNonOWLClassRange(self):
         owl = self.exporter.getEntities()['owl']
         self.exporter.generateObjectProperty("foo1", ranges=[owl+'Instance'], domains=[owl+'Class'])
         prop = self.exporter.getDOM().documentElement.lastChild
         self.importer.importObjectProperty(prop)
-
-        if self.relations_version < 0.6:
-            self.assertRaises(NotFound, self.ct.getRelation, "foo1")
-        else:
-            self.assertRaises(ValueError, self.ct.getRelation, "foo1")
+        self.assertRaises(NotFound, self.ct.getRelation, "foo1")
 
     def testOWLImporterObjectPropertyAccumulateNonBuiltins(self):
         owl = self.exporter.getEntities()['owl']
@@ -136,7 +126,7 @@ class TestOWLImporter(PloneTestCase.PloneTestCase):
         except NotFound:
             self.fail("Necessary keyword not created on import (superclasses).")
 
-        super = kw.getRefs("childOf")
+        super = kw.getReferences("childOf")
         super = [x.getName() for x in super]
         super.sort()
 
@@ -148,12 +138,12 @@ class TestOWLImporter(PloneTestCase.PloneTestCase):
         except NotFound:
             self.fail("Necessary keyword not created on import (properties).")
 
-        syn = kw.getRefs("authorOf")
+        syn = kw.getReferences("authorOf")
         syn = [x.getName() for x in syn]
 
         self.assertEqual(['Bonk'], syn)
 
-        syn = kw.getRefs("publisher")
+        syn = kw.getReferences("publisher")
         syn = [x.getName() for x in syn]
 
         self.assertEqual(['Gargle'], syn)
@@ -165,7 +155,7 @@ class TestOWLImporter(PloneTestCase.PloneTestCase):
         cl = self.exporter.getDOM().documentElement.lastChild
         self.importer.importClass(cl)
 
-        self.assertEquals(["Bar"], [x.getName() for x in foo.getRefs('synonymOf')])
+        self.assertEquals(["Bar"], [x.getName() for x in foo.getReferences('synonymOf')])
 
 def test_suite():
         from unittest import TestSuite, makeSuite

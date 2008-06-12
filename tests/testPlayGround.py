@@ -231,7 +231,7 @@ class TestWithPlayground(PloneTestCase.PloneTestCase):
         self.ctool.addRelation('childOf', 0.5)
 
         for ob in self.storage.objectValues():
-            children = ob.getRefs('parentOf')
+            children = ob.getReferences('parentOf')
 
             for child in children:
                 child.addReference(ob, 'childOf')

@@ -1,3 +1,5 @@
+from AccessControl import allow_module
+from AccessControl import ModuleSecurityInfo
 from Products.CMFCore.CMFCorePermissions import AddPortalContent
 from Products.CMFCore.DirectoryView import registerDirectory
 from Products.CMFCore import utils as cmfutils
@@ -9,6 +11,8 @@ from Products.Archetypes.atapi import process_types, listTypes
 registerDirectory(SKINS_DIR, GLOBALS)
 
 from poapi import ClassificationTool, GraphVizTool
+
+ModuleSecurityInfo("zExceptions").declarePublic("NotFound")
 
 import workflow
 import proposal

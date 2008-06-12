@@ -18,7 +18,7 @@ from Products.Relations.exception import ValidationException
 from zExceptions import NotFound
 
 import zExceptions, zLOG
-import difflib, re
+import difflib
 
 from types import *
 
@@ -242,7 +242,8 @@ class ClassificationTool(UniqueObject,
         self._edgeshape = 'normal'
         self._edgecolor = '#000000'
         self._edge_font_color = '#111111'
-        self._edge_font_size = 8        
+        self._edge_font_size = 8
+        self._encoding = 'utf-8'
 
     def getGVNodeShapesList(self):
         """Return the gv node shape list.
@@ -553,20 +554,33 @@ class ClassificationTool(UniqueObject,
         self._relfont=font
 
     def getBack(self):
-        """Return if Back References should be used in the KeywordMap generation"""
+        """Return if Back References should be used in the KeywordMap generation.
+        """
         return self._back
 
     def setBack(self, back):
-        """Set the back option"""
+        """Set the back option.
+        """
         self._back=back
 
     def getForth(self):
-        """Return if Forward References should be used in the KeywordMap generation"""
+        """Return if Forward References should be used in the KeywordMap generation.
+        """
         return self._forth
 
     def setForth(self, forth):
         """Set the forth option"""
         self._forth=forth
+
+    def getEncoding(self):
+        """Get the encoding of strings used in the classification tool.
+        """
+        return self._encoding
+
+    def setEncoding(self, encoding):
+        """Set the encoding of strings used in the classification tool.
+        """
+        self._encoding = encoding
 
     def reftypes(self):
         """Return a list of all referenceable portal types.
@@ -614,9 +628,7 @@ class ClassificationTool(UniqueObject,
         except:
             return 'README.txt not found'
 
-    def addKeyword(self, name, title="",
-                   description="",
-                   shortDescription="", uid=""):
+    def addKeyword(self, name, title="", description="", shortDescription="", uid=""):
         """Create a keyword in the current ontology. If 'uid' is specified, the referenced keyword is registered as 'name'.
 
         Exceptions:
@@ -661,13 +673,23 @@ class ClassificationTool(UniqueObject,
             raise ValidationException, "Empty keyword name."
 
         try:
-            return catalog.searchResults(portal_type='Keyword', name=name)[0].getObject()
-        except:
+            return catalog.searchResults(portal_type='Keyword', name=name.decode(self.getEncoding()))[0].getObject()
+        except IndexError:
             raise NotFound, "Keyword '%s' not found in current ontology" % name
 
-    def isUsedName(self, name):
+    def isUsedName(self, name, type="Keyword"):
+        """Check if 'name' is used for 'type' already.
+
+        Exceptions:
+            ValidationException : 'name' is empty or 'type' is unknown.
+        """
         try:
-            return self.getKeyword(name)
+            if   type == "Keyword":
+                return self.getKeyword(name)
+            elif type == "Ruleset":
+                return self.getRelation(name)
+            else:
+                raise ValidationException, "Unknown type for name '%s': %s" % (name,type)
         except NotFound:
             return False
 
@@ -713,73 +735,85 @@ class ClassificationTool(UniqueObject,
 
         return [kw_res.getObject().getName() for kw_res in catalog.searchResults(portal_type='Keyword')]
 
-    def addRelation(self, name, weight=0.0, types=[], inverses=[]):
+    def addRelation(self, name, weight=0.0, types=[], inverses=[], uid=""):
         """Create a keyword relation 'name' in the Plone Relations library, if non-existant.
 
-        'weight' is set in any case if in [0,1]. For each item in the 'types' list from {'transitive', 'symmetric', 'functional', 'inversefunctional'} an appropiate rule is created in the Relations ruleset. For each relation name in the 'inverses' list an InverseImplicator rule is created in the Relations ruleset. The inverse keyword relation is created in the Plone Relations library if non-existant. Rules for inferring types for the inverse relation are created.
+        'weight' is set in any case if in [0,1]. For each item in the 'types' list from {'transitive', 'symmetric', 'functional', 'inversefunctional'} an appropiate rule is created in the Relations ruleset. For each relation name in the 'inverses' list an InverseImplicator rule is created in the Relations ruleset. The inverse keyword relation is created in the Plone Relations library if non-existant. Rules for inferring types for the inverse relation are created. If 'uid' is specified, the referenced relation ruleset is registered as relation 'name'.
+
+        Exceptions:
+            ValidationException : 'name' is not a valid XML NCName.
+            NameError           : Relation 'name' already exists in current ontology.
+            AttributeError      : 'uid' references no relation in current ontology.
         """
+        if not owl.isXMLNCName(name):
+            raise ValidationException("Invalid name for relation specified")
+
+        if self.isUsedName(name, 'Ruleset'):
+            raise NameError, "Relation '%s' already exists in current ontology" % name
+
         relations_library = getToolByName(self, 'relations_library')
 
-        relations_library.invokeFactory('Ruleset', name)
-        zLOG.LOG(PROJECTNAME, zLOG.INFO,
-                 "Added relation %s." % name)
+        if not uid:
+            uid = generateUniqueId('Ruleset')
+            relations_library.invokeFactory('Ruleset', uid)
 
-        ruleset = self.getRelation(name)
+        ruleset = relations_library.getRuleset(uid)
         ruleset.setTitle(name)
+        ruleset.reindexObject()
+        ruleset.unmarkCreationFlag()
 
         self.setWeight  (name, weight)
 
         if type(types) != ListType:
             types = [types]
-
         self.setTypes   (name, types)
 
         if type(inverses) != ListType:
             inverses = [inverses]
-
         self.setInverses(name, inverses)
-        getToolByName(self, 'portal_catalog').reindexObject(ruleset)
+
+        zLOG.LOG(PROJECTNAME, zLOG.INFO,
+                 "Added relation %s." % name)
 
         return ruleset
 
     def getRelation(self, name):
-        """Return the relation ruleset from the Plone Relations library.
+        """Return ruleset for keyword relation 'name' of current ontology from the Plone Relations library.
 
         Exceptions:
-            ValueError : No ruleset with title or id 'name'
+            NotFound            : There is no relation 'name' in current ontology.
+            ValidationException : 'name' is empty.
         """
-        relations_library = getToolByName(self, 'relations_library')
-        x=0
-        for r in relations_library.getRulesets():
-            if r.getId() == name:
-             x=1
-             return r
-            elif r.title_or_id() == name:           
-             x=1
-             return r
-        if x==0:
-             raise ValueError, "No ruleset with title or id %r" % name
+        catalog = getToolByName(self, 'portal_catalog')
+
+        if not name:
+            raise ValidationException, "Empty relation name."
+
+        try:
+            return catalog.searchResults(portal_type='Ruleset', Title=name)[0].getObject()
+        except IndexError:
+            raise NotFound, "Relation '%s' not found in current ontology" % name
 
     def delRelation(self, name):
-        """Remove the keyword relation 'name' from 'relations_library', if it exists.
+        """Remove the keyword relation 'name' from current ontology, if it exists.
         """
         relations_library = getToolByName(self, 'relations_library')
-        if hasattr(relations_library, name):
-            relations_library.manage_delObjects(name)
-            zLOG.LOG(PROJECTNAME, zLOG.INFO,
-                     "Removed relation %s." % name)
+        try:
+            relations_library.manage_delObjects(self.getRelation(name).getId())
+            zLOG.LOG(PROJECTNAME, zLOG.INFO, "Removed relation %s." % name)
+        except:
+            pass
 
     def relations(self, relations_library):
         """Return a list of all existing keyword relation names in 'relations_library'.
         """
-        return [r.title_or_id() for r in relations_library.getRulesets()]
+        return [r.Title() for r in relations_library.getRulesets()]
 
     def getWeight(self, name):
         """Return the weight of keyword relation 'name'.
 
         Exceptions:
-            NotFound   : No relation ruleset 'name' in library. (Products.Relations version <  0.6)
-            ValueError : No relation ruleset 'name' in library. (Products.Relations version >= 0.6)
+            NotFound : No relation 'name' in current ontology.
         """
         r = self.getRelation(name)
         try:
@@ -791,8 +825,7 @@ class ClassificationTool(UniqueObject,
         """Set weight of keyword relation 'name' to 'w', if 'w' >= 0.
 
         Exceptions:
-            NotFound   : No relation ruleset 'name' in library. (Products.Relations version <  0.6)
-            ValueError : No relation ruleset 'name' in library. (Products.Relations version >= 0.6)
+            NotFound : No relation 'name' current ontology.
         """
         r = self.getRelation(name)
 
@@ -800,14 +833,13 @@ class ClassificationTool(UniqueObject,
             r.weight = w
 
     def setTypes(self, name, t):
-        """Set the list of types of keyword relation 'name' in 'relations_library'.
+        """Set the list of types of keyword relation 'name'.
 
         The list is set to t, if 't' is non-empty list from {'transitive', 'symmetric', 'functional', 'inversefunctional'}. Empty list deletes all types.
         Return the list of types of keyword relation 'name'.
 
         Exceptions:
-            NotFound   : No relation ruleset 'name' in library. (Products.Relations version <  0.6)
-            ValueError : No relation ruleset 'name' in library. (Products.Relations version >= 0.6)
+            NotFound : No relation 'name' in current ontology.
         """
 
         r = self.getRelation(name)
@@ -853,8 +885,7 @@ class ClassificationTool(UniqueObject,
         """Get list of types for keyword relation 'name'.
 
         Exceptions:
-            NotFound   : No relation ruleset 'name' in library. (Products.Relations version <  0.6)
-            ValueError : No relation ruleset 'name' in library. (Products.Relations version >= 0.6)
+            NotFound : No relation 'name' in current ontology.
         """
         ruleset = self.getRelation(name)
 
@@ -870,13 +901,12 @@ class ClassificationTool(UniqueObject,
         return result
 
     def setInverses(self, name, i):
-        """Set inverse relations of keyword relation 'name' in 'relations_library'.
+        """Set inverse relations of keyword relation 'name'.
 
         Inverse relations are set to relations in 'i', if 'i' is non-empty list of relation names. Empty list deletes all inverses. All relations in 'i' are created, if non-existant. Inferring types for relations in 'i' are created from the types of relation 'name'.
 
         Exceptions:
-            NotFound   : No relation ruleset 'name' in library. (Products.Relations version <  0.6)
-            ValueError : No relation ruleset 'name' in library. (Products.Relations version >= 0.6)
+            NotFound : No relation ruleset 'name' in current ontology.
         """
         ruleset = self.getRelation(name)
         current = self.getInverses(name)
@@ -887,15 +917,13 @@ class ClassificationTool(UniqueObject,
             iruleset = self.getRelation(o)
             irules = iruleset.getComponents(interfaces.IRule)
             irules = [rule for rule in irules if rule.getId().startswith('inverseOf')]
-            iruleset.manage_delObjects([rule.getId() for rule in irules if rule.getInverseRuleset().getId() == ruleset.getId()])
+            iruleset.manage_delObjects([rule.getId() for rule in irules if rule.getInverseRuleset().Title() == ruleset.Title()])
 
-        ruleset.manage_delObjects([rule.getId() for rule in ruleset.getComponents(interfaces.IRule) if re.match('inverseOf', rule.getId()) and rule.getInverseRuleset().getId() in obsolete])
+        ruleset.manage_delObjects([rule.getId() for rule in ruleset.getComponents(interfaces.IRule) if rule.getId().startswith('inverseOf_') and rule.getInverseRuleset().Title() in obsolete])
 
         for inverse in new:
             try:
                 self.getRelation(inverse)
-            except ValueError:
-                self.addRelation(inverse)
             except NotFound:
                 self.addRelation(inverse)
 
@@ -909,23 +937,24 @@ class ClassificationTool(UniqueObject,
 
             self.setTypes(inverse, inverse_types)
 
-            if not hasattr(ruleset, 'inverseOf_' + inverse):
-                ruleset.invokeFactory('Inverse Implicator', 'inverseOf_' + inverse)
-                getattr(ruleset, 'inverseOf_' + inverse).setInverseRuleset(inverse_ruleset.UID())
+            if not hasattr(ruleset, 'inverseOf_' + inverse_ruleset.getId()):
+                ruleset.invokeFactory('Inverse Implicator', 'inverseOf_' + inverse_ruleset.getId())
+                getattr(ruleset, 'inverseOf_' + inverse_ruleset.getId()).setTitle('inverseOf: ' + inverse)
+                getattr(ruleset, 'inverseOf_' + inverse_ruleset.getId()).setInverseRuleset(inverse_ruleset.UID())
 
-            if not hasattr(inverse_ruleset, 'inverseOf_' + name):
-                inverse_ruleset.invokeFactory('Inverse Implicator', 'inverseOf_' + name)
-                getattr(inverse_ruleset, 'inverseOf_' + name).setInverseRuleset(ruleset.UID())
+            if not hasattr(inverse_ruleset, 'inverseOf_' + ruleset.getId()):
+                inverse_ruleset.invokeFactory('Inverse Implicator', 'inverseOf_' + ruleset.getId())
+                getattr(inverse_ruleset, 'inverseOf_' + ruleset.getId()).setTitle('inverseOf: ' + name)
+                getattr(inverse_ruleset, 'inverseOf_' + ruleset.getId()).setInverseRuleset(ruleset.UID())
 
     def getInverses(self, name):
         """Get inverse relations for the relation 'name'.
 
         Exceptions:
-            NotFound   : No relation ruleset 'name' in library. (Products.Relations version <  0.6)
-            ValueError : No relation ruleset 'name' in library. (Products.Relations version >= 0.6)
+            NotFound : No relation ruleset 'name' in current ontology.
         """
         ruleset = self.getRelation(name)
-        return [rule.getInverseRuleset().getId() for rule in ruleset.getComponents(interfaces.IRule) if re.match('inverseOf', rule.getId())]
+        return [rule.getInverseRuleset().Title() for rule in ruleset.getComponents(interfaces.IRule) if rule.getId().startswith('inverseOf_')]
 
     def addReference(self, src, dst, relation, ):
         """Create an Archetype reference of type 'relation' from keyword with name
@@ -934,19 +963,13 @@ class ClassificationTool(UniqueObject,
         'src' and 'dst' are created, if non-existant. The reference is created through Plone Relations library, so relation-specific rulesets are honored.
 
         Exceptions:
-            NotFound            : No relation ruleset 'relation' in library. (Products.Relations version <  0.6)
-            ValueError          : No relation ruleset 'relation' in library. (Products.Relations version >= 0.6)
+            NotFound            : No relation 'relation' in current ontology.
             ValidationException : Reference does not validate in the relation ruleset or 'src' or 'dst' are invalid XMLNCNames
         """
         zLOG.LOG(PROJECTNAME, zLOG.INFO,
                  "%s(%s,%s)." % (relation, src, dst))
 
         relations_library = getToolByName(self, 'relations_library')
-
-        for r in relations_library.getRulesets():
-          if r.title_or_id() == relation:
-            if r.getId() != r.title_or_id():
-             relation=r.getId()        
 
         try:
             kw_src  = self.getKeyword(src)
@@ -958,7 +981,7 @@ class ClassificationTool(UniqueObject,
         except NotFound:
             kw_dst  = self.addKeyword(dst)
 
-        process(self, connect=((kw_src.UID(), kw_dst.UID(), relation),))
+        process(self, connect=((kw_src.UID(), kw_dst.UID(), self.getRelation(relation).getId()),))
 
 
     def delReference(self, src, dst, relation):
@@ -968,8 +991,7 @@ class ClassificationTool(UniqueObject,
         'src' and 'dst' are created, if non-existant. The reference is removed through Plone Relations library, so relation-specific rulesets are honored.
 
         Exceptions:
-            NotFound            : No relation ruleset 'relation' in library. (Products.Relations version <  0.6)
-            ValueError          : No relation ruleset 'relation' in library. (Products.Relations version >= 0.6)
+            NotFound            : No relation 'relation' in current ontology.
             ValidationException : Unreference does not validate in the relation ruleset.
         """
         try:
@@ -978,7 +1000,7 @@ class ClassificationTool(UniqueObject,
         except NotFound:
             return
 
-        process(self, disconnect=((kw_src.UID(), kw_dst.UID(), relation),))
+        process(self, disconnect=((kw_src.UID(), kw_dst.UID(), self.getRelation(relation).getId()),))
 
     # ZMI wrappers.
     def manage_addKeyword(self, name, title='', shortAdditionalDescription='', description='', REQUEST=None):
@@ -1145,7 +1167,7 @@ class ClassificationTool(UniqueObject,
         for rel in links:
             relfac = self.getWeight(rel) * fac
             children.extend([(relfac, x)
-                             for x in (kwObj.getRefs(rel) or []) if x is not None and relfac>cutoff])
+                             for x in (kwObj.getReferences(rel) or []) if x is not None and relfac>cutoff])
 
         return _unifyRawResults(children)
 
@@ -1189,7 +1211,7 @@ class ClassificationTool(UniqueObject,
             if item.title:
                 kws.update({item.title: item})
 
-        result = difflib.get_close_matches(search, kws.keys(), n=5, cutoff=0.5)
+        result = difflib.get_close_matches(search.decode(self.getEncoding()), kws.keys(), n=5, cutoff=0.5)
         result = [kws[x] for x in result]
 
         extresult=[]
@@ -1219,7 +1241,7 @@ class ClassificationTool(UniqueObject,
 
         set = []
         [set.append(i) for i in result if (not i in set) and (i not in exclude)]
-        
+
         if len(set) > 20:
             set = set[0:20]
         return set

@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE rdf:RDF [
             <!ENTITY owl "http://www.w3.org/2002/07/owl#"    >
             <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
@@ -69,6 +69,26 @@
 			1.0
 		</nip:weight>
 	</owl:ObjectProperty>
+	<owl:ObjectProperty rdf:ID="ähnlichWie">
+		<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+		<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+		<rdfs:domain rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+		<rdfs:range rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+		<nip:weight>
+			0.9
+		</nip:weight>
+	</owl:ObjectProperty>
+	<owl:Class rdf:ID="Äquivalenz">
+		<rdfs:label xml:lang="de">
+			Die Äquivalenz
+		</rdfs:label>
+		<rdfs:comment xml:lang="de">
+			Das Konzept der Äquivalenz
+		</rdfs:comment>
+		<dc:description xml:lang="de">
+			Verschiedene Individuen können als äquivalent betrachtet werden.
+		</dc:description>
+	</owl:Class>
 	<owl:Class rdf:ID="abdominal_ganglion">
 		<rdfs:subClassOf rdf:resource="#invertebrate_structure"/>
 		<rdfs:label xml:lang="en">
@@ -89,6 +109,7 @@
 		<dc:description xml:lang="de">
 			Das abdominale Ganglion ist abdominal.
 		</dc:description>
+		<ähnlichWie rdf:resource="#Äquivalenz"/>
 	</owl:Class>
 	<owl:Class rdf:ID="abducens_nerve">
 		<rdfs:subClassOf rdf:resource="#cranial_nerve"/>

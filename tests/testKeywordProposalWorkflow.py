@@ -54,7 +54,7 @@ class TestKeywordProposalWF(PloneTestCase.PloneTestCase):
         self.wf.doActionFor(prop, 'approve', wf_id, )
         self.assertEqual(self.wf.getHistoryOf(wf_id, prop)[-1]['review_state'], 'approved')
         print "KeywordProposal approved"
-        self.assertEqual(self.portal.portal_catalog.searchResults(portal_type='Keyword')[0].getObject().getBRefs()[0], self.portal.portal_catalog.searchResults(portal_type='Keyword')[1].getObject())
+        self.assertEqual(self.portal.portal_catalog.searchResults(portal_type='Keyword')[0].getObject().getBackReferences()[0], self.portal.portal_catalog.searchResults(portal_type='Keyword')[1].getObject())
 
 def test_suite():
     from unittest import TestSuite, makeSuite

@@ -83,63 +83,39 @@ def addScript(wf):
 ##parameters=state_change
 ##title=
 ##
-#first make keyword
-kwprop=state_change.object #getattr(context, context.getKPId())
-name=kwprop.generateName(kwprop.getKPTitle(),kwprop.getShortAdditionalDescription())
 
-context.portal_classification.manage_addKeyword(name=name, title=kwprop.getKPTitle(), description=kwprop.getPKWDescription(), shortAdditionalDescription=kwprop.getShortAdditionalDescription())
-srcFldr = kwprop.aq_parent
 
-#then make relations
-storage=context.portal_classification.getStorage()
-newkwhandle=context.portal_classification.getKeyword(name)
-reflist=kwprop.getRefs()
-wf_id="kw_proposal_workflow"
-tool=context.portal_workflow
+from Products.Relations.exception import ValidationException
 
-new_kws_list=[]
+# create keyword from proposal
+kwProp  = state_change.object
+kwTitle = kwProp.getKPTitle()
+kwDesc  = kwProp.getKeywordProposalDescription()
+kwSAD   = kwProp.getShortAdditionalDescription()
+kwName  = kwProp.generateName(kwTitle, kwSAD)
+#try:
+kw      = context.portal_classification.addKeyword(kwName, kwTitle, kwDesc, kwSAD)
+#except ValidationException:
+#    state_change.getPortal().state.set(portal_status_message="'%s' is not a valid XML NCName" % kwName)
+#    return
+#except NameError:
+#    state_change.getPortal().state.set(portal_status_message="'%s' already exists in current ontology" % kwName)
+#    return
+#except AttributeError:
+#    pass
 
-# retrieve the state
-for thing in reflist:
- if tool.getInfoFor(thing, "review_state") == "pending":
-  try:
-   relation_object=context.portal_classification.getKeyword(thing.getSearchKWB())
-   id2=relation_object.getName()
-   context.portal_classification.addReference(name, id2, thing.getRelation())
-  except:
-   relation_object=context.portal_classification.getKeywordProposal(thing.getSearchKWB())
-   context.portal_classification.manage_addKeyword(name=relation_object.generateName(relation_object.getKPTitle(),relation_object.getShortAdditionalDescription()), title=relation_object.getKPTitle(), description=relation_object.getPKWDescription(), shortAdditionalDescription=relation_object.getShortAdditionalDescription())
-   new_kws_list.append(context.portal_classification.getKeyword(relation_object.generateName(relation_object.getKPTitle(),relation_object.getShortAdditionalDescription())))
-   context.portal_classification.addReference(name, relation_object.generateName(relation_object.getKPTitle(), relation_object.getShortAdditionalDescription()), thing.getRelation())
- try:
-  tool.doActionFor(thing, "approve", comment="")
- except:
-  pass
+# approve all referenced relation proposals
+wfTool = context.portal_workflow
+for refProp in kwProp.getRefs('hasRelation'):
+    if wfTool.getInfoFor(refProp, "review_state") == "pending":
+        wfTool.doActionFor(refProp, "approve", commtent="")
 
-#graphviz support
-new_kws_list.append(newkwhandle)
+kw.updateKwMap()
 
-for obj in new_kws_list:
- innernodes = obj.getRefs() or [] #level 1 keywords
- nodes = []
- [nodes.extend(x.getRefs() or []) for x in innernodes]
- outernodes= [] #level 2 keywords
- [outernodes.append(x) for x in nodes if not (x in outernodes or x in innernodes or x == obj)]
- try:
-  obj.updateKwMap(levels=2)
-  for node in innernodes:
-   node.updateKwMap(levels=2)
-  for node in outernodes:
-   node.updateKwMap(levels=2)
- except:
-  pass
-
-stay=kwprop.getId()
-context.portal_url.getPortalObject().accepted_kws.manage_pasteObjects(kwprop.getParentNode().manage_cutObjects(kwprop.getId()))
-
-raise state_change.ObjectMoved(getattr(context.portal_url.getPortalObject().accepted_kws, stay), srcFldr) 
-
-return ''
+accepted_kws = context.portal_url.getPortalObject().accepted_kws
+kwPropId     = kwProp.getId()
+accepted_kws.manage_pasteObjects(kwProp.getParentNode().manage_cutObjects(kwPropId))
+raise state_change.ObjectMoved(getattr(accepted_kws, kwPropId), kwProp.aq_parent)
 '''
 )
 
@@ -163,15 +139,11 @@ def addScript2(wf):
 ##parameters=state_change
 ##title=
 ##
-#this script shall make all the referenced relationproposals of the keywordproposal to move alond with it through the workflow
-tool=context.portal_workflow
-try:
- src_obj=getattr(context, context.getKPId())
-except:
- src_obj=state_change.object
-for thing in src_obj.getRefs():
- tool.doActionFor(thing, "submit", comment="")
-return ""
+
+# this script shall make all the referenced relationproposals of the keywordproposal to move along with it through the workflow
+
+for refProp in state_change.object.getRefs('hasRelation'):
+    context.portal_workflow.doActionFor(refProp, "submit", comment="")
 '''
 )
 
@@ -194,15 +166,11 @@ def addScript3(wf):
 ##parameters=state_change
 ##title=
 ##
-#this script shall make all the referenced relationproposals of the keywordproposal to move along with it through the workflow
-tool=context.portal_workflow
-try:
- src_obj=getattr(context, context.getKPId())
-except:
- src_obj=state_change.object
-for thing in src_obj.getRefs():
- tool.doActionFor(thing, "reject", comment="")
-return ""
+
+# this script shall make all the referenced relationproposals of the keywordproposal to move along with it through the workflow
+
+for refProp in state_change.object.getRefs('hasRelation'):
+    context.portal_workflow.doActionFor(refProp, "reject", comment="")
 '''
 )
 
@@ -274,74 +242,41 @@ def addScript4(wf):
 ##parameters=state_change
 ##title=
 ##
-relprop=state_change.object
-relid=relprop.getId()
-srcFldr = relprop.aq_parent
-storage=context.portal_classification.getStorage()
-one=0
-id=""
-new_kws_list=[]
-for el in context.portal_catalog.searchResults(portal_type='Keyword'):
- if el.getObject().getName() == relprop.getSearchKWA():
-  kwobj=el.getObject()
-  id=kwobj.getName()
-if id == "":
-  proposalobj=context.portal_classification.getKeywordProposal(relprop.getSearchKWA())
-  context.portal_classification.manage_addKeyword(name=proposalobj.generateName(proposalobj.getKPTitle(),proposalobj.getShortAdditionalDescription()), title=proposalobj.title_or_id(), shortAdditionalDescription=proposalobj.getShortAdditionalDescription(), description=proposalobj.getKeywordProposalDescription())
-  kwobj=context.portal_classification.getKeyword(name=proposalobj.generateName(proposalobj.getKPTitle(),proposalobj.getShortAdditionalDescription()))
-  id=kwobj.getName()
+
+from zExceptions import NotFound
+from Products.Relations.exception import ValidationException
+
+wfTool           = context.portal_workflow
+relationProposal = state_change.object
+srcName          = relationProposal.getSearchKWA()
+dstName          = relationProposal.getSearchKWB()
+relation         = relationProposal.getRelation()
 
 try:
- relation_object=context.portal_classification.getKeyword(relprop.getSearchKWB())
-except:
- proposalobj=context.portal_classification.getKeywordProposal(relprop.getSearchKWB())
- context.portal_classification.manage_addKeyword(name=proposalobj.generateName(proposalobj.getKPTitle(),proposalobj.getShortAdditionalDescription()), title=proposalobj.title_or_id(), shortAdditionalDescription=proposalobj.getShortAdditionalDescription(), description=proposalobj.getKeywordProposalDescription())
- relation_object=context.portal_classification.getKeyword(name=proposalobj.generateName(proposalobj.getKPTitle(),proposalobj.getShortAdditionalDescription()))
+    srcKP = context.portal_classification.getKeywordProposal(srcName)
+    if wfTool.getInfoFor(srcKP, "review_state") == "private":
+        wfTool.doActionFor(srcKP, "submit", comment="")
+    if wfTool.getInfoFor(srcKP, "review_state") == "pending":
+        wfTool.doActionFor(srcKP, "approve", comment="")
+except NotFound:
+    pass
+
 try:
- newcontext=getattr(context, relation_object.getId())
- if relation_object.meta_type == 'KeywordProposal':
-  context.portal_classification.manage_addKeyword(name=newcontext.generateName(newcontext.getKPTitle(),newcontext.getShortAdditionalDescription()), title=newcontext.getKPTitle(), description=newcontext.getPKWDescription(), shortAdditionalDescription=newcontext.getShortAdditionalDescription())
-  new_kws_list.append(getattr(storage, newcontext.generateName(newcontext.getKPTitle(),newcontext.getShortAdditionalDescription())))
-  context.portal_classification.addReference(id, relation_object.generateName(newcontext.getKPTitle(),newcontext.getShortAdditionalDescription()), relprop.getRelation())
-except:
- if relation_object.meta_type != 'KeywordProposal':
-  id2=relation_object.getName()
-  context.portal_classification.addReference(id, id2, relprop.getRelation())
+    dstKP = context.portal_classification.getKeywordProposal(dstName)
+    if wfTool.getInfoFor(dstKP, "review_state") == "private":
+        wfTool.doActionFor(dstKP, "submit", comment="")
+    if wfTool.getInfoFor(dstKP, "review_state") == "pending":
+        wfTool.doActionFor(dstKP, "approve", comment="")
+except NotFound:
+    pass
 
-if relprop.getParentNode().meta_type != 'KeywordProposal':
-    context.portal_url.getPortalObject().accepted_kws.manage_pasteObjects(relprop.manage_cutObjects(relid))
-    one=1
-newkwhandle=context.portal_classification.getKeyword(id)
+context.portal_classification.addReference(srcName, dstName, relation)
 
-#graphviz support
-new_kws_list.append(newkwhandle)
-for obj in new_kws_list:
- innernodes = obj.getRefs() or [] #level 1 keywords
- nodes = []
- [nodes.extend(x.getRefs() or []) for x in innernodes]
- outernodes= [] #level 2 keywords
- [outernodes.append(x) for x in nodes if not (x in outernodes or x in innernodes or x == obj)]
-
- try:
-  obj.updateKwMap(levels=2)
- except:
-  pass
-
- for node in innernodes:
-   try:
-     node.updateKwMap(levels=2)
-   except:
-     pass
-
- for node in outernodes:
-   try:
-     node.updateKwMap(levels=2)
-   except:
-     pass
-
-if one==1:
- raise state_change.ObjectMoved(getattr(context.portal_url.getPortalObject().accepted_kws, relid), srcFldr) 
-return ""
+if not relationProposal.hasKeywordProposal():
+    accepted_kws = context.portal_url.getPortalObject().accepted_kws
+    relPropId    = relationProposal.getId()
+    accepted_kws.manage_pasteObjects(relationProposal.getParentNode().manage_cutObjects(relPropId))
+    raise state_change.ObjectMoved(getattr(accepted_kws, relPropId), relationProposal.aq_parent)
 '''
 )
 

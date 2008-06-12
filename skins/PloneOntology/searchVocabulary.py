@@ -24,10 +24,13 @@ value = '''
 ''' % field
 
 for x in items:
-   try:
-     value = value + """<li style="padding-left: 1em"><a href="javascript:void setInput('%s', '%s')">%s</a></li>""" % (field, x.getName(), x.title_or_id())
-   except:
-     value = value + """<li style="padding-left: 1em"><a href="javascript:void setInput('%s', '%s')">%s</a></li>""" % (field, x.title_or_id(), x.title_or_id())
+    if field == 'title':
+        name = x.Title()
+    elif x.meta_type == "KeywordProposal":
+        name = x.generateName(x.getKPTitle(), x.getShortAdditionalDescription())
+    else:
+        name = x.getName()
+    value = value + """<li style="padding-left: 1em"><a href="javascript:void setInput('%s', '%s')">%s</a></li>""" % (field, name, x.title_or_id())
 
 value = value + "\n</ul></body></html>"
 

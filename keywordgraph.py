@@ -7,13 +7,14 @@ def dotID(string):
        DOT ID is "any double-quoted string ("...") possibly containing escaped quotes (\")",
        see <http://www.graphviz.org/doc/info/lang.html>.
     """
-    return string.replace('"', '\\"').encode('unicode_escape', 'backslashreplace')
+    return string.replace('"', '\\"')
+    # .encode('unicode_escape', 'backslashreplace')
 
 class KeywordGraph:
     """Dot code generator for keyword graphs.
     """
 
-    def __init__(self, font='', relfont='', focus_nodeshape = 'ellipse', focus_nodecolor = '#eeeeee', focus_node_font_color = '#000000', focus_node_font_size = '9', first_nodeshape = 'box', first_nodecolor = 'transparent', first_node_font_color = '#000000', first_node_font_size = '8', second_nodeshape = 'box', second_nodecolor = 'transparent', second_node_font_color = '#000000', second_node_font_size = '7', edgeshape = 'normal', edgecolor = '#000000', edge_font_color = '#111111', edge_font_size = '8'):
+    def __init__(self, font='', relfont='', focus_nodeshape = 'ellipse', focus_nodecolor = '#eeeeee', focus_node_font_color = '#000000', focus_node_font_size = 9, first_nodeshape = 'box', first_nodecolor = 'transparent', first_node_font_color = '#000000', first_node_font_size = 8, second_nodeshape = 'box', second_nodecolor = 'transparent', second_node_font_color = '#000000', second_node_font_size = 7, edgeshape = 'normal', edgecolor = '#000000', edge_font_color = '#111111', edge_font_size = 8):
         self._text = StringIO()
         self._font = font
         self._relfont = relfont
@@ -52,13 +53,13 @@ class KeywordGraph:
         splines="true";
         node [style="filled", shape="%s", fontname="%s", fillcolor="%s", fontcolor="%s", fontsize="%s"];
         edge [shape="%s", fontname="%s", fillcolor="%s", fontcolor="%s", fontsize="%s"];
-        ''' % (dotID(root.getName()), dotID(self._first_nodeshape), dotID(self._font), dotID(self._first_nodecolor), dotID(self._first_node_font_color), dotID(self._first_node_font_size), dotID(self._edgeshape), dotID(self._relfont), dotID(self._edgecolor), dotID(self._edge_font_color), dotID(self._edge_font_size)))
+        ''' % (dotID(root.getName()), dotID(self._first_nodeshape), dotID(self._font), dotID(self._first_nodecolor), dotID(self._first_node_font_color), dotID(str(self._first_node_font_size)), dotID(self._edgeshape), dotID(self._relfont), dotID(self._edgecolor), dotID(self._edge_font_color), dotID(str(self._edge_font_size))))
 
     def graphFooter(self):
         self._text.write("}\n")
 
     def focusNode(self, node):
-        self._text.write('"%s" [shape="%s", fillcolor="%s", fontcolor="%s", fontsize="%s", label="%s", ];\n' % (dotID(node.getName()), dotID(self._focus_nodeshape), dotID(self._focus_nodecolor), dotID(self._focus_node_font_color), dotID(self._focus_node_font_size), dotID(node.title_or_id()), ))
+        self._text.write('"%s" [shape="%s", fillcolor="%s", fontcolor="%s", fontsize="%s", label="%s", ];\n' % (dotID(node.getName()), dotID(self._focus_nodeshape), dotID(self._focus_nodecolor), dotID(self._focus_node_font_color), dotID(str(self._focus_node_font_size)), dotID(node.title_or_id()), ))
 
 
     def firstLevelNode(self, node):
@@ -73,7 +74,7 @@ class KeywordGraph:
         else:
             tooltip = node.title_or_id()
 
-        self._text.write('"%s" [fontsize="%s", label="%s", URL="%s/keyword_context_view", tooltip="%s"];\n' % (dotID(node.getName()), dotID(self._focus_node_font_size), dotID(nodelabel), dotID(node.absolute_url()), dotID(tooltip)))
+        self._text.write('"%s" [fontsize="%s", label="%s", URL="%s/keyword_context_view", tooltip="%s"];\n' % (dotID(node.getName()), dotID(str(self._focus_node_font_size)), dotID(nodelabel), dotID(node.absolute_url()), dotID(tooltip)))
 
     def secondLevelNode(self, node):
         nodelabel = node.title_or_id()
@@ -87,7 +88,7 @@ class KeywordGraph:
         else:
             tooltip = node.title_or_id()
 
-        self._text.write('"%s" [shape="%s", fillcolor="%s", fontcolor="%s", fontsize="%s", label="%s", URL="%s/keyword_context_view", tooltip="%s"];\n' % (dotID(node.getName()), dotID(self._second_nodeshape), dotID(self._second_nodecolor), dotID(self._second_node_font_color), dotID(self._second_node_font_size), dotID(nodelabel), dotID(node.absolute_url()), dotID(tooltip), ))
+        self._text.write('"%s" [shape="%s", fillcolor="%s", fontcolor="%s", fontsize="%s", label="%s", URL="%s/keyword_context_view", tooltip="%s"];\n' % (dotID(node.getName()), dotID(self._second_nodeshape), dotID(self._second_nodecolor), dotID(self._second_node_font_color), dotID(str(self._second_node_font_size)), dotID(nodelabel), dotID(node.absolute_url()), dotID(tooltip), ))
 
     def relation(self, node, cnode, rel):
         self.write('"%s" -> "%s" [label="%s"];\n' % (dotID(node.getName()), dotID(cnode.getName()), dotID(rel)))

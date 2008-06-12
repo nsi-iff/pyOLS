@@ -1,5 +1,7 @@
 from keywordgraph import KeywordGraph
 import keyword
+import owl
+import ctool
 
 from Products.CMFCore.utils import getToolByName
 from Products.CMFCore.PortalFolder import ContentFilter
@@ -65,12 +67,10 @@ def generateName(title, shortDescription=""):
 
     The generated name is an XML NCName and 'shortDescription' is used to distinguish homonymous titles.
     """
-    title = _normalize(title)
+    name = title
     if shortDescription:
-        shortDescription = _normalize(shortDescription)
-        return title + '_' + shortDescription
-    else:
-        return title
+        name = name + '_' + shortDescription
+    return owl.toXMLNCName(name)
 
 class XMLNCNameValidator:
     __implements__ = (ivalidator,)
@@ -90,6 +90,7 @@ class UniqueNameValidator:
     def __call__(self, value, *args, **kwargs):
         from Products.CMFCore.utils import getToolByName
         instance = kwargs.get('instance')
+        #type = kwargs.get('portal_type')
         ctool = getToolByName(instance, 'portal_classification')
         used = ctool.isUsedName(value)
         if used and used != instance:
@@ -144,7 +145,7 @@ class Keyword(BaseContent):
         if not name or name == self.getId():
             name = keyword.generateName(self.Title(), self.getShortAdditionalDescription())
         ctool = getToolByName(self, 'portal_classification')
-        ctool.addKeyword(name, self.title, self.getKwDescription(), self.getShortAdditionalDescription(), self.getId())
+        ctool.addKeyword(name, self.Title(), self.getKwDescription(), self.getShortAdditionalDescription(), self.getId())
         self.updateKwMap()
 
     def at_post_edit_script(self):
@@ -164,36 +165,53 @@ class Keyword(BaseContent):
 
     security.declarePublic("getLinkedKeywords")
     def getLinkedKeywords(self, type=None):
-        res = self.getRefs(type)
+        res = self.getReferences(type)
         res = [x for x in res if x is not None]
         return res
+
+    def getReferences(self, relation=None):
+        if relation:
+            ctool = getToolByName(self, 'portal_classification')
+            rel_id = ctool.getRelation(relation).getId()
+        else:
+            rel_id = None
+        return self.getRefs(rel_id)
+
+    def getBackReferences(self, relation=None):
+        if relation:
+            ctool = getToolByName(self, 'portal_classification')
+            rel_id = ctool.getRelation(relation).getId()
+        else:
+            rel_id = None
+        return self.getBRefs(rel_id)
+
+    def getRelations(self):
+        rlib = getToolByName(self, 'relations_library')
+        return [rlib.getRuleset(rel_id).Title() for rel_id in self.getRelationships()]
+
+    def getBackRelations(self):
+        rlib = getToolByName(self, 'relations_library')
+        return [rlib.getRuleset(rel_id).Title() for rel_id in self.getBRelationships()]
 
     def getWrappedKeywords(self):
         """returns all linked keywords wrapped together with a list of the corresponding relationtypes.
         """
-        reltypes=self.getRelationships()
+        reltypes=self.getRelations()
 
         result = []
         objects = []
-        relations_library = getToolByName(self, 'relations_library')
 
         for r in reltypes:
-            obs = self.getRefs(r)
-            for relobj in relations_library.getRulesets():
-             rel = r
-             if relobj.getId() == r:
-              if relobj.getId() != relobj.title_or_id():
-               rel=relobj.title_or_id()
-
+            obs = self.getReferences(r)
             for o in obs:
                 if not o in objects:
                     objects.append(o)
-                    result.append((o, [rel]))
+                    result.append((o, [r]))
                 else: #just append relationship
                     try:
                         idx = objects.index(o)
                         entry = result[idx]
-                        entry[1].append(rel)
+                        entry[1].append(r)
                     except:
                         pass
 
@@ -273,12 +291,12 @@ class Keyword(BaseContent):
             result = [self]
 
         if forth == '1':
-         direct = self.getRefs()
+         direct = self.getReferences()
          for kw in direct:
             result.extend(kw.findDependent(levels-1, exact))
 
         if back == '1':
-         directback = self.getBRefs()
+         directback = self.getBackReferences()
          for kw in directback:
             result.extend(kw.findDependent(levels-1, exact))
 
@@ -306,7 +324,6 @@ class Keyword(BaseContent):
         forth = ctool.getForth()
         back = ctool.getBack()
         storage = ctool.getStorage()
-        relations_library = getToolByName(self, 'relations_library')
 
         innernodes = self.findDependent(1, exact=True) # level 1 keywords
         outernodes = self.findDependent(2, exact=True) # level 2 keywords
@@ -327,63 +344,43 @@ class Keyword(BaseContent):
 
         # from central node
         if forth == '1':
-         for rel in self.getRelationships():
-            obs = self.getRefs(rel)
-            for relobj in relations_library.getRulesets():
-             rel_title = rel
-             if relobj.getId() == rel:
-              if relobj.getId() != relobj.title_or_id():
-               rel_title=relobj.title_or_id()
+         for rel in self.getRelations():
+            obs = self.getReferences(rel)
             for cnode in obs:
-                dot.relation(self, cnode, rel_title)
+                dot.relation(self, cnode, rel)
         if back == '1':
          for backrel in self.getBRelationships():
-            obsback = self.getBRefs(backrel)
-            for relobj in relations_library.getRulesets():
-             backrel_title = backrel
-             if relobj.getId() == backrel:
-              if relobj.getId() != relobj.title_or_id():
-               backrel_title=relobj.title_or_id()
+            obsback = self.getBackReferences(backrel)
             for cnode in obsback:
-                dot.relation(cnode, self, backrel_title)
+                dot.relation(cnode, self, backrel)
 
 
         # from innernodes w/o back to central
         if forth == '1':
          for node in innernodes:
-            rels = node.getRelationships() 
+            rels = node.getRelations() 
             for rel in rels:
-                obs = node.getRefs(rel)
-                for relobj in relations_library.getRulesets():
-                 rel_title = rel
-                 if relobj.getId() == rel:
-                  if relobj.getId() != relobj.title_or_id():
-                   rel_title=relobj.title_or_id()
+                obs = node.getReferences(rel)
                 try:
                     obs.remove(self)
                 except ValueError: # self not in list
                     pass
 
                 for cnode in obs:
-                    dot.relation(node, cnode, rel_title)
+                    dot.relation(node, cnode, rel)
 
         if back == '1':
          for node in innernodes:
             relsback = node.getBRelationships() 
             for backrel in relsback:
-                obsback = node.getBRefs(backrel)
-                for relobj in relations_library.getRulesets():
-                 rel_title = backrel
-                 if relobj.getId() == backrel:
-                  if relobj.getId() != relobj.title_or_id():
-                   backrel_title=relobj.title_or_id()
+                obsback = node.getBackReferences(backrel)
                 try:
                     obsback.remove(self)
                 except ValueError: # self not in list
                     pass
 
                 for cnode in obsback:
-                    dot.relation(cnode, node, backrel_title)
+                    dot.relation(cnode, node, backrel)
 
         dot.graphFooter()
 

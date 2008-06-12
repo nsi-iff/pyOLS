@@ -49,8 +49,8 @@ class Ontology(BaseBTreeFolder):
 
         number=0
         for el in getToolByName(self, 'portal_classification').getStorage().contentValues():
-            if u'parentOf' in el.getRelationships() and u'childOf' not in el.getRelationships():
-                for il in el.getRelationships():
+            if u'parentOf' in el.getRelations() and u'childOf' not in el.getRelations():
+                for il in el.getRelations():
                     if il == u'parentOf':
                         number=number+1
                 if number > 0:
@@ -117,8 +117,8 @@ class Ontology(BaseBTreeFolder):
                     file.write(kw.getKwDescription())
                     file.write('      </description>\n')
 
-                for rel in kw.getRelationships():
-                    for ref in kw.getRefs(rel):
+                for rel in kw.getRelations():
+                    for ref in kw.getReferences(rel):
                         file.write('      <reference dst="%s" type="%s"/>\n' % (ref.getName(), rel))
 
                 file.write('    </keyword>\n\n')
@@ -213,9 +213,9 @@ class Ontology(BaseBTreeFolder):
 
         # Export OWL object properties.
         for prop in ct.relations(rl):
-            exporter.generateObjectProperty(name               = prop,
+            exporter.generateObjectProperty(name               = prop.decode(ct.getEncoding()),
                                             types              = [entities['owl'] + self.owl_types[t] for t in ct.getTypes(prop)],
-                                            inverses           = ct.getInverses(prop),
+                                            inverses           = [i.decode(ct.getEncoding()) for i in ct.getInverses(prop)],
                                             domains            = [entities['owl'] + 'Class'],
                                             ranges             = [entities['owl'] + 'Class'],
                                             labels             = [],
@@ -227,18 +227,18 @@ class Ontology(BaseBTreeFolder):
         # Export OWL classes.
         for kw in ct.keywords():
             keyword = ct.getKeyword(kw)
-            scs = [ c.getName() for c in keyword.getRefs('childOf')   ]
-            ecs = [ c.getName() for c in keyword.getRefs('synonymOf') ]
+            scs = [ c.getName() for c in keyword.getReferences('childOf')   ]
+            ecs = [ c.getName() for c in keyword.getReferences('synonymOf') ]
             ops = []
-            for p in keyword.getRelationships():
+            for p in keyword.getRelations():
                 if p not in [ 'childOf', 'parentOf', 'synonymOf' ]:
-                    for c in keyword.getRefs(p):
+                    for c in keyword.getReferences(p):
                         ops.append((p,c.getName()))
             lang         = 'en'
             labels       = []
             comments     = []
             descriptions = []
-            label       = keyword.title
+            label       = keyword.Title()
             comment     = keyword.getShortAdditionalDescription()
             description = keyword.getKwDescription()
             if label:
@@ -247,16 +247,16 @@ class Ontology(BaseBTreeFolder):
                 comments.append((lang, comment))
             if description:
                 descriptions.append((lang, description))
-            exporter.generateClass(name            = kw,
-                                   superclasses    = scs,
-                                   labels          = labels,
-                                   comments        = comments,
-                                   descriptions    = descriptions,
-                                   classproperties = ops
+            exporter.generateClass(name            = kw.decode(ct.getEncoding()),
+                                   superclasses    = [sc.decode(ct.getEncoding()) for sc in scs],
+                                   labels          = [(lang, lb.decode(ct.getEncoding())) for (lang, lb) in labels],
+                                   comments        = [(lang, co.decode(ct.getEncoding())) for (lang, co) in comments],
+                                   descriptions    = [(lang, dc.decode(ct.getEncoding())) for (lang, dc) in descriptions],
+                                   classproperties = [(p.decode(ct.getEncoding()), c.decode(ct.getEncoding())) for (p, c) in ops]
             )
 
             for c in ecs:
-                exporter.generateEquivalentClass(kw, c)
+                exporter.generateEquivalentClass(kw.decode(ct.getEncoding()), c.decode(ct.getEncoding()))
 
         return exporter.serialize()
 

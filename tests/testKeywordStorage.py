@@ -84,19 +84,23 @@ class TestKeywordStorage(PloneTestCase.PloneTestCase):
                               'nonlinear_dynamics',
                               'phase_space_analysis',
                               'receptor',
-                              'statistical_mechanics'
+                              'statistical_mechanics',
+                              'Äquivalenz'
                             ]
         expected_relations = [ 'childOf',
                                'parentOf',
+                               'relatedTo',
                                'synonymOf',
-                               'relatedTo'
+                               'ähnlichWie'
                              ]
         owl_file = os.path.join(os.path.dirname(__file__), 'testOntology.owl')
         message  = self.st.importOWL(owl_file)
 
         ### check relations.
+        rls = self.ct.relations(self.rl)
+        rls.sort()
+        self.assertEqual(rls, expected_relations)
         # childOf
-        self.assertEqual(self.ct.relations(self.rl).sort(), expected_relations.sort())
         self.assertEqual(self.ct.getTypes   ('childOf'), ['transitive'])
         self.assertEqual(self.ct.getInverses('childOf'), ['parentOf'])
         self.assertEqual(self.ct.getWeight  ('childOf'), 0.5)
@@ -112,9 +116,15 @@ class TestKeywordStorage(PloneTestCase.PloneTestCase):
         self.assertEqual(self.ct.getTypes   ('relatedTo'), ['transitive', 'functional', 'inversefunctional'])
         self.assertEqual(self.ct.getInverses('relatedTo'), [])
         self.assertEqual(self.ct.getWeight  ('relatedTo'), 0.7)
+        # ähnlichWie
+        self.assertEqual(self.ct.getTypes   ('ähnlichWie'), ['transitive', 'symmetric'])
+        self.assertEqual(self.ct.getInverses('ähnlichWie'), [])
+        self.assertEqual(self.ct.getWeight  ('ähnlichWie'), 0.9)
 
         ### check keywords.
-        self.assertEqual(self.ct.keywords().sort(),  expected_keywords.sort())
+        kws = self.ct.keywords()
+        kws.sort()
+        self.assertEqual(kws,  expected_keywords)
         # title, description, short additional description
         abdominal_ganglion = self.ct.getKeyword('abdominal_ganglion')
         self.assertEqual(abdominal_ganglion.title, 'Abdominal ganglion')
@@ -124,19 +134,19 @@ class TestKeywordStorage(PloneTestCase.PloneTestCase):
         ### check references.
         # childOf inverseOf parentOf
         invertebrate_structure = self.ct.getKeyword('invertebrate_structure')
-        self.assertEqual(abdominal_ganglion.getRefs('childOf'), [invertebrate_structure])
-        self.failUnless(abdominal_ganglion in invertebrate_structure.getRefs('parentOf'))
+        self.assertEqual(abdominal_ganglion.getReferences('childOf'), [invertebrate_structure])
+        self.failUnless(abdominal_ganglion in invertebrate_structure.getReferences('parentOf'))
         # synonymOf symmetric
         acetylcholine_receptor = self.ct.getKeyword('acetylcholine_receptor')
         acetylcholin_rezeptor  = self.ct.getKeyword('acetylcholin_rezeptor')
-        self.assertEqual(acetylcholine_receptor.getRefs('synonymOf'), [acetylcholin_rezeptor])
-        self.assertEqual(acetylcholin_rezeptor.getRefs ('synonymOf'), [acetylcholine_receptor])
+        self.assertEqual(acetylcholine_receptor.getReferences('synonymOf'), [acetylcholin_rezeptor])
+        self.assertEqual(acetylcholin_rezeptor.getReferences ('synonymOf'), [acetylcholine_receptor])
         # constraint message for relatedTo (functional, inversefunctional)
         self.assertEqual(message, "relatedTo(abducens_nerve,abducens_nerve_nucleus): Too many targets (2) for 'relatedTo'.\nrelatedTo(accessory_nerve_spinal_root_nucleus,accessory_nerve): Too many sources (2) for 'relatedTo'.\n")
         # violating references do not exist, but first ones do
         abducens_nerve  = self.ct.getKeyword('abducens_nerve')
         accessory_nerve = self.ct.getKeyword('accessory_nerve')
-        self.assertEqual(abducens_nerve.getRefs('relatedTo'), [accessory_nerve])
+        self.assertEqual(abducens_nerve.getReferences('relatedTo'), [accessory_nerve])
 
     def testOWLExport(self):
         """OWL export tests."""
@@ -155,13 +165,13 @@ class TestKeywordStorage(PloneTestCase.PloneTestCase):
         # check if all relations are correct.
         owl_props = owl_dom.getElementsByTagName('owl:ObjectProperty')
         for rel in self.ct.relations(self.rl):
-            p = [ps for ps in owl_props if ps.getAttribute('rdf:ID') == rel]
+            p = [ps for ps in owl_props if ps.getAttribute('rdf:ID').encode(self.ct.getEncoding()) == rel]
             self.assertEqual(len(p), 1)
             p = p[0]
-            domains  = [d.getAttribute('rdf:resource') for d in p.getElementsByTagName('rdfs:domain')]
-            ranges   = [r.getAttribute('rdf:resource') for r in p.getElementsByTagName('rdfs:range')]
-            types    = [t.getAttribute('rdf:resource') for t in p.getElementsByTagName('rdf:type')]
-            inverses = [i.getAttribute('rdf:resource') for i in p.getElementsByTagName('owl:inverseOf')]
+            domains  = [d.getAttribute('rdf:resource').encode(self.ct.getEncoding()) for d in p.getElementsByTagName('rdfs:domain')]
+            ranges   = [r.getAttribute('rdf:resource').encode(self.ct.getEncoding()) for r in p.getElementsByTagName('rdfs:range')]
+            types    = [t.getAttribute('rdf:resource').encode(self.ct.getEncoding()) for t in p.getElementsByTagName('rdf:type')]
+            inverses = [i.getAttribute('rdf:resource').encode(self.ct.getEncoding()) for i in p.getElementsByTagName('owl:inverseOf')]
             self.assertEqual(domains,  [entities['owl'] + 'Class'])
             self.assertEqual(ranges,   [entities['owl'] + 'Class'])
             self.assertEqual(types,    [entities['owl'] + self.st.owl_types[t] for t in self.ct.getTypes(rel)])
@@ -172,27 +182,39 @@ class TestKeywordStorage(PloneTestCase.PloneTestCase):
         owl_classes = owl_dom.getElementsByTagName('owl:Class')
         for kw in self.ct.keywords():
             keyword = self.ct.getKeyword(kw)
-            c = [cl for cl in owl_classes if cl.getAttribute('rdf:ID') == kw]
+            c = [cl for cl in owl_classes if cl.getAttribute('rdf:ID').encode(self.ct.getEncoding()) == kw]
             self.assertEqual(len(c), 1)
             c = c[0]
             if keyword.title:
                 for label in c.getElementsByTagName('rdfs:label'):
-                    self.assertEqual(label.firstChild.data.strip(), keyword.title)
+                    self.assertEqual(label.firstChild.data.encode(self.ct.getEncoding()).strip(), keyword.Title())
             if keyword.getShortAdditionalDescription():
                 for comment in c.getElementsByTagName('rdfs:comment'):
-                    self.assertEqual(comment.firstChild.data.strip(), keyword.getShortAdditionalDescription())
+                    self.assertEqual(comment.firstChild.data.encode(self.ct.getEncoding()).strip(), keyword.getShortAdditionalDescription())
             if keyword.getKwDescription():
                 for description in c.getElementsByTagName('dc:description'):
-                    self.assertEqual(description.firstChild.data.strip(), keyword.getKwDescription())
-            for rel in keyword.getRelationships():
+                    self.assertEqual(description.firstChild.data.encode(self.ct.getEncoding()).strip(), keyword.getKwDescription())
+            for rel in keyword.getRelations():
                 if rel == 'childOf':
-                    self.assertEqual([superclass.getAttribute('rdf:resource') for superclass in c.getElementsByTagName('rdfs:subClassOf')], ['#' + parent.getName() for parent in keyword.getRefs('childOf')])
+                    scs = c.getElementsByTagName('rdfs:subClassOf')
+                    scs.sort()
+                    kws = keyword.getReferences('childOf')
+                    kws.sort()
+                    self.assertEqual([superclass.getAttribute('rdf:resource').encode(self.ct.getEncoding()) for superclass in scs], ['#' + parent.getName() for parent in kws])
                 elif rel == 'parentOf':
-                    self.assertEqual([subclass.getAttribute('rdf:ID') for subclass in [cl for cl in owl_classes if '#' + kw in [sc.getAttribute('rdf:resource') for sc in cl.getElementsByTagName('rdfs:subClassOf')]]].sort(), [child.getName() for child in keyword.getRefs('parentOf')].sort())
+                    scs = [subclass.getAttribute('rdf:ID').encode(self.ct.getEncoding()) for subclass in [cl for cl in owl_classes if '#' + kw in [sc.getAttribute('rdf:resource').encode(self.ct.getEncoding()) for sc in cl.getElementsByTagName('rdfs:subClassOf')]]]
+                    scs.sort()
+                    cld = [child.getName() for child in keyword.getReferences('parentOf')]
+                    cld.sort()
+                    self.assertEqual(scs, cld)
                 elif rel == 'synonymOf':
-                    self.assertEqual([eclass.getAttribute('rdf:resource') for eclass in reduce(lambda x,y: x+y, [cl.getElementsByTagName('owl:equivalentClass') for cl in owl_classes if '#' + kw == cl.getAttribute('rdf:about')])].sort(), ['#' + synonym.getName() for synonym in keyword.getRefs('synonymOf')].sort())
+                    eqs = [eclass.getAttribute('rdf:resource').encode(self.ct.getEncoding()) for eclass in reduce(lambda x,y: x+y, [cl.getElementsByTagName('owl:equivalentClass') for cl in owl_classes if '#' + kw == cl.getAttribute('rdf:about').encode(self.ct.getEncoding())])]
+                    eqs.sort()
+                    syns = ['#' + synonym.getName() for synonym in keyword.getReferences('synonymOf')]
+                    syns.sort()
+                    self.assertEqual(eqs, syns)
                 else:
-                    self.assertEqual([el.getAttribute('rdf:resource') for el in c.getElementsByTagName(rel)], ['#' + ref.getName() for ref in keyword.getRefs(rel)])
+                    self.assertEqual([el.getAttribute('rdf:resource').encode(self.ct.getEncoding()) for el in c.getElementsByTagName(rel.decode(self.ct.getEncoding()))], ['#' + ref.getName() for ref in keyword.getReferences(rel)])
 
 def test_suite():
         from unittest import TestSuite, makeSuite

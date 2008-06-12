@@ -53,7 +53,7 @@ PloneOntology Readme
 
       * Graphviz (Graph Visualization Software) -- 
       "http://www.graphviz.org/":http://www.graphviz.org/
-      
+
       * SchemaWeb - resource for ontologies in the owl format. Try importing
       some of these to see how PloneOntology works. (Here we stumbled upon the
       beerontology that we use as an example. Thank you, David Aumueller!) -- 

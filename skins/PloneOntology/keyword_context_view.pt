@@ -9,7 +9,6 @@
   <body>
 
     <div metal:fill-slot="main">
-        <!-- <h4>Context View of <span tal:replace="here/title_or_id"/></h4> -->
 	<tal:block tal:condition="here/getKwMapGraphic">
 		<span tal:define="imgurl here/kwMapGraphic/absolute_url;">
 	
@@ -17,6 +16,10 @@
 		<map name="kwMap" tal:content="structure here/kwMapData"/>
 		</span>
 	</tal:block>
+    <dl>
+    <dt tal:content="here/title_or_id"/>
+    <dd tal:condition="here/getKwDescription" tal:content="here/getKwDescription"/>
+    </dl>
 	<ul> 
 	<tal:block tal:repeat="child here/getWrappedKeywords">
 	<tal:block tal:define="obj python:child[0]; rels python:child[1]"><li>is <tal:block tal:repeat="rel rels"><span tal:replace="rel"/><span tal:replace="string:," tal:condition="not: repeat/rel/end"/></tal:block> 
