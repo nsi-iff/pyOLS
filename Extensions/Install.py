@@ -248,9 +248,11 @@ def install(portal):
     addClassifyAction(portal)
     setupTool(portal, out)
     wf_tool = getToolByName(portal, 'portal_workflow')
-    wf_tool.setChainForPortalTypes('KeywordProposal', 'keyword_proposal_workflow ')
-    wf_tool.setChainForPortalTypes('Keyword', '(Default)')
-    wf_tool.setChainForPortalTypes('RelationProposal', 'relation_proposal_workflow ')
+    print wf_tool
+    wf_tool.setChainForPortalTypes(('KeywordProposal',), 'keyword_proposal_workflow ')
+    print 'we made the keywords'
+    wf_tool.setChainForPortalTypes(('Keyword',), '(Default)')
+    wf_tool.setChainForPortalTypes(('RelationProposal',), 'relation_proposal_workflow ')
     registerConfiguration(portal, out)
     addCustomFormControllerTransitions(portal, out)
 
