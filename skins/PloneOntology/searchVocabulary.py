@@ -19,13 +19,13 @@
 field2=''
 if field=='SearchKWA':
     field2='KeywordA'
-    items = context.portal_classification.searchMatchingKeywordsFor(context, search=searchTerm, search_kw_proposals='true', search_linked_keywords='false')
+    items = context.portal_classification.searchMatchingKeywordsFor(context, search=searchTerm, search_kw_proposals='true', search_linked_keywords='true')
 elif field=='SearchKWB':
     field2='KeywordB'
-    items = context.portal_classification.searchMatchingKeywordsFor(context, search=searchTerm, search_kw_proposals='true', search_linked_keywords='false')
+    items = context.portal_classification.searchMatchingKeywordsFor(context, search=searchTerm, search_kw_proposals='true', search_linked_keywords='true')
 else:
     field2= 'skw'
-    items = context.portal_classification.searchMatchingKeywordsFor(context, search=searchTerm, search_kw_proposals='false', search_linked_keywords='false')
+    items = context.portal_classification.searchMatchingKeywordsFor(context, search=searchTerm, search_kw_proposals='false', search_linked_keywords='true')
 
 #categories = context.getCategories()
 value = '''

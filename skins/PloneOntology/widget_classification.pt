@@ -24,46 +24,16 @@
 
     <div metal:define-macro="edit">
      
-<tal:comment replace="nothing"></tal:comment>
       <div metal:use-macro="here/widgets/field/macros/edit">
 	<div metal:fill-slot="widget_body"
-	     tal:define="searchterm python: request.get('searchterm','');
+	     tal:define="searchterm python: request.get('SearchKW','');
+	                 skw python: request.get('skw','');
 	                 keywords python: request.get('keywords',None);
 			 accessor python:getattr(here, field.accessor);
 			 old python: accessor() or [];
 			 ">
-	  <p tal:condition="not:old">Not yet classified</p>
-
-	  <div  tal:condition="old"> <!-- Edit existing keywords -->
-	    <p>This item is classified with the following keywords:</p>
-	    <table>
-	      <tr tal:repeat="item old">
-	       <td><input type="checkbox" name="delKeywords:list" tal:attributes="value item/getId"/></td> 
-	        <td>
-	          <a tal:attributes="href item/absolute_url" tal:content="item/title_or_id"/>
-	        </td>
-	        <td>
-	          <span tal:replace="item/description|nothing"/>
-	        </td>
-	      </tr>
-	    </table>
-	    <input type="submit" name="form.button.delete" value="Delete"/><br>
-	  </div> <!-- end editing existing keywords -->
-
 	  <div> <!-- Search, add new keywords -->
-	 <fieldset>   <legend>use this in order to search and select keywords if the above javascript-search does not work</legend>
-	<input type="text"
-	       name="searchterm"
-	       value=""
-	       id="searchterm"
-	       size="30"
-	       tabindex="#"
-               onfocus="loadHandler(this)"
-               onkeypress="activeStringStart(this)"
-	       tal:attributes="value searchterm|nothing;
-                               tabindex tabindex/next;"
-	       />
-	    <input type="submit" name="form.button.search3" value="Search"/>
+	    <tal:block tal:condition="python: skw==''">
 	    <tal:block tal:condition="searchterm">
 	      <tal:block tal:define="results python:here.portal_classification.searchMatchingKeywordsFor(here, searchterm, old)">
 
@@ -80,14 +50,33 @@
 		      </tal:block>
 		    </tr>
 		  </table>
-		  <input type="submit" name="form.button.add" value="Select"/><font color='#ff0000'> 'select' before 'save' or no keywords will be added </font>
+		  <input type="submit" name="form.button.add" value="Select"/><font color='#ff0000'> 'select' before 'save' or new keywords will not be added </font>
 		</div>
 
 		<p tal:condition="not:results">No matching keywords found. Please try another search term.</p>
 	      </tal:block>
-	    </tal:block></fieldset>
+	    </tal:block>
+	    </tal:block>
 	  </div> <!-- end search/add new keywords -->
-	</div>
+
+	<fieldset>  <div tal:condition="not:old"><legend>Not yet classified</legend></div>
+
+	  <div  tal:condition="old"> <!-- Edit existing keywords -->
+	    <legend>This item is currently classified with the following keywords:</legend>
+	    <table>
+	      <tr tal:repeat="item old">
+	       <td><input type="checkbox" name="delKeywords:list" tal:attributes="value item/getId"/></td> 
+	        <td>
+	          <a tal:attributes="href item/absolute_url" tal:content="item/title_or_id"/>
+	        </td>
+	        <td>
+	          <span tal:replace="item/description|nothing"/>
+	        </td>
+	      </tr>
+	    </table>
+	    <input type="submit" name="form.button.delete" value="Delete"/><br>
+	  </div></fieldset> <!-- end editing existing keywords -->
+        </div>
        </div>
       </div>
 

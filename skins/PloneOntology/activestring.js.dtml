@@ -196,7 +196,7 @@ function launchSearch(inputId) {
 		return false;
 	}
 
-	activeStringReq = Sarissa.getXmlHttpRequest();
+	activeStringReq = new XMLHttpRequest();
 	activeStringReq.onreadystatechange= httpRequestChangeHandler;
 	var url = activeStringRoot + queryTarget + inputId + "&searchTerm="+ input.value;
 	activeStringReq.open("GET", url);

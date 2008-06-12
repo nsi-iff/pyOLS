@@ -37,31 +37,31 @@ class SearchKWWidget(ActiveStringWidget):
     _properties.update({
         'macro' : "activestringkw",
         })
-    security = ClassSecurityInfo()
-    security.declarePublic('process_form')
-    def process_form(self, instance, field, form, empty_marker=None,
-                     emptyReturnsMarker=False):
-        """
-        Basic impl for form processing in a widget
-        """
-        #my changes
-        at=getToolByName(instance, 'archetype_tool', None)
-        try:
-            try:
-                val = instance.getCategories()
-            except:
-                val=[]
-            val.append(at.lookupObject(form['skw']))
-            instance.setCategories(val)
-        except:
-            pass
-        #original
-        value = form.get(field.getName(), empty_marker)
-        if value is empty_marker:
-            return empty_marker
-        if emptyReturnsMarker and value == '':
-            return empty_marker
-        return value, {}
+##     security = ClassSecurityInfo()
+##     security.declarePublic('process_form')
+##     def process_form(self, instance, field, form, empty_marker=None,
+##                      emptyReturnsMarker=False):
+##         """
+##         Basic impl for form processing in a widget
+##         """
+##         #my changes
+##         at=getToolByName(instance, 'archetype_tool', None)
+##         try:
+##             try:
+##                 val = instance.getCategories()
+##             except:
+##                 val=[]
+##             val.append(at.lookupObject(form['skw']))
+##             instance.setCategories(val)
+##         except:
+##             pass
+##         #original
+##         value = form.get(field.getName(), empty_marker)
+##         if value is empty_marker:
+##             return empty_marker
+##         if emptyReturnsMarker and value == '':
+##             return empty_marker
+##         return value, {}
 
 class MyRefWidget(ReferenceWidget):
     _properties = ReferenceWidget._properties.copy()

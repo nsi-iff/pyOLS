@@ -16,7 +16,6 @@
 	     tal:define="searchterm python: request.get('searchterm','');
 	                 SearchKW python: request.get('SearchKW',None);
 			 accessor python:getattr(here, field.accessor);
-			 old python: accessor() or [];
 			 ">
 	<input type="text"
 	       name=""
@@ -34,12 +33,14 @@
 	       />
 
 <input type="hidden" name="skw" id="skw" value="" />
+<input type="submit" name="form.button.add_search" value="Add / Search"/>
 
 <div tal:attributes="id string:activeresult-${fieldName}" style="display: none;">
           <div tal:attributes="id string:activeresult-shadow-${fieldName}">
           </div>
         </div>
 </div>
+
       </metal:use>
     </metal:define>
 

@@ -11,7 +11,7 @@ p_view = View
 p_review = ReviewPortalContent
 p_request = RequestReview
 
-def setupKWPWorkflow(wf):
+def setupKeywordProposalWorkflow(wf):
     # nothing but the 'old' default worflow
     setupDefaultWorkflowClassic(wf)
 
@@ -202,19 +202,19 @@ return ""
     if script_folder:
         script_folder._setObject("rejectRelations", myscript)
         
-def createKWPWorkflow(id):
+def createKeywordProposalWorkflow(id):
     ob=DCWorkflowDefinition(id)
-    setupKWPWorkflow(ob)
-    ob.setProperties(title='KWPWorkflow [NIP]')
+    setupKeywordProposalWorkflow(ob)
+    ob.setProperties(title='KeywordProposalWorkflow [PloneOntology]')
     addScript(ob)
     addScript2(ob)
     addScript3(ob)
     return ob
 
-addWorkflowFactory( createKWPWorkflow, id='kw_proposal_workflow'
-                  , title='KWPWorkflow [NIP]')
+addWorkflowFactory( createKeywordProposalWorkflow, id='keyword_proposal_workflow'
+                  , title='KeywordProposalWorkflow [PloneOntology]')
 
-def setupRelationPWorkflow(wf):
+def setupRelationProposalWorkflow(wf):
     # nothing but the 'old' default worflow
     setupDefaultWorkflowClassic(wf)
 
@@ -331,13 +331,13 @@ return ""
         script_folder._setObject("generateRelation", myscript)
         
         
-def createRelationPWorkflow(id):
+def createRelationProposalWorkflow(id):
     ob=DCWorkflowDefinition(id)
-    setupRelationPWorkflow(ob)
-    ob.setProperties(title='RelationPWorkflow [NIP]')
+    setupRelationProposalWorkflow(ob)
+    ob.setProperties(title='RelationProposalWorkflow [PloneOntology]')
     addScript4(ob)
     return ob
 
-addWorkflowFactory( createRelationPWorkflow, id='relation_proposal_workflow'
-                  , title='RelationPWorkflow [NIP]')
+addWorkflowFactory( createRelationProposalWorkflow, id='relation_proposal_workflow'
+                  , title='RelationProposalWorkflow [PloneOntology]')
 

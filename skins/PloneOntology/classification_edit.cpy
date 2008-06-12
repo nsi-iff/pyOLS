@@ -5,7 +5,7 @@
 ##bind script=script
 ##bind state=state
 ##bind subpath=traverse_subpath
-##parameters=keywords=None, kw=None, delKeywords=None, searchterm='', keyworda='', keywordb='', SearchKWA='', SearchKWB='', skw=''
+##parameters=keywords=None, kw=None, delKeywords=None, searchterm='', keyworda='', keywordb='', SearchKW='',SearchKWA='', SearchKWB='', skw=''
 ##title=Classification handler
 ##
 
@@ -17,6 +17,7 @@ se5_button = context.REQUEST.get('form.button.search5',None)
 sel_button = context.REQUEST.get('form.button.sel',None)
 sel2_button = context.REQUEST.get('form.button.sel2',None)
 sel3_button = context.REQUEST.get('form.button.sel3',None)
+add_search_button = context.REQUEST.get('form.button.add_search',None)
 
 if add_button:
     if keywords is not None:
@@ -32,6 +33,16 @@ if add_button:
         return state.set(portal_status_message='Selected keywords added.')
     else:
         return state.set(portal_status_message='No keywords selected.')
+
+if add_search_button:
+ if skw=='':
+  return state.set()
+ else:
+  storage = context.portal_classification.getStorage()
+  val = context.getCategories()
+  val.append(context.archetype_tool.lookupObject(skw))
+  context.setCategories(val)
+  return state.set(portal_status_message='content categorized with keyword %s.' % SearchKW)
 
 if sel_button:
     if kw is not None:

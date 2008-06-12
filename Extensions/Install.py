@@ -128,6 +128,9 @@ def addCustomFormControllerTransitions(portal, out):
     container.addFormAction('base_edit', 'failure','',
                              'sel3', 'traverse_to',
                              'string:classification_edit')
+    container.addFormAction('base_edit', 'success','',
+                             'add_search', 'traverse_to',
+                             'string:classification_edit')
     
 def removeCustomFormControllerTransitions(portal, out):
     fc = getToolByName(portal, 'portal_form_controller')
@@ -190,25 +193,29 @@ def removeCustomFormControllerTransitions(portal, out):
         container.delete(FormActionKey('base_edit', 'failure', '',
                                        'sel2', fc))
     except KeyError: pass
+    try:
+        container.delete(FormActionKey('base_edit', 'success', '',
+                                       'add_search', fc))
+    except KeyError: pass
     
-def setupKWPWorkflow(portal, out):
+def setupKeywordProposalWorkflow(portal, out):
     """the proposal wf"""
     wf_tool = getToolByName(portal, 'portal_workflow')
-    wf_tool.manage_addWorkflow( id='kw_proposal_workflow',
-                                workflow_type='kw_proposal_workflow '+\
-                                '(KWPWorkflow [NIP])'
+    wf_tool.manage_addWorkflow( id='keyword_proposal_workflow',
+                                workflow_type='keyword_proposal_workflow '+\
+                                '(KeywordProposalWorkflow [PloneOntology])'
                                 )
 #    wf_tool.setChainForPortalTypes('KeywordProposal', 'kw_proposal_workflow ')
-    out.write("Set up KWPWorkflow")
+    out.write("Set up KeywordProposalWorkflow")
 
-def setupRelationPWorkflow(portal, out):
+def setupRelationProposalWorkflow(portal, out):
     """the proposal wf II"""
     wf_tool = getToolByName(portal, 'portal_workflow')
     wf_tool.manage_addWorkflow( id='relation_proposal_workflow',
-                                workflow_type='relation_proposal_workflow (RelationPWorkflow [NIP])'
+                                workflow_type='relation_proposal_workflow (RelationProposalWorkflow [PloneOntology])'
                                 )
 #    wf_tool.setChainForPortalTypes('KeywordProposal', 'kw_proposal_workflow ')
-    out.write("Set up RelationPWorkflow")
+    out.write("Set up RelationProposalWorkflow")
 
 def addArchive(portal, out):
     """ the kw proposal storage """
@@ -225,13 +232,13 @@ def addArchive(portal, out):
 def install(portal):
     out = StringIO()
     checkDependencies(portal, out)
-    setupKWPWorkflow(portal, out)
-    setupRelationPWorkflow(portal, out)
+    setupKeywordProposalWorkflow(portal, out)
+    setupRelationProposalWorkflow(portal, out)
     installTypes(portal, out, listTypes(PROJECTNAME), PROJECTNAME, GLOBALS)
     addArchive(portal, out)
     setupTool(portal, out)
     wf_tool = getToolByName(portal, 'portal_workflow')
-    wf_tool.setChainForPortalTypes('KeywordProposal', 'kw_proposal_workflow ')
+    wf_tool.setChainForPortalTypes('KeywordProposal', 'keyword_proposal_workflow ')
     wf_tool.setChainForPortalTypes('Keyword', '(Default)')
     wf_tool.setChainForPortalTypes('RelationProposal', 'relation_proposal_workflow ')
     registerConfiguration(portal, out)
