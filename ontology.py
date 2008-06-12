@@ -67,7 +67,7 @@ class Ontology(BaseBTreeFolder):
         gvtool = getToolByName(self, 'graphviz_tool')
 
         if not gvtool.isLayouterPresent():
-            raise NotFound(gvtool.getLayouter())
+            raise zExceptions.NotFound(gvtool.getLayouter())
 
         g = ctool.generateGraphvizMap()
 
