@@ -83,7 +83,6 @@ class StorageMethods:
         for col in [c.name for c in self.list_columns() if c.required]:
             query[col] = getattr(self, col)
 
-        print query
         if self.get_by(**query):
             vals = ", ".join(["=".join(map(str, a)) for a in query.items()])
             raise PyolsValidationError(
@@ -317,7 +316,7 @@ class Keyword(Entity, StorageMethods):
         self.delete()
 
 
-class KeywordAssociation(Entity):
+class KeywordAssociation(Entity, StorageMethods):
     belongs_to('keyword', of_kind='Keyword', primary_key=True)
     has_field('path', Unicode(512), primary_key=True)
     

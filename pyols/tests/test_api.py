@@ -1,5 +1,5 @@
 from pyols.api import OntologyTool
-from pyols.model import Keyword, Namespace, Relation
+from pyols.model import *
 from pyols.tests import run_tests, db
 from pyols.exceptions import PyolsNotFound, PyolsValidationError
 
@@ -24,7 +24,7 @@ class TestOntologyTool:
     def addKeyword(self, name=u"testKW", disambiguation=u"dis",
                    description=u"desc"):
         """ Add a keyword using a call to the OT. """
-        self.ot.addKeyword(name=name, disambiguation=disambiguation,
+        self.ot.addKeyword(name, disambiguation=disambiguation,
                            description=description)
         db().flush() # Mimic the flush that hapens at the end of each request
 
@@ -42,6 +42,7 @@ class TestOntologyTool:
                          disambiguation=disambiguation,
                          description=description)
         kw.flush()
+        return kw
 
     def keyword_getby(self, name=u"testKW"):
         """ Query for a keyword using Keyword.get_by. """
@@ -148,5 +149,26 @@ class TestOntologyTool:
     def testDelBadRelation(self):
         self.ot.delRelation(u'doesnt_exist')
 
+    def testAddKeywordAssociation(self):
+        kw = self.keyword_new()
+        self.ot.addKeywordAssociation(kw.name, u'asdf')
+        db().flush()
+
+        ka = KeywordAssociation.get_by(path=u'asdf')
+        ok_(ka)
+        assert_equal(ka.keyword.name, kw.name)
+
+    def testAddKeywordRelationship(self):
+        kw0 = self.keyword_new(name=u"kw0")
+        kw1 = self.keyword_new(name=u"kw1")
+        rel = self.addRelation()
+        self.ot.addKeywordRelationship(kw0.name, rel.name, kw1.name)
+        db().flush()
+
+        kwr = list(KeywordRelationship.query_by())[0]
+        ok_(kwr)
+        assert_equal(kwr.left.name, kw0.name)
+        assert_equal(kwr.right.name, kw1.name)
+        assert_equal(kwr.relation.name, rel.name)
 
 run_tests(__name__)

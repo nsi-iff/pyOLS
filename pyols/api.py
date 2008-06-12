@@ -1,4 +1,4 @@
-from pyols.model import Keyword, Namespace, Relation
+from pyols.model import *
 from pyols.fonts import findFonts
 from pyols.exceptions import PyolsNotFound, PyolsProgrammerError
 from pyols.util import create_methods
@@ -74,11 +74,43 @@ class OntologyTool(object):
         return self._namespace.name
     namespace = property(_get_namespace, _set_namespace)
 
-    @create_methods('add%s', (Keyword, ))
+    # XXX: REFACTOR THIS BIT
+    def obj_with_args(obj):
+        required = []
+        optional = []
+        for col in obj.list_columns():
+            if col.name == "namespace": continue
+            if col.required:
+                required.append(col.name)
+            else:
+                optional.append(str(col.name) + "=" + repr(col.default))
+        required = ", ".join(required + optional)
+        return (obj, "(" + required + ")")
+
+    # XXX: ADD ERROR CHECKING HERE
+    def _generate_query(self, class_, args, kwargs):
+        args = list(args)
+        query = {}
+        for col in class_.list_columns():
+            if col.name == 'namespace':
+                query['namespace'] = self._namespace
+            elif col.required:
+                if col.type.__module__ == 'pyols.model':
+                    args.insert(0, self._generic_get(col.type, args.pop(0)))
+                query[col.name] = args.pop(0)
+            else:
+                if col.name in kwargs:
+                    query[col.name] = kwargs[col.name]
+        return query
+
+    @create_methods('add%s', (obj_with_args(Keyword),
+                              obj_with_args(KeywordAssociation),
+                              obj_with_args(KeywordRelationship)))
     def _generic_add(self, class_, *args, **kwargs):
         """ Add a %(class_name)s to the ontology.  It is an error
             to add duplicate items.  The new instance is returned. """
-        new = class_.new(namespace=self._namespace, **kwargs)
+        query = self._generate_query(class_, args, kwargs)
+        new = class_.new(**query)
         new.assert_valid()
         return new
 
@@ -130,17 +162,6 @@ class OntologyTool(object):
             namespace matching kwargs.  kwargs may be empty. """
         return class_.query_by(namespace=self._namespace, **kwargs)
 
-    def addRelationship(self, left, relation, right):
-        """ Create a relationship of kind 'relation' between keywords 'left'
-            and 'right'.
-            For example, addRelationsihp('pear', 'typeOf', 'fruit') """
-        left = self.getKeyword(left)
-        right = self.getKeyword(right)
-        relation = self.getRelation(relation)
-        newkwr = KeywordRelationship.new(left=left, relation=relation, right=right)
-        newkwr.assert_valid()
-        return newkwa
-
     def delRelationship(self, left, relation, right):
         """ Destroy the relationship of kind 'relation' between keywords 
             'left' and 'right'. """
@@ -151,13 +172,6 @@ class OntologyTool(object):
                                            relation=relation,
                                            right=right)
         kwr.remove()
-
-    def addAssociation(self, keyword, path):
-        """ Create an association between 'keyword' and 'path'. """
-        keyword = self.getKeyword(keyword)
-        newkwa = KeywordAssociation.new(keyword=keyword, path=path)
-        newkwa.assert_valid()
-        return newkwa
 
     def getAssociations(self, keyword=None, path=None):
         """ Get an iterable of  associations for either the specified 'keyword'

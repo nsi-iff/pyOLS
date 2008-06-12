@@ -63,10 +63,15 @@ def _create_methods(name, classes, func):
     class_locals = sys._getframe(2).f_locals
 
     for class_ in classes:
+        doc = ""
+        if isinstance(class_, tuple):
+            (class_, doc) = class_
         new_func = curried(func, class_)
+        new_name = name % (class_.__name__, )
         new_doc = (func.__doc__ or '') %{'class_name': class_.__name__}
+        if doc: new_doc += "\n" + new_name + doc
         new_func.__doc__ = new_doc
-        class_locals[name % (class_.__name__, )] = new_func
+        class_locals[new_name] = new_func
     return func
 
 class Container:
