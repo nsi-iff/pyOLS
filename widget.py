@@ -26,10 +26,10 @@ registerWidget(ActiveStringWidget,
 
 registerPropertyType('dataurl', 'string', ActiveStringWidget)
 
-class MyRefWidget(ReferenceWidget):
+class RelationRefWidget(ReferenceWidget):
     _properties = ReferenceWidget._properties.copy()
     _properties.update({
-        'macro' : "my_ref_widget",
+        'macro' : "relation_ref_widget",
         })
 
 class SearchKWAWidget(ActiveStringWidget):
