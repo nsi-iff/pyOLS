@@ -9,6 +9,7 @@ import zLOG
 import popen2
 
 from warnings import warn
+from config import *
 
 class GraphVizTool(UniqueObject, PloneFolder,
                          ActionProviderBase): 
@@ -64,8 +65,10 @@ class GraphVizTool(UniqueObject, PloneFolder,
         Type is dependable on options.
         """
         if tool == '':
-            tool=self.getLayouter()
+            tool = self.getLayouter()
         
+        tool = os.path.join(GV_BIN_PATH, tool)
+
         options = " ".join(options)
         
         (pout,pin) = popen2.popen4(cmd = "%s %s" % (tool, options), mode = "b")
