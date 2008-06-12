@@ -13,3 +13,6 @@ class PyolsProgrammerError(AssertionError, PyolsException):
         (a user, no matter how unruly, should never be able
          to cause one of these). """
     pass
+
+class PyolsNotFound(PyolsException):
+    """ A wrapper around the NotFound exception. """

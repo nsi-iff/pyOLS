@@ -214,12 +214,12 @@ class OntologyTool(object):
         self._edge_font_color = '#000000'
         self._edge_font_size = 8
         self._encoding = 'utf-8'
-        self._classifyRelationship = "classifiedAs_byPloneOntology"
 
     def _set_namespace(self, new_namespace):
         """ Set the current namespace.
             It it does not exist, it will be created. """
         self._namespace = Namespace.get_or_create_by(name=new_namespace)
+        self._namespace.flush()
 
     def _get_namespace(self):
         """ Return the name of the current namespace. """
@@ -231,28 +231,16 @@ class OntologyTool(object):
             An error will be raised if a keyword with the same name
             and disambiguation exists in the current namespace. """
 
-        newkw = Keyword.new(namespace_id=self._namespace.id, name=name,
+        newkw = Keyword.new(namespace=self._namespace, name=name,
                             disambiguation=disambiguation,
                             description=description)
         newkw.assert_valid()
-        newkw.save()
+        newkw.flush()
 
     def getKeyword(self, name):
-        """Return keyword 'name' from current ontology.
-
-        Exceptions:
-            NotFound            : There is no keyword 'name' in current ontology.
-            ValidationException : 'name' is empty.
-        """
-        catalog = getToolByName(self, 'portal_catalog')
-
-        if not name:
-            raise ValidationException, "Empty keyword name."
-
-        try:
-            return catalog.searchResults(portal_type='Keyword', name=name.decode(self.getEncoding()))[0].getObject()
-        except IndexError:
-            raise NotFound, "Keyword '%s' not found in current ontology" % name
+        """ Return keyword 'name' from current ontology.
+            An exception is raised if the keyword is not found. """
+        return Keyword.fetch_by(name=name)        
 
     def delKeyword(self, name):
         """Remove keyword from ontology.

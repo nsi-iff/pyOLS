@@ -1,4 +1,4 @@
-from pyols.web.tests import reset_db
+from pyols.tests import reset_db, run_tests
 from pyols.web.main import RequestDispatcher
 
 import elixir
@@ -29,11 +29,7 @@ class TestRequestDispatcher:
         self.d = RequestDispatcher(self.f)
 
     def teardown(self):
-        # XXX THIS DOESN'T WORK XXX
-        # Keyword().flush()
-        # will result in an object in the DB, but new and dirty will be empty
-        if elixir.objectstore.dirty or elixir.objectstore.new:
-            reset_db()
+        reset_db()
 
     def call(self, *calls):
         """ Make a call to the dispatch_many function, called when a
@@ -72,5 +68,5 @@ class TestRequestDispatcher:
     def testUnsupportedMethod(self):
         self.call_one('unsupported')
 
-import nose
-nose.main(argv=["", "-d"])
+
+run_tests(__name__)

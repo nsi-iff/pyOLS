@@ -1,6 +1,6 @@
 """ Model for pyOLS. """
 
-from pyols.exceptions import PyolsValidationError, PyolsProgrammerError
+from pyols.exceptions import *
 from pyols.owl import isXMLNCName
 
 from elixir import *
@@ -13,7 +13,8 @@ class StorageMethods:
     @classmethod
     def get_or_create_by(cls, **kwargs):
         """ Get an instance of the class, or if it does not exist,
-            create one.
+            create one using new() (note that this means the object
+            has _not_ been flush()'d).
             **kwargs are the attributes of the class (for instance,
             name or description). """
         obj = cls.get_by(**kwargs)
@@ -33,17 +34,25 @@ class StorageMethods:
         #       _never executed_.
 
     @classmethod
+    def fetch_by(cls, **kwargs):
+        """ Identical to get_by, except an exception is raised if the
+            object is not found.
+            >>> Keyword.fetch_by(name='bad_name')
+            ...
+            PyolsNotFound("Keyword with {'name': 'bad_name'} not found.")
+            """
+        obj = cls.get_by(**kwargs)
+        if obj: return obj
+        raise PyolsNotFound("%s with %r not found." %(cls.__name__, kwargs))
+
+    @classmethod
     def new(cls, **kwargs):
-        """ Create a new object which can be save()'d.
+        """ Create a new object which can be flush()'d.
             **kwargs are the attributes of the class. """
         return cls(**kwargs)
 
     def assert_valid(self):
         """ Assert that the new instance is valid. """
-
-        # Make life a little easier because _most_ classes
-        # have a name.
-        if hasattr(self, 'name'): self.validate_name()
         self.assert_unique()
         self.has_required_fields()
 
@@ -51,6 +60,10 @@ class StorageMethods:
         """ Assert that all the required fields have been filled out. """
         required_fields = [f.name for f in self.c if not f.nullable]
         for field in required_fields:
+            # The ID field is set automatically and can be ignored
+            # The endswith test is because linked objects may have IDs too
+            # (eg, namespace_id)
+            if field.endswith('id'): continue
             field_val = getattr(self, field)
             if not field_val:
                 raise PyolsValidationError(
@@ -78,22 +91,10 @@ class StorageMethods:
                     "A %s already exists with %s."
                     %(self.__class__.__name__, values))
 
-    def validate_name(self):
-        # This may or may not stay here... I need to figure out how to
-        # do validateion.
-        if not hasattr(self, 'name'):
-            raise PyolsProgrammerError("%s does not have a name."
-                                        %(self.__class__.__name__))
-
-        if not isXMLNCName(self.name):
-            raise PyolsValidationError("%s is not a valid name for a %s"
-                                        %(self.name, self.__class__.__name__))
-
-    def save(self):
-        """ "Save" this instance, making it persistant.
-            Does not nessicarly guarentee that the object will "hit the disk"
-            right away -- just that, at some point, it will. """
-        self.flush()
+    def flush(self):
+        """ Flush this instance to disk, making it persistant. """
+        # Note: Just like get_by, this method is overriden by Elixir, so
+        #       this code here will never get called.
 
 
 """
@@ -115,7 +116,7 @@ Assumptions:
 """
 class Namespace(Entity, StorageMethods):
     has_field('id', Integer, primary_key=True)
-    has_field('name', Unicode, unique=True, required=True)
+    has_field('name', Unicode(128), unique=True, required=True)
 
     using_options(tablename='namespaces')
 
@@ -130,7 +131,7 @@ Relations bind keywords together through "KeywordRelationship"s.
 class Relation(Entity):
     has_field('id', Integer, primary_key=True)
     belongs_to('namespace', of_kind='Namespace', required=True)
-    has_field('name', String, required=True)
+    has_field('name', Unicode(128), required=True)
 
     has_field('revelance', Float, default=1)
     has_field('transitive', Boolean, default=False)
@@ -148,10 +149,10 @@ class Relation(Entity):
 class Keyword(Entity, StorageMethods):
     has_field('id', Integer, primary_key=True)
     belongs_to('namespace', of_kind='Namespace', required=True)
-    has_field('name', Unicode, required=True)
+    has_field('name', Unicode(128), required=True)
 
-    has_field('disambiguation', Unicode, default='')
-    has_field('description', Unicode, default='')
+    has_field('disambiguation', UnicodeText, default='')
+    has_field('description', UnicodeText, default='')
 
     has_many('associations', of_kind='KeywordAssociation')
     has_many('left_relations', of_kind='KeywordRelationship', inverse='left')
@@ -161,7 +162,7 @@ class Keyword(Entity, StorageMethods):
     using_table_options(UniqueConstraint('namespace_id', 'name', 'disambiguation'))
 
 class KeywordAssociation(Entity):
-    has_field('path', Unicode, primary_key=True)
+    has_field('path', Unicode(512), primary_key=True)
     belongs_to('keyword', of_kind='Keyword', primary_key=True)
     
     using_options(tablename='keyword_associations')
@@ -172,8 +173,3 @@ class KeywordRelationship(Entity):
     belongs_to('right', of_kind='Keyword', primary_key=True)
 
     using_options(tablename='keyword_relationships')
-    
-
-metadata.bind = "sqlite:///:memory:"
-metadata.bind.echo = True
-setup_all(True)

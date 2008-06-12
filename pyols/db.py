@@ -1,7 +1,7 @@
 from pyols.exceptions import PyolsProgrammerError
 from pyols import config
 
-from elixir import metadata, session, setup_all, objectstore
+from elixir import metadata, session, setup_all, drop_all, objectstore
 
 class DatabaseManager:
     def __init__(self, dbString, debug=False):
