@@ -44,7 +44,7 @@
 					     newurl string:${cururl}?fieldset=classification&searchterm=${s}">
 		      <td><input type="checkbox" name="keywords:list" tal:attributes="value item/getId"/></td>
 
-		      <td><span tal:content="item/title_or_id"/></td>
+		      <td><a tal:attributes="href item/absolute_url" tal:content="item/title_or_id" /></td>
 		      <td><span tal:replace="item/description|nothing"/></td>
 		      </tal:block>
 		    </tr>
@@ -62,7 +62,7 @@
 					     newurl string:${cururl}?fieldset=classification&searchterm=${s}">
 		      <td><input type="checkbox" name="exkeywords:list" tal:attributes="value item/getId"/></td>
 
-		      <td><span tal:content="item/title_or_id"/></td>
+		      <td><a tal:attributes="href item/absolute_url" tal:content="item/title_or_id" /></td>
 		      <td><span tal:replace="item/description|nothing"/></td>
 		      </tal:block>
 		    </tr>

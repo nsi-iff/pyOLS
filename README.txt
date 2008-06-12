@@ -37,13 +37,13 @@ PloneOntology Readme
 
     required Software:
 
-      * Zope 2.8 or higher with Plone 2.1 -- 
+      * Zope 2.8 or higher with Plone 2.1 or higher -- 
       "http://plone.org/products/plone/":http://plone.org/products/plone/
 
         *Note that PloneOntology may work with Plone 2.0.5, but that
         this is not officially supported.*
 
-      * Archetypes 1.3.2. or higher -- 
+      * Archetypes 1.3.2. or higher (comes with Plone nowadays) -- 
       "http://sourceforge.net/projects/archetype":http://sourceforge.net/projects/archetype
 
       * Relations 0.5b1 or higher -- 
@@ -91,6 +91,9 @@ PloneOntology Readme
         site. Note though that this may take a while on sites with 
         many Keywords. Probably it is best to try this on a test site 
         first...
+
+        *Types that allow classification*: choose the content types
+        that shall support classification.
 
       Tab *relations*:
 
@@ -167,14 +170,11 @@ PloneOntology Readme
       For all content types that are enabled for classification an
       additional object tab is displayed, which allows to edit the
       keyword references of that object.
-
       To add a new keyword, first search for candidates. From the
       result list pick the ones you want to include and press the
       'Add' button.
-
       Removal of keywords is similar. Just select the ones to delete
       and press the 'Delete' button.
-
       As soon as you classified some objects within your portal, the
       related portlet shows related content, ranked according to Plone
       Ontologies scoring mechanism.
@@ -184,7 +184,6 @@ PloneOntology Readme
       To make a custom Archetypes content type classifiable select it
       in the list of content types within the Plone Ontology
       configuration panel.
-
 
     Getting Graphviz to work with PloneOntology
 
