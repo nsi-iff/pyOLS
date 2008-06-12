@@ -118,7 +118,7 @@ class TestKeywordStorage(PloneTestCase.PloneTestCase):
         # title, description, short additional description
         abdominal_ganglion = self.ct.getKeyword('abdominal_ganglion')
         self.assertEqual(abdominal_ganglion.title, 'Abdominal ganglion')
-        self.assertEqual(abdominal_ganglion.getKwDescription(), 'The abdominal ganglion is abdominal')
+        self.assertEqual(abdominal_ganglion.getKwDescription(), 'The abdominal ganglion is abdominal.')
         self.assertEqual(abdominal_ganglion.short_additional_description, 'The abdominal ganglion')
 
         ### check references.
@@ -176,18 +176,21 @@ class TestKeywordStorage(PloneTestCase.PloneTestCase):
             self.assertEqual(len(c), 1)
             c = c[0]
             if keyword.title:
-                self.assertEqual(c.getElementsByTagName('dc:title')[0].firstChild.data.strip(), keyword.title)
-            if keyword.short_additional_description:
-                self.assertEqual(c.getElementsByTagName('rdfs:label')[0].firstChild.data.strip(), keyword.short_additional_description)
+                for label in c.getElementsByTagName('rdfs:label'):
+                    self.assertEqual(label.firstChild.data.strip(), keyword.title)
+            if keyword.getShort_additional_description():
+                for comment in c.getElementsByTagName('rdfs:comment'):
+                    self.assertEqual(comment.firstChild.data.strip(), keyword.getShort_additional_description())
             if keyword.getKwDescription():
-                self.assertEqual(c.getElementsByTagName('dc:description')[0].firstChild.data.strip(), keyword.getKwDescription())
+                for description in c.getElementsByTagName('dc:description'):
+                    self.assertEqual(description.firstChild.data.strip(), keyword.getKwDescription())
             for rel in keyword.getRelationships():
                 if rel == 'childOf':
                     self.assertEqual([superclass.getAttribute('rdf:resource') for superclass in c.getElementsByTagName('rdfs:subClassOf')], ['#' + parent.getId() for parent in keyword.getRefs('childOf')])
                 elif rel == 'parentOf':
                     self.assertEqual([subclass.getAttribute('rdf:ID') for subclass in [cl for cl in owl_classes if '#' + kw in [sc.getAttribute('rdf:resource') for sc in cl.getElementsByTagName('rdfs:subClassOf')]]], [child.getId() for child in keyword.getRefs('parentOf')])
                 elif rel == 'synonymOf':
-                    self.assertEqual([eclass.getAttribute('rdf:resource') for eclass in reduce(lambda x,y: x+y, [cl.getElementsByTagName('owl:equivalentClass') for cl in owl_classes if kw == cl.getAttribute('rdf:about')])], ['#' + synonym.getId() for synonym in keyword.getRefs('synonymOf')])
+                    self.assertEqual([eclass.getAttribute('rdf:resource') for eclass in reduce(lambda x,y: x+y, [cl.getElementsByTagName('owl:equivalentClass') for cl in owl_classes if '#' + kw == cl.getAttribute('rdf:about')])], ['#' + synonym.getId() for synonym in keyword.getRefs('synonymOf')])
                 else:
                     self.assertEqual([el.getAttribute('rdf:resource') for el in c.getElementsByTagName(rel)], ['#' + ref.getId() for ref in keyword.getRefs(rel)])
 

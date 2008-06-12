@@ -33,8 +33,7 @@ class Ontology(BaseBTreeFolder):
     allowed_content_types = ('Keyword',)
 
     def getTopLevel(self):
-        """
-        try to guess the most 'rootlike' Kewords by looking which KWs are only parents and parent to more than one KW
+        """try to guess the most 'rootlike' Kewords by looking which KWs are only parents and parent to more than one KW.
         """
         listOfObjects=[]
 
@@ -57,10 +56,10 @@ class Ontology(BaseBTreeFolder):
             idList.append(el.getId())
 ##             for il in self.RootKW:
 ##                 idList.append(il)
-                
+
         return idList
 
-    
+
     def objectOfIds(self):
         """
         """
@@ -73,14 +72,15 @@ class Ontology(BaseBTreeFolder):
         if objList==[]:
             objList=getToolByName(self, 'portal_classification').getStorage().contentValues()
         return objList
-        
+
     def exportVocabulary(self):
-        """
-        XML Serialization. In the future this might be RDF or OWL
+        """XML Serialization.
+
+        In the future this might be RDF or OWL.
         2005-04-12 OWL export with exportOWL().
         """
         ct = getToolByName(self, 'portal_classification')
-        
+
         file = StringIO()
 
         #xml header
@@ -114,12 +114,12 @@ class Ontology(BaseBTreeFolder):
                 file.write('    </keyword>\n\n')
             file.write('  </keywords>\n\n')
         file.write('</vocabulary>\n')
-            
+
         return file.getvalue()
 
     def importVocabulary(self, file):
-        """
-        Import ontology from XML file data
+        """Import ontology from XML file data.
+
         2005-04-19 OWL import with importOWL().
         """
         dom = parse(file)
@@ -129,11 +129,11 @@ class Ontology(BaseBTreeFolder):
 
         kws = dom.getElementsByTagName("keyword")
         for kw in kws: self.handleKeyword(kw)
-        
+
         for el in getToolByName(self, 'portal_classification').getStorage().contentValues():
             el.updateKwMap()
         dom.unlink() # cleanup
-        
+
     def handleRelation(self, rel):
         name = rel.getAttribute('name')
         score = rel.getAttribute('score')
@@ -143,24 +143,23 @@ class Ontology(BaseBTreeFolder):
             ct.registerKeywordRelation(name, factor=score)
             zLOG.LOG(PROJECTNAME, zLOG.INFO,
                      "Added relation %s with score %s" % (name, score))
-            
+
     def handleKeyword(self, kw):
-        """
-        utility function for import, handles a keyword
+        """utility function for import, handles a keyword.
         """
         id = kw.getAttribute('id')
         title = kw.getAttribute('title')
         description = kw.getElementsByTagName('description')
         refs = kw.getElementsByTagName('reference')
-        
+
         if not hasattr(self.aq_base, id): # create new keyword
             self.invokeFactory('Keyword', id)
-            
+
         kw = getattr(self, id)
-        
+
         if title:
             kw.title = title
-            
+
         if description: description = description.nodeValue
         if description:
             kw.setKwDescription(description)
@@ -175,15 +174,14 @@ class Ontology(BaseBTreeFolder):
         #XXX partial commit???
 
     def handleReference(self, kw, ref):
-        """
-        utility function for import, handles a reference
+        """utility function for import, handles a reference.
         """
         dst = ref.getAttribute('dst')
         if not hasattr(self.aq_base, dst): # create new keyword
             self.invokeFactory('Keyword', dst)
 
         dst = getattr(self, dst)
-        
+
         type = ref.getAttribute('type')
 
         kw.addReference(dst, type)
@@ -195,18 +193,26 @@ class Ontology(BaseBTreeFolder):
                  'inversefunctional' : 'InverseFunctionalProperty'}
 
     def exportOWL(self):
-        """
-        Export NIP keyword structure to OWL.
+        """Export keyword structure to OWL.
         """
         exporter = OWLExporter()
         entities = exporter.getEntities()
 
         ct = getToolByName(self, 'portal_classification')
         rl = getToolByName(self, 'relations_library')
-        
+
         # Export OWL object properties.
         for prop in ct.relations(rl):
-            exporter.generateObjectProperty(prop, [entities['owl'] + self.owl_types[t] for t in ct.getTypes(prop)], ct.getInverses(prop), [entities['owl'] + 'Class'], [entities['owl'] + 'Class'], {}, "", "", [('nip:weight', str(ct.getWeight(prop)))])
+            exporter.generateObjectProperty(name               = prop,
+                                            types              = [entities['owl'] + self.owl_types[t] for t in ct.getTypes(prop)],
+                                            inverses           = ct.getInverses(prop),
+                                            domains            = [entities['owl'] + 'Class'],
+                                            ranges             = [entities['owl'] + 'Class'],
+                                            labels             = [],
+                                            comments           = [],
+                                            descriptions       = [],
+                                            propertyproperties = [('nip:weight', str(ct.getWeight(prop)))]
+            )
 
         # Export OWL classes.
         for kw in ct.keywords():
@@ -218,23 +224,34 @@ class Ontology(BaseBTreeFolder):
                 if p not in [ 'childOf', 'parentOf', 'synonymOf' ]:
                     for c in keyword.getRefs(p):
                         ops.append((p,c.getId()))
-            if keyword.short_additional_description:
-                label = { 'en' : keyword.short_additional_description }
-            else:
-                label = {}
-            exporter.generateClass(keyword.getId(), scs, label,
-                                   keyword.title,
-                                   keyword.getKwDescription(), ops
-                                   )
-                               
+            lang         = 'en'
+            labels       = []
+            comments     = []
+            descriptions = []
+            label       = keyword.title
+            comment     = keyword.getShort_additional_description()
+            description = keyword.getKwDescription()
+            if label:
+                labels.append((lang, label))
+            if comment:
+                comments.append((lang, comment))
+            if description:
+                descriptions.append((lang, description))
+            exporter.generateClass(name            = keyword.getId(),
+                                   superclasses    = scs,
+                                   labels          = labels,
+                                   comments        = comments,
+                                   descriptions    = descriptions,
+                                   classproperties = ops
+            )
+
             for c in ecs:
                 exporter.generateEquivalentClass(keyword.getId(), c)
 
         return exporter.serialize()
 
     def importOWL(self, file):
-        """
-        Import NIP keyword structure from OWL file 'file'.
+        """Import keyword structure from OWL file 'file'.
         """
         #XXX use subtransactions for large imports!!!
 
@@ -246,12 +263,12 @@ class Ontology(BaseBTreeFolder):
 
         #don't abort transaction if map generation fails
         transaction.commit()
-        
+
         # Update keyword graph images
         ct = getToolByName(self, 'portal_classification')
         for el in ct.getStorage().contentValues():
             el.updateKwMap(levels=2)
-            
+
         return error_string
-            
+
 registerType(Ontology)

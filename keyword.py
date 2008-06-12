@@ -32,12 +32,12 @@ kwSchema = BaseSchema + Schema((
     ))
 
 class Keyword(BaseContent):
-    
+
     meta_type = portal_type = archetype = "Keyword"
-    
+
     global_allow = 0
     content_icon = "workflow_icon.gif"
-    
+
     schema = kwSchema
     actions = (
         {'name' : "Related Content",
@@ -52,7 +52,7 @@ class Keyword(BaseContent):
          },
 
         )
-    
+
     security = ClassSecurityInfo()
     security.declareObjectPublic()
 
@@ -63,11 +63,12 @@ class Keyword(BaseContent):
         if small_des!='':
             return id + '_' + new_small_des
         else:
-            return id                
+            return id
 
     security.declarePublic('title_or_id')
     def title_or_id(self):
-        '''makes title string with small description'''
+        """makes title string with small description.
+        """
         t=''
         des=''
         try:
@@ -88,15 +89,13 @@ class Keyword(BaseContent):
         return res
 
     def getWrappedKeywords(self):
-        """
-        returns all linked keywords wrapped together with a list of
-        the corresponding relationtypes
+        """returns all linked keywords wrapped together with a list of the corresponding relationtypes.
         """
         reltypes=self.getRelationships()
 
         result = []
         objects = []
-        
+
         for r in reltypes:
             obs = self.getRefs(r)
             for o in obs:
@@ -114,11 +113,9 @@ class Keyword(BaseContent):
         return result
 
     def _filteredItems( self, obs, filt ):
-        """
-            Apply filter, a mapping, to child objects indicated by 'ids',
-            returning a sequence of ( id, obj ) tuples.
+        """Apply filter, a mapping, to child objects indicated by 'ids', returning a sequence of ( id, obj ) tuples.
 
-            From CMF1.6 PortalFolder API
+        From CMF1.6 PortalFolder API.
         """
         # Restrict allowed content types
         if filt is None:
@@ -148,15 +145,12 @@ class Keyword(BaseContent):
             if query(obj):
                 append( (obj.getId(), obj) )
         return result
-    
+
     security.declarePublic("classifiedContentItems")
     def classifiedContentItems( self, filter=None ):
-        """
-        From Portalfolder
-        Provide a filtered view onto 'objectValues', allowing only
-        PortalFolders and PortalContent-derivatives to show through.
+        """Provide a filtered view onto 'objectValues', allowing only PortalFolders and PortalContent-derivatives to show through.
 
-        From CMF Portalfolder (follows CMF 1.6 API)
+        From CMF Portalfolder (follows CMF 1.6 API).
         """
         obs = self.getBRefs('classifiedAs')
         return self._filteredItems(obs, filter)
@@ -164,18 +158,16 @@ class Keyword(BaseContent):
     security.declarePublic("classifiedContentValues")
     def classifiedContentValues( self, filter=None ):
         """Return content classified for keyword.
-        
-        Provide a filtered view onto 'objectValues', allowing only
-        PortalFolders and PortalContent-derivatives to show through.
+
+        Provide a filtered view onto 'objectValues', allowing only        PortalFolders and PortalContent-derivatives to show through.
         """
         return [x[1] for x in self.classifiedContentItems(filter)]
 
     security.declarePublic("classifiedContentIds")
     def classifiedContentIds( self, filter=None ):
-        """
-        From Portalfolder
-        Provide a filtered view onto 'objectValues', allowing only
-        PortalFolders and PortalContent-derivatives to show through.
+        """Provide a filtered view onto 'objectValues', allowing only PortalFolders and PortalContent-derivatives to show through.
+
+        From Portalfolder.
         """
         return [x[0] for x in self.classifiedContentItems(filter)]
 
@@ -192,7 +184,7 @@ class Keyword(BaseContent):
             result = []
         else:
             result = [self]
-            
+
         if forth == '1':
          direct = self.getRefs()
          for kw in direct:
@@ -207,12 +199,10 @@ class Keyword(BaseContent):
             result = [x for x in result if not x==self]
             result = [x for x in result if not x in direct]
             result = [x for x in result if not x in directback]
-                
         return result
-    
+
     def findDependent(self, levels=2, exact=False):
-        """
-        Find keywords with shortest path distance less than level steps
+        """Find keywords with shortest path distance less than level steps.
         """
         temp = self._recursiveFindDependent(levels, exact)
         result = []
@@ -228,10 +218,9 @@ class Keyword(BaseContent):
         result = result.replace('_', '')
         result = result.replace('-', '')
         return result
-    
+
     def generateGraph(self, levels=2):
-        """
-        Generate graph source code for GraphViz.
+        """Generate graph source code for GraphViz.
         """
         ctool = getToolByName(self, 'portal_classification')
         forth = ctool.getForth()
@@ -278,7 +267,7 @@ class Keyword(BaseContent):
                     obs.remove(self)
                 except ValueError: # self not in list
                     pass
-                
+
                 for cnode in obs:
                     dot.relation(node, cnode, rel)
 
@@ -300,8 +289,7 @@ class Keyword(BaseContent):
         return dot.getValue()
 
     def updateKwMap(self, levels=2):
-        """
-        update kwMap cached images
+        """update kwMap cached images.
         """
         ctool = getToolByName(self, 'portal_classification')
         gvtool = getToolByName(self, 'graphviz_tool')
@@ -312,10 +300,10 @@ class Keyword(BaseContent):
 
         result = gvtool.renderGraph(g, options=["-Tpng",])
         self.setKwMapGraphic(result, mimetype="image/png")
-        
+
         result = gvtool.renderGraph(g, options=["-Tcmap",])
         self.setKwMapData(result, mimetype="text/html")
-        
+
 ## def modify_fti(fti):
 ##     fti['allow_discussion'] = 1
 ##     # hide unnecessary tabs (usability enhancement)

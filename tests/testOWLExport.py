@@ -22,13 +22,13 @@ class TestOWLExporter(PloneTestCase.PloneTestCase):
         self.qi.installProduct('PloneOntology')
 
         self.exporter = OWLExporter()
-        
+
     def testOWLExportGenerateClassDefault(self):
         self.exporter.generateClass("foo")
         cl = self.exporter.getDOM().documentElement.lastChild
 
         self.assertEqual('foo', cl.getAttribute('rdf:ID'))
-        
+
     def testOWLExportGenerateClassSuperClasses(self):
         self.exporter.generateClass("foo", superclasses = ["bar", "blaz"])
         cl = self.exporter.getDOM().documentElement.lastChild
@@ -40,9 +40,9 @@ class TestOWLExporter(PloneTestCase.PloneTestCase):
         self.assertEqual(['#bar', '#blaz'], names)
 
     def testOWLExportGenerateClassLabels(self):
-        self.exporter.generateClass("foo", labels = {'de':'Honig', 'en':'honey'})
+        self.exporter.generateClass("foo", labels = [('de','Honig'), ('en','honey')])
         cl = self.exporter.getDOM().documentElement.lastChild
-        
+
         labels = cl.getElementsByTagName('rdfs:label')
         res = []
         for l in labels:
@@ -53,10 +53,10 @@ class TestOWLExporter(PloneTestCase.PloneTestCase):
         self.assertEqual([('de','Honig'), ('en', 'honey')], res)
 
     def testOWLExportGenerateClassDCAttributes(self):
-        self.exporter.generateClass("foo", title="bar", description="blaz")
+        self.exporter.generateClass("foo", labels=[('en',"bar")], descriptions=[('en',"blaz")])
         cl = self.exporter.getDOM().documentElement.lastChild
-        
-        title = cl.getElementsByTagName('dc:title')
+
+        title = cl.getElementsByTagName('rdfs:label')
         self.assertEqual(1, title.length)
         self.assertEqual("bar", title.item(0).firstChild.data)
 
@@ -67,9 +67,9 @@ class TestOWLExporter(PloneTestCase.PloneTestCase):
     def testOWLExportGenerateEquivalentClass(self):
         self.exporter.generateEquivalentClass("foo", "bar")
         cl = self.exporter.getDOM().documentElement.lastChild
-        
-        self.assertEqual("foo", cl.getAttribute('rdf:about'))
-        
+
+        self.assertEqual("#foo", cl.getAttribute('rdf:about'))
+
         ecl = cl.getElementsByTagName('owl:equivalentClass')
         self.assertEqual(1, ecl.length)
         self.assertEqual("#bar", ecl.item(0).getAttribute('rdf:resource'))
@@ -89,7 +89,7 @@ class TestOWLExporter(PloneTestCase.PloneTestCase):
     def testOWLExportGenerateObjectPropertyTypes(self):
         self.exporter.generateObjectProperty("foo", types=["bar", "blaz"])
         prop = self.exporter.getDOM().documentElement.lastChild
-        
+
         types = prop.getElementsByTagName('rdf:type')
         names = [x.getAttribute('rdf:resource') for x in types]
         names.sort()
@@ -99,7 +99,7 @@ class TestOWLExporter(PloneTestCase.PloneTestCase):
     def testOWLExportGenerateObjectPropertyInverses(self):
         self.exporter.generateObjectProperty("foo", inverses=["bar", "blaz"])
         prop = self.exporter.getDOM().documentElement.lastChild
-        
+
         types = prop.getElementsByTagName('owl:inverseOf')
         names = [x.getAttribute('rdf:resource') for x in types]
         names.sort()
@@ -109,7 +109,7 @@ class TestOWLExporter(PloneTestCase.PloneTestCase):
     def testOWLExportGenerateObjectPropertyDomains(self):
         self.exporter.generateObjectProperty("foo", domains=["bar", "blaz"])
         prop = self.exporter.getDOM().documentElement.lastChild
-        
+
         types = prop.getElementsByTagName('rdfs:domain')
         names = [x.getAttribute('rdf:resource') for x in types]
         names.sort()
@@ -119,7 +119,7 @@ class TestOWLExporter(PloneTestCase.PloneTestCase):
     def testOWLExportGenerateObjectPropertyRange(self):
         self.exporter.generateObjectProperty("foo", ranges=["bar", "blaz"])
         prop = self.exporter.getDOM().documentElement.lastChild
-        
+
         types = prop.getElementsByTagName('rdfs:range')
         names = [x.getAttribute('rdf:resource') for x in types]
         names.sort()
@@ -127,9 +127,9 @@ class TestOWLExporter(PloneTestCase.PloneTestCase):
         self.assertEqual(["bar", "blaz"], names)
 
     def testOWLExportGenerateObjectPropertyLabels(self):
-        self.exporter.generateObjectProperty("foo", labels = {'de':'Honig', 'en':'honey'})
+        self.exporter.generateObjectProperty("foo", labels = [('de','Honig'), ('en','honey')])
         prop = self.exporter.getDOM().documentElement.lastChild
-        
+
         labels = prop.getElementsByTagName('rdfs:label')
         res = []
         for l in labels:
@@ -140,10 +140,10 @@ class TestOWLExporter(PloneTestCase.PloneTestCase):
         self.assertEqual([('de','Honig'), ('en', 'honey')], res)
 
     def testOWLExportGenerateObjectPropertyDCAttributes(self):
-        self.exporter.generateObjectProperty("foo", title="bar", description="blaz")
+        self.exporter.generateObjectProperty("foo", labels=[('en',"bar")], descriptions=[('en',"blaz")])
         prop = self.exporter.getDOM().documentElement.lastChild
-        
-        title = prop.getElementsByTagName('dc:title')
+
+        title = prop.getElementsByTagName('rdfs:label')
         self.assertEqual(1, title.length)
         self.assertEqual("bar", title.item(0).firstChild.data)
 

@@ -14,6 +14,7 @@ from config import *
 from Products.Relations import interfaces
 from Products.Relations.processor import process
 from Products.Relations.exception import ValidationException
+from zExceptions import NotFound
 
 import zExceptions, zLOG
 import difflib, re
@@ -25,12 +26,11 @@ import os.path
 from warnings import warn
 
 def _unifyRawResults(results):
+    """unify result list and add scores for unique objects.
+
+    results is list of tuples (score, object).
     """
-    unify result list and add scores for unique objects
-    
-    results is list of tuples (score, object)
-    """
-    
+
     result = []
     obs = []
     for c in results:
@@ -58,7 +58,7 @@ class ClassificationTool(UniqueObject,
                          ActionProviderBase): 
     """A tool to handle content syndication with keywords.
     """
-    
+
     id = 'portal_classification' 
     meta_type= 'Classification Tool' 
     plone_tool = 1 
@@ -66,7 +66,7 @@ class ClassificationTool(UniqueObject,
     security = ClassSecurityInfo()
     #XXX proper security declarations
     security.declareObjectPublic()
-    
+
     def __init__(self):
         self.relevance_factors = PersistentMapping()
         self._cutoff = 0.1
@@ -78,11 +78,13 @@ class ClassificationTool(UniqueObject,
         self._back = '0'
 
     def getGVFont(self):
-        """Return the current gv font"""
+        """Return the current gv font.
+        """
         return self._gvfont
 
     def setGVFont(self, font):
-        """Set the font for gv output"""
+        """Set the font for gv output.
+        """
         self._gvfont=font
 
     def getBack(self):
@@ -102,37 +104,42 @@ class ClassificationTool(UniqueObject,
         self._forth=forth
 
     def reftypes(self):
-        """Return a list of all referenceable portal types
+        """Return a list of all referenceable portal types.
         """
         at = getToolByName(self, 'archetype_tool')
         typeslist=[]
         for el in at.listRegisteredTypes():
             typeslist.append(el['meta_type'])
-            
+
         return typeslist
 
     def getClassifyTypes(self):
-        """Return a list of all the types which are set as classifyable"""
+        """Return a list of all the types which are set as classifyable.
+        """
         return self._classifytypes
 
     def setClassifyTypes(self, types):
-        """Set the list of the classifyable types"""
+        """Set the list of the classifyable types.
+        """
         self._classifytypes=types
 
     def addClassifyType(self, type):
-        """Add a type to the list of classifyable types"""
+        """Add a type to the list of classifyable types.
+        """
         if not type in self._classifytypes:
             self._classifytypes.append(type)
 
     def removeClassifyType(self, type):
-        """Remove a type from the list of classifyable types"""
+        """Remove a type from the list of classifyable types.
+        """
         try:
             self._classifytypes.remove(type)
         except ValueError:
             pass
-        
+
     def returnReadMe(self):
-        """Return README file for display in configlet"""
+        """Return README file for display in configlet.
+        """
         from config import GLOBALS
         cdir = os.path.dirname(GLOBALS['__file__'])
         filename = os.path.join(cdir, "README.txt")
@@ -145,7 +152,12 @@ class ClassificationTool(UniqueObject,
     def addKeyword(self, name, title="",
                    description="",
                    short_description=""):
-        """Create a keyword in the current onology"""
+        """Create a keyword in the current onology.
+
+        Exceptions:
+            ValidationException : 'name' is empty.
+            NameError           : Keyword 'name' already exists in current ontology.
+        """
         if not name:
             raise ValidationException("Empty name for keyword specified")
 
@@ -153,7 +165,7 @@ class ClassificationTool(UniqueObject,
             self.getKeyword(name)
             if self.getKeyword(name).meta_type == 'Keyword':
                 raise NameError, "Keyword '%s' already exists in current ontology" % name
-        except KeyError:
+        except NotFound:
             pass
 
         storage = self.getStorage()
@@ -164,16 +176,21 @@ class ClassificationTool(UniqueObject,
         return self.getKeyword(name)
 
     def getKeyword(self, name):
-        """Return keyword 'name' from current ontology."""
+        """Return keyword 'name' from current ontology.
+
+        Exceptions:
+            NotFound : There is no keyword 'name' in current ontology.
+        """
         storage = self.getStorage()
 
         if not hasattr(storage, name):
-            raise KeyError, "Keyword '%s' not found in current ontology" % name
+            raise NotFound, "Keyword '%s' not found in current ontology" % name
 
         return getattr(storage, name)
 
     def delKeyword(self, name):
-        """Remove keyword from ontology"""
+        """Remove keyword from ontology.
+        """
         storage = self.getStorage()
         try:
             storage._delObject(name)
@@ -183,31 +200,23 @@ class ClassificationTool(UniqueObject,
             pass
 
     def keywords(self): 
-        """
-        Return a list of all existing keyword names.
+        """Return a list of all existing keyword names.
         """
         #XXX use catalog search cause it's faster
         storage = self.getStorage()
         return [kw.getId() for kw in storage.objectValues('Keyword')]
 
     def addRelation(self, name, weight=0.0, types=[], inverses=[]):
-        """
-        Create a keyword relation 'name' in the Plone Relations library, if
-        non-existant. 'weight' is set in any case if in [0,1]. For each item in
-        the 'types' list from {'transitive', 'symmetric', 'functional',
-        'inversefunctional'} an appropiate rule is created in the Relations
-        ruleset. For each relation name in the 'inverses' list an
-        InverseImplicator rule is created in the Relations ruleset. The inverse
-        keyword relation is created in the Plone Relations library if
-        non-existant. Rules for inferring types for the inverse relation are
-        created.
+        """Create a keyword relation 'name' in the Plone Relations library, if non-existant.
+
+        'weight' is set in any case if in [0,1]. For each item in the 'types' list from {'transitive', 'symmetric', 'functional', 'inversefunctional'} an appropiate rule is created in the Relations ruleset. For each relation name in the 'inverses' list an InverseImplicator rule is created in the Relations ruleset. The inverse keyword relation is created in the Plone Relations library if non-existant. Rules for inferring types for the inverse relation are created.
         """
         relations_library = getToolByName(self, 'relations_library')
 
         relations_library.invokeFactory('Ruleset', name)
         zLOG.LOG(PROJECTNAME, zLOG.INFO,
                  "Added relation %s." % name)
-        
+
         ruleset = self.getRelation(name)
         ruleset.setTitle(name)
 
@@ -215,45 +224,45 @@ class ClassificationTool(UniqueObject,
 
         if type(types) != ListType:
             types = [types]
-            
+
         self.setTypes   (name, types)
 
         if type(inverses) != ListType:
             inverses = [inverses]
-            
+
         self.setInverses(name, inverses)
-        
+
         return ruleset
 
     def getRelation(self, name):
         """Return the relation ruleset from the Plone Relations library.
-        """
-        
-        relations_library = getToolByName(self, 'relations_library')
-        if name not in self.relations(relations_library):
-            raise KeyError, "Relation '%s' not found in library" % name
 
+        Exceptions:
+            NotFound : No relation ruleset 'name' in library.
+        """
+
+        relations_library = getToolByName(self, 'relations_library')
         return relations_library.getRuleset(name)
 
     def delRelation(self, name):
-        """
-        Remove the keyword relation 'name' from 'relations_library', if it
-        exists.
+        """Remove the keyword relation 'name' from 'relations_library', if it exists.
         """
         relations_library = getToolByName(self, 'relations_library')
         if hasattr(relations_library, name):
             relations_library.manage_delObjects(name)
             zLOG.LOG(PROJECTNAME, zLOG.INFO,
                      "Removed relation %s." % name)
-        
+
     def relations(self, relations_library):
-        """
-        Return a list of all existing keyword relation names in 'relations_library'.
+        """Return a list of all existing keyword relation names in 'relations_library'.
         """
         return [r.getId() for r in relations_library.getRulesets()]
 
     def getWeight(self, name):
         """Return the weight of keyword relation 'name'.
+
+        Exceptions:
+            NotFound : No relation ruleset 'name' in library.
         """
         r = self.getRelation(name)
         try:
@@ -262,27 +271,24 @@ class ClassificationTool(UniqueObject,
             return 0.0
 
     def setWeight(self, name, w):
-        """
-        Set weight of keyword relation 'name' to 'w',
-        if 'w' >= 0.
-        
-        
-        Exceptions: If there does not exist a keyword relation 'name', KeyError occurs.
+        """Set weight of keyword relation 'name' to 'w', if 'w' >= 0.
+
+        Exceptions:
+            NotFound : No relation ruleset 'name' in library.
         """
         r = self.getRelation(name)
-        
+
         if w >= 0.0:
             r.weight = w
-        
+
     def setTypes(self, name, t):
-        """
-        Set the list of types of keyword relation 'name' in 'relations_library'
-        to 't', if 't' is non-empty list from {'transitive', 'symmetric',
-        'functional', 'inversefunctional'}. Empty list deletes all types.
+        """Set the list of types of keyword relation 'name' in 'relations_library'.
+
+        The list is set to t, if 't' is non-empty list from {'transitive', 'symmetric', 'functional', 'inversefunctional'}. Empty list deletes all types.
         Return the list of types of keyword relation 'name'.
-        
-        Exceptions: If there does not exist a keyword relation 'name',
-                    KeyError occurs.
+
+        Exceptions:
+            NotFound : No relation ruleset 'name' in library.
         """
 
         r = self.getRelation(name)
@@ -312,7 +318,7 @@ class ClassificationTool(UniqueObject,
                 r.manage_delObjects('functional')
             except AttributeError:
                 pass
-            
+
         if 'inversefunctional' in t:
             if not hasattr(r, 'inversefunctional'):
                 r.invokeFactory('Cardinality Constraint', 'inversefunctional')
@@ -323,10 +329,12 @@ class ClassificationTool(UniqueObject,
                 r.manage_delObjects('inversefunctional')
             except AttributeError:
                 pass
-            
 
     def getTypes(self, name):
-        """Get list of types for keyword relation 'name'
+        """Get list of types for keyword relation 'name'.
+
+        Exceptions:
+            NotFound : No relation ruleset 'name' in library.
         """
         ruleset = self.getRelation(name)
 
@@ -336,21 +344,18 @@ class ClassificationTool(UniqueObject,
                 result.append('transitive')
         except AttributeError:
             pass
-        
+
         result.extend([rule.getId() for rule in ruleset.getComponents(interfaces.IRule) if rule.getId() in ('symmetric', 'functional', 'inversefunctional')])
 
         return result
-    
-    def setInverses(self, name, i):
-        """
-        Set inverse relations of keyword relation 'name' in 'relations_library'
-        to relations in 'i', if 'i' is non-empty list of relation names. Empty
-        list deletes all inverses. All relations in 'i' are created, if
-        non-existant. Inferring types for relations in 'i' are created from the
-        types of relation 'name'.
 
-        Exceptions: If there does not exist a keyword relation 'name',
-                    a KeyError is thrown.
+    def setInverses(self, name, i):
+        """Set inverse relations of keyword relation 'name' in 'relations_library'.
+
+        Inverse relations are set to relations in 'i', if 'i' is non-empty list of relation names. Empty list deletes all inverses. All relations in 'i' are created, if non-existant. Inferring types for relations in 'i' are created from the types of relation 'name'.
+
+        Exceptions:
+            NotFound : No relation ruleset 'name' in library.
         """
         ruleset = self.getRelation(name)
         current = self.getInverses(name)
@@ -362,25 +367,25 @@ class ClassificationTool(UniqueObject,
             irules = iruleset.getComponents(interfaces.IRule)
             irules = [rule for rule in irules if rule.getId().startswith('inverseOf')]
             iruleset.manage_delObjects([rule.getId() for rule in irules if rule.getInverseRuleset().getId() == ruleset.getId()])
-            
+
         ruleset.manage_delObjects([rule.getId() for rule in ruleset.getComponents(interfaces.IRule) if re.match('inverseOf', rule.getId()) and rule.getInverseRuleset().getId() in obsolete])
 
         for inverse in new:
             try:
                 self.getRelation(inverse)
-            except KeyError:
+            except NotFound:
                 self.addRelation(inverse)
-                
+
         for inverse in i:
             inverse_ruleset = self.getRelation(inverse)
-            
+
             types         = self.getTypes(name)
             inverse_types = [t for t in types if t in ['transitive', 'symmetric']]      + \
                             ['inversefunctional' for i in range('functional' in types)] + \
                             ['functional' for i in range('inversefunctional' in types)]
 
             self.setTypes(inverse, inverse_types)
-            
+
             if not hasattr(ruleset, 'inverseOf_' + inverse):
                 ruleset.invokeFactory('Inverse Implicator', 'inverseOf_' + inverse)
                 getattr(ruleset, 'inverseOf_' + inverse).setInverseRuleset(inverse_ruleset.UID())
@@ -390,92 +395,92 @@ class ClassificationTool(UniqueObject,
                 getattr(inverse_ruleset, 'inverseOf_' + name).setInverseRuleset(ruleset.UID())
 
     def getInverses(self, name):
-        """Get inverse relations for the relation 'name'
+        """Get inverse relations for the relation 'name'.
 
-        If 'name' is not existing a KeyError is thrown.
+        Exceptions:
+            NotFound : No relation ruleset 'name' in library.
         """
         ruleset = self.getRelation(name)
         return [rule.getInverseRuleset().getId() for rule in ruleset.getComponents(interfaces.IRule) if re.match('inverseOf', rule.getId())]
-    
-    def addReference(self, src, dst, relation):
-        """
-        Create an Archetype reference of type 'relation' from keyword with name
-        'src' to keyword with name 'dst', if non-existant. 'src' and 'dst' are
-        created, if non-existant. The reference is created through Plone
-        Relations library, so relation-specific rulesets are honored.
 
-        Exceptions: If 'relation' does not exist zExceptions.NotFound occurs.
-                    If the reference does not validate in the ruleset,
-                    Relations.exception.ValidationException occurs.
+    def addReference(self, src, dst, relation):
+        """Create an Archetype reference of type 'relation' from keyword with name
+        'src' to keyword with name 'dst', if non-existant.
+
+        'src' and 'dst' are created, if non-existant. The reference is created through Plone Relations library, so relation-specific rulesets are honored.
+
+        Exceptions:
+            NotFound            : No relation ruleset 'relation' in library.
+            ValidationException : Reference does not validate in the relation ruleset.
         """
         zLOG.LOG(PROJECTNAME, zLOG.INFO,
                  "%s(%s,%s)." % (relation, src, dst))
 
         try:
             kw_src  = self.getKeyword(src)
-        except KeyError:
-            kw_src  = self.addKeyword(src)
+        except NotFound:
+            try:
+                kw_src  = self.addKeyword(src)
+            except ValidationException:
+                return
 
         try:
             kw_dst  = self.getKeyword(dst)
-        except KeyError:
-            kw_dst  = self.addKeyword(dst)
+        except NotFound:
+            try:
+                kw_dst  = self.addKeyword(dst)
+            except ValidationException:
+                return
 
         process(self, connect=((kw_src.UID(), kw_dst.UID(), relation),))
 
-    
+
     def delReference(self, src, dst, relation):
-        """
-        Remove the Archetype reference of type 'relation' from keyword with
-        name 'src' to keyword with name 'dst', if the reference exists. 'src'
-        and 'dst' are created, if non-existant. The reference is removed
-        through Plone Relations library, so relation-specific rulesets are
-        honored.
-        
-        Exceptions: If 'relation' does not exist zExceptions.NotFound occurs.
-                    If the unreference does not validate in the ruleset
-                    Relations.exceptions.ValidationException occurs.
+        """Remove the Archetype reference of type 'relation' from keyword with
+        name 'src' to keyword with name 'dst', if the reference exists.
+
+        'src' and 'dst' are created, if non-existant. The reference is removed through Plone Relations library, so relation-specific rulesets are honored.
+
+        Exceptions:
+            NotFound            : No relation ruleset 'name' in library.
+            ValidationException : Unreference does not validate in the relation ruleset.
         """
         try:
             kw_src = self.getKeyword(src)
             kw_dst = self.getKeyword(dst)
-        except KeyError:
+        except NotFound:
             return
-        
+
         process(self, disconnect=((kw_src.UID(), kw_dst.UID(), relation),))
 
     # ZMI wrappers.
     def manage_addKeyword(self, name, title='', short_additional_description='', description='', REQUEST=None):
-        """
-        Add new keyword.
+        """Add new keyword.
         """
         self.addKeyword(name, title, description, short_additional_description)
-        
+
         if REQUEST is not None:
             return self.manage_main(REQUEST)
-        
+
     def manage_addRelation(self, name, title='', factor=1, REQUEST=None):
-        """
-        Add new relation between keywords.
+        """Add new relation between keywords.
         """
         self.addRelation(name, factor)
-        
+
         if REQUEST is not None:
             return self.manage_relations(REQUEST)
-    
+
     def manage_delRelations(self, ids, REQUEST=None):
-        """
-        Delete keyword relations.
+        """Delete keyword relations.
         """
         for name in ids:
             self.delRelation(name)
 
         if REQUEST is not None:
             return self.manage_relations(REQUEST)
-            
+
     def manage_changeFactors(self, name, factor=1, REQUEST=None):
-        """
-        Change relevancy factor/weight for relation.
+        """Change relevancy factor/weight for relation.
         """
         self.setWeight(name, factor)
 
@@ -485,22 +490,20 @@ class ClassificationTool(UniqueObject,
     ### End of new API.
 
     def setStorageId(self, name):
-        """
-        Set id of current storage
+        """Set id of current storage.
         """
         self._storage = name
 
     def getStorageId(self):return self._storage
-    
+
     def getStorage(self):
-        """
-        Return current keyword storage object
+        """Return current keyword storage object.
         """
         urltool = getToolByName(self, 'portal_url')
         portal = urltool.getPortalObject()
 
         kwstorage = getattr(portal, self.getStorageId(), None)
-        
+
         if kwstorage is None: #create
             pt=getToolByName(self, 'portal_types')
             pt.getTypeInfo('Ontology').global_allow=True
@@ -511,16 +514,16 @@ class ClassificationTool(UniqueObject,
             pt.getTypeInfo('Ontology').global_allow=False
 
             kwstorage = getattr(portal, self.getStorageId(), None)
-            
+
         return kwstorage
-    
+
     def isAllowed(self, obj):
-        """
-        Return true if current user is allowed to access obj. This is
-        solely to swallow Unauthorized exceptions
+        """Return true if current user is allowed to access obj.
+
+        This is solely to swallow Unauthorized exceptions.
         """
         if obj is None: return 0
-        
+
         try:
             if getSecurityManager().validate(self, self, obj.getId(), obj):
                 return 1
@@ -528,43 +531,42 @@ class ClassificationTool(UniqueObject,
             return 0
 
         return 0
-                        
+
     def search(self, kwId, links="all"):
-        """
-        Search Content for a given keyword.
-        By default follow all link types
+        """Search Content for a given keyword.
+
+        By default follow all link types.
         """
         storage = self.getStorage()
-        
+
         keywords = self.getRelatedKeywords(kwId, links=links,
                                            cutoff = self.getSearchCutoff())
-        
+
         results = []
-        
+
         for kw in keywords.keys():
             obj = getattr(storage, kw)
             rels = obj.getBRefs('classifiedAs') or []
-            
+
             res = [(keywords[kw], x) for x in rels if self.isAllowed(x)]
             results.extend(res)
 
         results =  _unifyRawResults(results)
-    
+
         results.sort()
         results.reverse() #descending scores
         return results
 
 
     def searchFor(self, obj, links="all"):
-        """
-        Search related content for content object
+        """Search related content for content object.
         """
 
         # search not possible for non AT types
         if not getattr(obj, 'isReferenceable', 0): return []
-        
+
         keywords = obj.getRefs('classifiedAs') or []
-        
+
         results = []
 
         for kw in keywords:
@@ -579,19 +581,17 @@ class ClassificationTool(UniqueObject,
         results.reverse()
 
         return results
-    
+
     def getRelatedKeywords(self, keyword, fac=1, result={}, links="all", cutoff=0.1):
-        """
-        Return list of keywords, that are related to the current one,
-        keyword is the keyword ID
+        """Return list of keywords, that are related to the current one, keyword is the keyword ID.
         """
         storage = self.getStorage()
-        
+
         try:
             kwObj = getattr(storage, keyword)
         except AttributeError: # nonexistant keyword
             return {}
-            
+
         # work with private copy w/t reference linking
         result = result.copy() 
 
@@ -614,7 +614,7 @@ class ClassificationTool(UniqueObject,
 
     def _getDirectLinkTargets(self, kwObj, fac, links, cutoff):
         children=[]
-        
+
         for rel in links:
             relfac = self.getWeight(rel) * fac
             children.extend([(relfac, x)
@@ -627,7 +627,7 @@ class ClassificationTool(UniqueObject,
             cid = c[1].id
             if not result.has_key(cid):
                 result[cid] = c[0]
-                
+
                 recursive = self.getRelatedKeywords(cid, c[0],
                                                     result, links, cutoff)
 
@@ -639,39 +639,38 @@ class ClassificationTool(UniqueObject,
                         result[kw] = recursive[kw]
 
         return result
-    
+
     def setSearchCutoff(self, cutoff):
         if type(cutoff) != FloatType: cutoff = float(cutoff)
         if cutoff < 0: cutoff = 0
-        
+
         self._cutoff = cutoff
 
     def getSearchCutoff(self):
         return self._cutoff
 
     def searchMatchingKeywordsFor(self, obj, search, exclude=[], search_kw_proposals='false', search_linked_keywords='true'):
-        """
-        Return keywords matching a search string
+        """Return keywords matching a search string.
         """
         #XXX obj in method signature is obsolete
 
         storage = self.getStorage()
         catalog = getToolByName(self, 'portal_catalog')
-        
+
         kws = dict(storage.objectItems('Keyword'))
         kwps = catalog.searchResults(portal_type='KeywordProposal')
         kwpsdict={}
         for el in kwps:
             if el.getObject().getParentNode().getId() != 'accepted_kws':
              kwpsdict.update({el.getObject().getId():el.getObject()})
-            
+
         for item in storage.objectValues('Keyword'):
             if item.title:
                 kws.update({item.title: item})
-        
+
         result = difflib.get_close_matches(search, kws.keys(), n=5, cutoff=0.5)
         result = [kws[x] for x in result]
-    
+
         extresult=[]
         if search_linked_keywords == 'true':
          [extresult.extend(x.getLinkedKeywords()) for x in result]
@@ -686,14 +685,13 @@ class ClassificationTool(UniqueObject,
                         result2.remove(el2)
             result.extend(result2)
 
-        
         result.extend(extresult)
 
         #remove duplicates & excludes
 
         if type(exclude) != ListType:
             exclude = [exclude]
-            
+
         set = []
         [set.append(i) for i in result if (not i in set) and (i not in exclude)]        
         if len(set) > 20:
@@ -701,5 +699,5 @@ class ClassificationTool(UniqueObject,
         return set
 
     def useGraphViz(self): return self._use_gv_tool
-    
+
 InitializeClass(ClassificationTool)

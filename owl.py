@@ -1,6 +1,6 @@
 from Products.CMFCore.utils import getToolByName
 from Products.Relations.exception import ValidationException
-import zExceptions
+from zExceptions import NotFound
 from xml.dom.minidom import parse, parseString, getDOMImplementation
 import re
 
@@ -12,21 +12,22 @@ class OWLBase:
       <!ENTITY dc  "http://www.purl.org/dc/elements/1.1/">
       <!ENTITY nip "http://www.neuroinf.de/ontology/0.1/">
     ]>
-        
+    
     <rdf:RDF
       xmlns:owl = "http://www.w3.org/2002/07/owl#"
       xmlns:rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
       xmlns:rdfs= "http://www.w3.org/2000/01/rdf-schema#"
       xmlns:xsd = "http://www.w3.org/2001/XMLSchema#"
       xmlns:dc  = "http://purl.org/dc/elements/1.1/"
-      xmlns:nip = "http://www.neuroinf.de/ontology/0.1/">
+      xmlns:nip = "http://www.neuroinf.de/ontology/0.1/"
+      xmlns     = "http://www.neuroinf.de/ontology/0.1/kw_storage.owl#"
+      xml:base  = "http://www.neuroinf.de/ontology/0.1/kw_storage.owl">
     
       <owl:Ontology rdf:about="">
-        <rdfs:comment>OWL ontology for neuroinf.de</rdfs:comment>
-        <rdfs:label>neuroinf.de ontology</rdfs:label>
+        <rdfs:label xml:lang="en">neuroinf.de ontology</rdfs:label>
+        <rdfs:comment xml:lang="en">OWL ontology for neuroinf.de</rdfs:comment>
       </owl:Ontology>
     
-      <owl:AnnotationProperty rdf:about="&dc;title"/>
       <owl:AnnotationProperty rdf:about="&dc;description"/>
       <owl:AnnotationProperty rdf:about="&nip;weight"/>
     
@@ -38,7 +39,7 @@ class OWLBase:
 
         if self._dom.doctype:
             self._dom.doctype.name = 'rdf:RDF'
-        
+
         self._entities = {}
         self.ensureEntities()
 
@@ -47,6 +48,13 @@ class OWLBase:
 
     def getEntities(self):
         return self._entities
+
+    def parseURIRef(self, uriRef):
+        (fragmentContext, fragment) = re.match('([^#]*)#?(.*)', uriRef).groups()
+        return {'fragmentContext':fragmentContext, 'fragment':fragment}
+
+    def generateURIRef(self, fragment, fragmentContext=""):
+        return fragmentContext + '#' + fragment
 
     def ensureEntities(self):
         """Collect XML entities and ensure existance of &owl; and &nip; entities.
@@ -61,81 +69,69 @@ class OWLBase:
         if not self._entities.has_key('nip'):
             self._entities['nip'] = 'http://www.neuroinf.de/ontology/0.1/'
 
-            
+
 class OWLExporter(OWLBase):
-        
+
     def serialize(self):
         return self.getDOM().toprettyxml()
-    
-    def generateClass(self, name, superclasses=[], labels={}, title="",
-                      description="", classproperties=[]
+
+    def generateClass(self, name, superclasses=[], labels=[], comments=[],
+                      descriptions=[], classproperties=[]
                      ):
-        """
-        Return an OWL class element for class 'name' which is a subclass
-        of every class in 'superclasses'. The class is labelled for each
-        mapping of an ISO639 language code to a label in 'labels'.
-        DublinCore 'title' and 'description' are annotated if non-empty.
-        The class gets a property for each tuple of property name and class
-        name in 'classproperties'.
+        """Return an OWL class element for class 'name' which is a subclass of every class in 'superclasses'.
+        The class is RDFS labelled, commented on and DublinCore described for each pair of an ISO639 language code to a label in 'labels', a comment in 'comments' or a description in 'descriptions' respectively. The class gets a property for each pair of property name and class name in 'classproperties'.
         """
         cl = self._dom.createElement('owl:Class')
         cl.setAttribute('rdf:ID', name)
 
         for superclass in superclasses:
             subclassof = self._dom.createElement('rdfs:subClassOf')
-            subclassof.setAttribute('rdf:resource', '#' + superclass)
+            subclassof.setAttribute('rdf:resource', self.generateURIRef(superclass))
             cl.appendChild(subclassof)
 
-        for (lang, label) in labels.iteritems():
+        for (lang, label) in labels:
             l = self._dom.createElement('rdfs:label')
             l.setAttribute('xml:lang', lang)
             l.appendChild(self._dom.createTextNode(label))
             cl.appendChild(l)
 
-        if title:
-            t = self._dom.createElement('dc:title')
-            t.appendChild(self._dom.createTextNode(title))
-            cl.appendChild(t)
+        for (lang, comment) in comments:
+            c = self._dom.createElement('rdfs:comment')
+            c.setAttribute('xml:lang', lang)
+            c.appendChild(self._dom.createTextNode(comment))
+            cl.appendChild(c)
 
-        if description:
+        for (lang, description) in descriptions:
             d = self._dom.createElement('dc:description')
+            d.setAttribute('xml:lang', lang)
             d.appendChild(self._dom.createTextNode(description))
             cl.appendChild(d)
 
         for (prop, propclass) in classproperties:
             p = self._dom.createElement(prop)
-            p.setAttribute('rdf:resource', '#' + propclass)
+            p.setAttribute('rdf:resource', self.generateURIRef(propclass))
             cl.appendChild(p)
 
         self._dom.documentElement.appendChild(cl)
 
     def generateEquivalentClass(self, class1, class2):
-        """
-        Return an OWL class element saying about 'class1' that it is
-        equivalent to 'class2'.
+        """Return an OWL class element saying about 'class1' that it is equivalent to 'class2'.
         """
         eq  = self._dom.createElement('owl:Class')
         eqc = self._dom.createElement('owl:equivalentClass')
-        eq.setAttribute('rdf:about', class1)
-        eqc.setAttribute('rdf:resource', '#' + class2)
+        eq.setAttribute('rdf:about', self.generateURIRef(class1))
+        eqc.setAttribute('rdf:resource', self.generateURIRef(class2))
         eq.appendChild(eqc)
 
         self._dom.documentElement.appendChild(eq)
 
     def generateObjectProperty(self, name, types=[], inverses=[], domains=[], ranges=[],
-                               labels={}, title="", description="",
+                               labels=[], comments=[], descriptions=[],
                                propertyproperties=[]
                                ):
-        """
-        Return an OWL object property element for property 'name' with
-        'types', 'iverses', 'domains' and 'ranges'. 'types' is a list of
-        OWL type strings, e.g. ['&owl;TransitiveProperty',
-        '&owl;SymmetricProperty']. 'inverses' is a list of inverse
-        properties, e.g. name='parentOf', inverses=['childOf']. The
-        property is labelled for each mapping of an ISO693 language code to
-        label in 'labels'. DublinCore 'title' and 'description' are
-        annotated if non-empty. The property gets a datatype property for
-        each tuple of property name and string in 'propertyproperties'.
+        """Return an OWL object property element for property 'name' with 'types', 'iverses', 'domains' and 'ranges'.
+
+        'types' is a list of OWL type strings, e.g. ['&owl;TransitiveProperty', '&owl;SymmetricProperty']. 'inverses' is a list of inverse properties, e.g. name='parentOf', inverses=['childOf']. The property is RDFS labelled, commented on and DublinCore described for each pair of an ISO639 language code to a label in 'labels', a comment in 'comments' or a description in 'descriptions' respectively. The property gets a datatype property for each pair of property name and string in 'propertyproperties'.
         """
         op = self._dom.createElement('owl:ObjectProperty')
         op.setAttribute('rdf:ID', name)
@@ -146,7 +142,7 @@ class OWLExporter(OWLBase):
 
         for inverse in inverses:
             i = self._dom.createElement('owl:inverseOf')
-            i.setAttribute('rdf:resource', '#' + inverse)
+            i.setAttribute('rdf:resource', self.generateURIRef(inverse))
             op.appendChild(i)
 
         for domain in domains:
@@ -159,19 +155,21 @@ class OWLExporter(OWLBase):
             r.setAttribute('rdf:resource', range)
             op.appendChild(r)
 
-        for (lang, label) in labels.iteritems():
+        for (lang, label) in labels:
             l = self._dom.createElement('rdfs:label')
             l.setAttribute('xml:lang', lang)
             l.appendChild(self._dom.createTextNode(label))
             op.appendChild(l)
 
-        if title:
-            t = self._dom.createElement('dc:title')
-            t.appendChild(self._dom.createTextNode(title))
-            op.appendChild(t)
+        for (lang, comment) in comments:
+            c = self._dom.createElement('rdfs:comment')
+            c.setAttribute('xml:lang', lang)
+            c.appendChild(self._dom.createTextNode(comment))
+            op.appendChild(c)
 
-        if description:
+        for (lang, description) in descriptions:
             d = self._dom.createElement('dc:description')
+            d.setAttribute('xml:lang', lang)
             d.appendChild(self._dom.createTextNode(description))
             op.appendChild(d)
 
@@ -189,7 +187,7 @@ class OWLImporter(OWLBase):
         self._context = context # acquisition context for finding tools
 
         OWLBase.__init__(self)
-        
+
         if file is not None:
             self._dom = parse(file)
 
@@ -197,10 +195,10 @@ class OWLImporter(OWLBase):
                 self._dom.doctype.name = 'rdf:RDF'
 
             self.ensureEntities()
-            
+
         self._props = []
         self.ensureBuiltinProperties()
-        
+
     def objectProperties(self):
         """Return known non builtin relations"""
         return self._props
@@ -209,23 +207,23 @@ class OWLImporter(OWLBase):
         return [ 'childOf', 'parentOf', 'synonymOf' ]
 
     def ensureBuiltinProperties(self):
-        """Ensure existance of OWL built-in relations
-        
+        """Ensure existance of OWL built-in relations.
+
         rdfs:subClassOf     -- childOf <-> parentOf
         owl:equivalentClass -- synonymOf
         """
         ct = getToolByName(self._context, 'portal_classification')
-        
+
         try:
             ct.getRelation('childOf')
-        except KeyError:
+        except NotFound:
             ct.addRelation('childOf'  , 1.0, ['transitive'], ['parentOf'])
 
         try:
             ct.getRelation('synonymOf')
-        except KeyError:
+        except NotFound:
             ct.addRelation('synonymOf', 1.0, ['transitive', 'symmetric'])
-            
+
     def importProperties(self):
         for owlObjectProperty in self._dom.getElementsByTagName('owl:ObjectProperty'):
             self.importObjectProperty(owlObjectProperty)
@@ -237,7 +235,7 @@ class OWLImporter(OWLBase):
         rangeIsClass = nsClass in [ range.getAttribute('rdf:resource') for range in prop.getElementsByTagName('rdfs:range') ]
 
         return domainIsClass and rangeIsClass
-        
+
     def importObjectProperty(self, prop):
         ct = getToolByName(self._context, 'portal_classification')
         rid = prop.getAttribute('rdf:ID')
@@ -245,12 +243,12 @@ class OWLImporter(OWLBase):
         if  self.domainAndRangeAreClasses(prop):
             try:
                 rel = ct.getRelation(rid)
-            except KeyError:
+            except NotFound:
                 rel = ct.addRelation(rid)
 
             if not rid in self.getBuiltinProperties():
                 self._props.append(rid)
-                
+
             owl_type = re.compile('^' + self._entities['owl'] + '(.*)Property$')
             types = []
             for type in prop.getElementsByTagName('rdf:type'):
@@ -262,7 +260,7 @@ class OWLImporter(OWLBase):
 
             inverses = []
             for inverse in prop.getElementsByTagName('owl:inverseOf'):
-                inverses.append(inverse.getAttribute('rdf:resource').strip("#"))
+                inverses.append(self.parseURIRef(inverse.getAttribute('rdf:resource'))['fragment'])
 
             ct.setInverses(rid, inverses)
 
@@ -274,15 +272,15 @@ class OWLImporter(OWLBase):
 
             ct.setWeight(rid, weight)
 
-            dctitle = prop.getElementsByTagName("dc:title")
+            labels = prop.getElementsByTagName("rdfs:label")
             try:
-                rel.setTitle(dctitle[0].firstChild.data)
+                rel.setTitle(labels[0].firstChild.data)
             except:
                 rel.setTitle(rel.getId())
 
-            dcdescription = prop.getElementsByTagName("dc:description")
+            descriptions = prop.getElementsByTagName("dc:description")
             try:
-                rel.setDescription(dcdescription[0].firstChild.data)
+                rel.setDescription(descriptions[0].firstChild.data)
             except:
                 rel.setDescription("")
 
@@ -295,7 +293,7 @@ class OWLImporter(OWLBase):
                            self.importClass(owlClass)
 
         return error_string
-            
+
     def importClass(self, cl):
         error_string=""
         ct = getToolByName(self._context, 'portal_classification')
@@ -304,68 +302,76 @@ class OWLImporter(OWLBase):
         if kid:
             try:
                 kw = ct.getKeyword(kid)
-            except KeyError:
+            except NotFound:
                 kw = ct.addKeyword(kid)
+            #FIXME: Catch ValidationException (empty name).
 
-            short_additional_description = ''
             for label in cl.getElementsByTagName('rdfs:label'):
                 # ignore language and use first value.
                 if label.firstChild:
-                    short_additional_description = label.firstChild.data.strip()
+                    kw.setTitle(label.firstChild.data.strip())
                     break
-
-            kw.setShort_additional_description(short_additional_description)
-                
-            for superclass in cl.getElementsByTagName('rdfs:subClassOf'):
-                src = kw.getId()
-                dst = superclass.getAttribute('rdf:resource').strip("#")
-                try:
-                    ct.addReference(src, dst, 'childOf')
-                except ValidationException, e:
-                    error_string = error_string + "childOf(%s,%s): %s\n" % (src, dst, e.message)
-                except zExceptions.NotFound:
-                    error_string = error_string + "No such relation: childOf.\n"
-
-            dctitle = cl.getElementsByTagName("dc:title")
-            try:
-                kw.setTitle(dctitle[0].firstChild.data.strip())
-            except:
+            if not kw.title:
                 kw.setTitle(kw.getId())
 
-            dcdescription = cl.getElementsByTagName("dc:description")
-            try:
-                kw.setKwDescription(dcdescription[0].firstChild.data.strip())
-            except:
-                kw.setKwDescription("")
+            for comment in cl.getElementsByTagName('rdfs:comment'):
+                # ignore language and use first value.
+                if comment.firstChild:
+                    kw.setShort_additional_description(comment.firstChild.data.strip())
+                    break
+
+            for description in cl.getElementsByTagName('dc:description'):
+                # ignore language and use first value.
+                if description.firstChild:
+                    kw.setKwDescription(description.firstChild.data.strip())
+                    break
+
+            for superclass in cl.getElementsByTagName('rdfs:subClassOf'):
+                src = kw.getId()
+                dsts = []
+                if superclass.hasAttribute('rdf:resource'):
+                    dsts.append(self.parseURIRef(superclass.getAttribute('rdf:resource'))['fragment'])
+                else:
+                    for cls in superclass.getElementsByTagName('owl:Class'):
+                        if cls.hasAttribute('rdf:about'):
+                            dsts.append(self.parseURIRef(cls.getAttribute('rdf:about'))['fragment'])
+                        elif cls.hasAttribute('rdf:ID'):
+                            dsts.append(cls.getAttribute('rdf:ID'))
+
+                for dst in dsts:
+                    try:
+                        ct.addReference(src, dst, 'childOf')
+                    except ValidationException, e:
+                        error_string = error_string + "childOf(%s,%s): %s\n" % (src, dst, e.message)
+                    except NotFound:
+                        error_string = error_string + "No such relation: childOf.\n"
 
             for classObjectProperty in self.objectProperties():
                 for prop in cl.getElementsByTagName(classObjectProperty):
                     src = kw.getId()
-                    dst = prop.getAttribute('rdf:resource').strip('#')
+                    dst = self.parseURIRef(prop.getAttribute('rdf:resource'))['fragment']
 
                     try:
                         dstkw = ct.getKeyword(dst)
-                    except KeyError:
+                    except NotFound:
                         ct.addKeyword(dst)
 
                     try:
                         ct.addReference(src, dst, prop.tagName)
                     except ValidationException, e:
                         error_string = error_string + "%s(%s,%s): %s\n" % (prop.tagName, src, dst, e.message)
-                    except zExceptions.NotFound:
+                    except NotFound:
                         error_string = error_string + "No such relation: %s.\n" % prop.tagName
 
         if cl.hasAttribute('rdf:about'):
             for equivalentClass in cl.getElementsByTagName('owl:equivalentClass'):
-                src = cl.getAttribute('rdf:about')
-                dst = equivalentClass.getAttribute('rdf:resource').strip("#")
+                src = self.parseURIRef(cl.getAttribute('rdf:about'))['fragment']
+                dst = self.parseURIRef(equivalentClass.getAttribute('rdf:resource'))['fragment']
                 try:
                     ct.addReference(src, dst, 'synonymOf')
                 except ValidationException, e:
                     error_string = error_string + "synonymOf(%s,%s): %s\n" % (src, dst, e.message)
-                except zExceptions.NotFound:
+                except NotFound:
                     error_string = error_string + "No such relation: synonymOf.\n" % prop.tagName
-                    
-        return error_string
 
-    
+        return error_string

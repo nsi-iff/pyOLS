@@ -5,7 +5,7 @@ PloneOntology Readme
     1. Overview
 
     2. Requirements
-    
+
     3. Installation
 
     4. Usage
@@ -125,11 +125,13 @@ PloneOntology Readme
 
       Tab *import/export*:
 
-        An existing Ontology in the OWL format 
-        ("http://www.w3.org/TR/owl-ref/":http://www.w3.org/TR/owl-ref/) 
-        can be imported into the site. This might take a while,
-        because graphs are created for each keyword. An example
-        OWL file can be found in the *doc* folder of this product.
+        An existing Ontology in the OWL format
+        ("http://www.w3.org/TR/owl-ref/":http://www.w3.org/TR/owl-ref/)
+        can be imported into the site. Complex classes/set operations,
+        local property restrictions and external references are
+        currently unsupported, though. The import might take a while,
+        because graphs are created for each keyword. An example OWL file
+        can be found in the *doc* folder of this product.
 
         Also the ontology of a site can be exported to an OWL file.
 

@@ -12,23 +12,19 @@
 	<owl:Ontology rdf:about="">
 		
             
-		<rdfs:comment>
+		<rdfs:label xml:lang="en">
+			neuroinf.de test ontology
+		</rdfs:label>
+
+		<rdfs:comment xml:lang="en">
 			OWL ontology test for neuroinf.de
 		</rdfs:comment>
 		
-            
-		<rdfs:label>
-			neuroinf.de ontology test
-		</rdfs:label>
 		
         
 	</owl:Ontology>
-	
-        
-        
-	<owl:AnnotationProperty rdf:about="http://www.purl.org/dc/elements/1.1/title"/>
-	
-        
+
+
 	<owl:AnnotationProperty rdf:about="http://www.purl.org/dc/elements/1.1/description"/>
 	
         
@@ -76,89 +72,98 @@
 	<owl:Class rdf:ID="abdominal_ganglion">
 		<rdfs:subClassOf rdf:resource="#invertebrate_structure"/>
 		<rdfs:label xml:lang="en">
-			The abdominal ganglion
-		</rdfs:label>
-		<dc:title>
 			Abdominal ganglion
-		</dc:title>
-		<dc:description>
-			The abdominal ganglion is abdominal
+		</rdfs:label>
+		<rdfs:label xml:lang="de">
+			Abdominales Ganglion
+		</rdfs:label>
+		<rdfs:comment xml:lang="en">
+			The abdominal ganglion
+		</rdfs:comment>
+		<rdfs:comment xml:lang="de">
+			Das abdominale Ganglion
+		</rdfs:comment>
+		<dc:description xml:lang="en">
+			The abdominal ganglion is abdominal.
+		</dc:description>
+		<dc:description xml:lang="de">
+			Das abdominale Ganglion ist abdominal.
 		</dc:description>
 	</owl:Class>
 	<owl:Class rdf:ID="abducens_nerve">
 		<rdfs:subClassOf rdf:resource="#cranial_nerve"/>
-		<dc:title>
+		<rdfs:label xml:lang="en">
 			Abducens nerve
-		</dc:title>
+		</rdfs:label>
 		<relatedTo rdf:resource="#accessory_nerve"/>
 		<relatedTo rdf:resource="#abducens_nerve_nucleus"/>
 	</owl:Class>
 	<owl:Class rdf:ID="abducens_nerve_nucleus">
 		<rdfs:subClassOf rdf:resource="#cranial_nerve_nucleus"/>
-		<dc:title>
+		<rdfs:label xml:lang="en">
 			Abducens nerve nucleus
-		</dc:title>
+		</rdfs:label>
 		<relatedTo rdf:resource="#abducens_nerve"/>
 	</owl:Class>
 	<owl:Class rdf:ID="abstract_mathematical_analysis_and_modeling">
 		<rdfs:subClassOf rdf:resource="#mathematical_and_theoretical_issue"/>
-		<dc:title>
+		<rdfs:label xml:lang="en">
 			Abstract mathematical analysis and modeling
-		</dc:title>
+		</rdfs:label>
 		<relatedTo rdf:resource="#accessory_nerve_spinal_root_nucleus"/>
 	</owl:Class>
 	<owl:Class rdf:ID="accessory_nerve">
 		<rdfs:subClassOf rdf:resource="#cranial_nerve"/>
-		<dc:title>
+		<rdfs:label xml:lang="en">
 			Accessory nerve
-		</dc:title>
+		</rdfs:label>
 	</owl:Class>
 	<owl:Class rdf:ID="accessory_nerve_spinal_root_nucleus">
 		<rdfs:subClassOf rdf:resource="#cranial_nerve_nucleus"/>
-		<dc:title>
+		<rdfs:label xml:lang="en">
 			Accessory nerve spinal root nucleus
-		</dc:title>
+		</rdfs:label>
 		<relatedTo rdf:resource="#accessory_nerve"/>
 	</owl:Class>
 	<owl:Class rdf:ID="accessory_oculomotor_nerve_nucleus">
 		<rdfs:subClassOf rdf:resource="#cranial_nerve_nucleus"/>
-		<dc:title>
+		<rdfs:label xml:lang="en">
 			Accessory oculomotor nerve nucleus
-		</dc:title>
+		</rdfs:label>
 	</owl:Class>
 	<owl:Class rdf:ID="acetylcholine">
 		<rdfs:subClassOf rdf:resource="#neurotransmitter_or_modulator"/>
-		<dc:title>
+		<rdfs:label xml:lang="en">
 			Acetylcholine
-		</dc:title>
+		</rdfs:label>
 		<relatedTo rdf:resource="#cholinergic"/>
 	</owl:Class>
 	<owl:Class rdf:ID="acetylcholine_muscarinic_receptor">
 		<rdfs:subClassOf rdf:resource="#acetylcholine_receptor"/>
-		<dc:title>
+		<rdfs:label xml:lang="en">
 			Acetylcholine-muscarinic receptor
-		</dc:title>
+		</rdfs:label>
 		<relatedTo rdf:resource="#muscarin"/>
 	</owl:Class>
 	<owl:Class rdf:ID="acetylcholine_nicotinic_receptor">
 		<rdfs:subClassOf rdf:resource="#acetylcholine_receptor"/>
-		<dc:title>
+		<rdfs:label xml:lang="en">
 			Acetylcholine-nicotinic receptor
-		</dc:title>
+		</rdfs:label>
 	</owl:Class>
 	<owl:Class rdf:ID="acetylcholine_receptor">
 		<rdfs:subClassOf rdf:resource="#receptor"/>
-		<dc:title>
+		<rdfs:label xml:lang="en">
 			Acetylcholine receptor
-		</dc:title>
+		</rdfs:label>
 		<relatedTo rdf:resource="#acetylcholine"/>
 	</owl:Class>
 	<owl:Class rdf:ID="acetylcholin_rezeptor">
-		<dc:title>
+		<rdfs:label xml:lang="de">
 			Acetylcholin Rezeptor
-		</dc:title>
+		</rdfs:label>
 	</owl:Class>
-	<owl:Class rdf:about="acetylcholin_rezeptor">
+	<owl:Class rdf:about="#acetylcholin_rezeptor">
 		<owl:equivalentClass rdf:resource="#acetylcholine_receptor"/>
 	</owl:Class>
 	<owl:Class rdf:ID="cholinergic"/>

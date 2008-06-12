@@ -11,6 +11,7 @@ ZopeTestCase.installProduct('Relations')
 ZopeTestCase.installProduct('PloneOntology')
 
 from Products.PloneOntology.owl import OWLExporter, OWLImporter
+from zExceptions import NotFound
 
 class TestOWLImporter(PloneTestCase.PloneTestCase):
     """Test the KeywordStorage class."""
@@ -22,31 +23,31 @@ class TestOWLImporter(PloneTestCase.PloneTestCase):
         self.qi.installProduct('PloneOntology')
 
         self.ct = self.portal.portal_classification
-        
+
         self.exporter = OWLExporter()
         self.importer = OWLImporter(self.portal)
 
     def testOWLImporterObjectProperty(self):
         owl = self.exporter.getEntities()['owl']
-        
+
         self.exporter.generateObjectProperty("synonymOf",
                                              types = [owl+'TransitiveProperty', owl+'SymmetricProperty'],
                                              inverses = ['foo'],
                                              domains = [owl+'Class'],
                                              ranges = [owl+'Class'],
-                                             labels = {'de':'Honig', 'en':'honey'},
-                                             title = "footitle",
-                                             description = "foodescription",
+                                             labels = [('en',"footitle")],
+                                             comments =  [('de','Honig'), ('en','honey')],
+                                             descriptions = [('en',"foodescription")],
                                              propertyproperties = [("nip:weight", "0.7")]
                                              )
-        
+
         prop = self.exporter.getDOM().documentElement.lastChild
 
         self.importer.importObjectProperty(prop)
-        
+
         try:
             rel = self.ct.getRelation('synonymOf')
-        except KeyError:
+        except NotFound:
             self.fail("Necessary relation not created on import.")
 
         self.assert_('transitive' in self.ct.getTypes('synonymOf'))
@@ -61,16 +62,16 @@ class TestOWLImporter(PloneTestCase.PloneTestCase):
         self.exporter.generateObjectProperty("foo1", domains=[owl+'Instance'], ranges=[owl+'Class'])
         prop = self.exporter.getDOM().documentElement.lastChild
         self.importer.importObjectProperty(prop)
-        
-        self.assertRaises(KeyError, self.ct.getRelation, "foo1")
+
+        self.assertRaises(NotFound, self.ct.getRelation, "foo1")
 
     def testOWLImporterObjectPropertyIgnoreNonOWLClassRange(self):
         owl = self.exporter.getEntities()['owl']
         self.exporter.generateObjectProperty("foo1", ranges=[owl+'Instance'], domains=[owl+'Class'])
         prop = self.exporter.getDOM().documentElement.lastChild
         self.importer.importObjectProperty(prop)
-        
-        self.assertRaises(KeyError, self.ct.getRelation, "foo1")
+
+        self.assertRaises(NotFound, self.ct.getRelation, "foo1")
 
     def testOWLImporterObjectPropertyAccumulateNonBuiltins(self):
         owl = self.exporter.getEntities()['owl']
@@ -94,18 +95,18 @@ class TestOWLImporter(PloneTestCase.PloneTestCase):
             self.ct.getRelation("childOf")
             self.ct.getRelation("parentOf")
             self.ct.getRelation("synonymOf")
-        except KeyError:
+        except NotFound:
             self.fail("At least one builtin relation is missing after creation of an importer")
-            
+
     def testOWLImporterClass(self):
         self.ct.addRelation("authorOf")
         self.ct.addRelation("publisher")
         self.importer._props = ['authorOf', 'publisher']
         self.exporter.generateClass("Foo",
                                     superclasses = ["Bar", "Blaz"],
-                                    labels = {'de':'Honig', 'en':'honey'},
-                                    title = "footitle",
-                                    description = "foodescription",
+                                    labels = [('en',"footitle")],
+                                    comments = [('de','Honig'), ('en','honey')],
+                                    descriptions = [('en',"foodescription")],
                                     classproperties=[("authorOf", "Bonk"), ('publisher', "Gargle")]
                                     )
         cl = self.exporter.getDOM().documentElement.lastChild
@@ -113,7 +114,7 @@ class TestOWLImporter(PloneTestCase.PloneTestCase):
 
         try:
             kw = self.ct.getKeyword("Foo")
-        except KeyError:
+        except NotFound:
             self.fail("Necessary keyword not created on import.")
 
         self.assertEqual("footitle", kw.Title())
@@ -122,7 +123,7 @@ class TestOWLImporter(PloneTestCase.PloneTestCase):
         try:
             self.ct.getKeyword("Bar")
             self.ct.getKeyword("Blaz")
-        except KeyError:
+        except NotFound:
             self.fail("Necessary keyword not created on import (superclasses).")
 
         super = kw.getRefs("childOf")
@@ -134,7 +135,7 @@ class TestOWLImporter(PloneTestCase.PloneTestCase):
         try:
             self.ct.getKeyword("Bonk")
             self.ct.getKeyword("Gargle")
-        except KeyError:
+        except NotFound:
             self.fail("Necessary keyword not created on import (properties).")
 
         syn = kw.getRefs("authorOf")

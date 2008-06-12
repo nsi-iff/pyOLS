@@ -18,7 +18,8 @@ ZopeTestCase.installProduct('Relations')
 ZopeTestCase.installProduct('PloneOntology')
 
 class TestClassificationTool(PloneTestCase.PloneTestCase):
-    '''Test the NIP ClassificationTool application'''
+    """Test the NIP ClassificationTool application.
+    """
 
     def afterSetUp(self):
         self.setRoles(['Manager'])
@@ -51,7 +52,7 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
 
     def testKeywordCreationEmptyName(self):
         self.failUnlessRaises(ValidationException, self.ctool.addKeyword, '')
-        
+
     def testKeywordFetchExisting(self):
         kw = self.ctool.addKeyword('test')
         kw2 = self.ctool.getKeyword('test')
@@ -59,7 +60,7 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
         self.assertEqual(kw, kw2)
 
     def testKeywordFetchNotExisting(self):
-        self.failUnlessRaises(KeyError, self.ctool.getKeyword, 'test')
+        self.failUnlessRaises(NotFound, self.ctool.getKeyword, 'test')
 
     def testKeywordDeleteExisting(self):
         kw = self.ctool.addKeyword('test')
@@ -69,11 +70,11 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
 
     def testKeywordDeleteNotExisting(self):
         self.ctool.delKeyword('test')
-            
+
         try:
             kw = self.ctool.getKeyword('test')
             self.fail("Keyword 'test' shouldn't be there")
-        except KeyError:
+        except NotFound:
             pass
 
     def testRelationCreationDefault(self):
@@ -108,7 +109,7 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
 
         try:
             r2 = self.ctool.getRelation('testOf2')
-        except KeyError:
+        except NotFound:
             self.fail("Necessary relation not created.")
 
         self.assertEqual(r2, r1.inverseOf_testOf2.getInverseRuleset())
@@ -120,7 +121,7 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
         self.assertEqual(r1, r2)
 
     def testRelationFetchNotExisting(self):
-        self.failUnlessRaises(KeyError, self.ctool.getRelation, 'testOf')
+        self.failUnlessRaises(NotFound, self.ctool.getRelation, 'testOf')
 
     def testRelationListing(self):
         r1 = self.ctool.addRelation('testOf')
@@ -146,12 +147,12 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
             self.ctool.delRelation('testOf3')
         except AttributeError, KeyError:
             self.fail("Uncatched exception")
-            
+
         l = self.ctool.relations(self.rtool)
         self.failIf('testOf3' in l)
-        
+
     def testRelationSetWeightNotExisting(self):
-        self.assertRaises(KeyError, self.ctool.setWeight, 'unrelatedTo', 0.7)
+        self.assertRaises(NotFound, self.ctool.setWeight, 'unrelatedTo', 0.7)
 
     def testRelationSetWeight(self):
         r1 = self.ctool.addRelation('testOf')
@@ -176,10 +177,10 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
         self.ctool.setWeight('testOf', 0.5)
         self.ctool.setWeight('testOf', -2.5)
         self.assertAlmostEqual(0.5, self.ctool.getWeight('testOf'))
-        
+
     def testRelationSetTypesNotExisting(self):
-        self.assertRaises(KeyError, self.ctool.setTypes, 'unrelatedTo', [])
-        
+        self.assertRaises(NotFound, self.ctool.setTypes, 'unrelatedTo', [])
+
     def testRelationSetTypes(self):
         r1 = self.ctool.addRelation('testOf')
         self.ctool.setTypes('testOf', ['symmetric', 'functional', 'inversefunctional'])
@@ -232,7 +233,7 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
         self.assertEqual(['transitive'], self.ctool.getTypes('testOf'))
 
     def testRelationSetInversesNotExisting(self):
-        self.assertRaises(KeyError, self.ctool.setInverses, 'unrelatedTo', [])
+        self.assertRaises(NotFound, self.ctool.setInverses, 'unrelatedTo', [])
 
     def testRelationSetInversesEmpty(self):
         r1 = self.ctool.addRelation('childOf')
@@ -301,7 +302,7 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
         self.ctool.addReference('child', 'kid', 'synonymOf')
         try:
             kid = self.ctool.getKeyword('kid')
-        except KeyError:
+        except NotFound:
             self.fail("Necessary keyword was not created")
 
     def testReferenceNotExistingRelation(self):
@@ -309,7 +310,7 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
         child  = self.ctool.addKeyword('child')
 
         self.failUnlessRaises(NotFound, self.ctool.addReference,'father', 'kid', 'parentOf')
-        
+
     def testReferenceSymmetric(self):
         self.ctool.addRelation('synonymOf', 1.0, ['symmetric'])
         child  = self.ctool.addKeyword('child')
@@ -374,7 +375,7 @@ class TestClassificationTool(PloneTestCase.PloneTestCase):
         kid  = self.ctool.addKeyword('kid')
 
         self.assertRaises(NotFound, self.ctool.delReference, 'child', 'kid', 'siblingOf')
-        
+
     def testEmptyAfterCreation(self):
         """Tool contains no keywords after initialization"""
         self.assertEqual(len(self.ctool.objectIds('Keyword')), 0)

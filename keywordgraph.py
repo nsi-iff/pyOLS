@@ -2,18 +2,19 @@ from Products.CMFCore.utils import getToolByName
 from cStringIO import StringIO
 
 class KeywordGraph:
-    """Dot code generator for keyword graphs"""
-    
+    """Dot code generator for keyword graphs.
+    """
+
     def __init__(self, font):
         self._text = StringIO()
         self._font = font
-        
+
     def write(self, text):
         self._text.write(text)
-        
+
     def getValue(self):
         return self._text.getvalue()
-    
+
     def graphHeader(self, root):
         self._text.write('''digraph G{
         size="11,8";
@@ -30,11 +31,11 @@ class KeywordGraph:
 
     def graphFooter(self):
         self._text.write("}\n")
-        
+
     def focusNode(self, node):
         self._text.write('%s [fillcolor="#ff999999", fontsize=11, label="%s", shape="ellipse"];\n' % (node.getSaneId(), node.title_or_id()))
 
-                    
+
     def firstLevelNode(self, node):
         nodelabel = node.title_or_id()
         #cut long titles
