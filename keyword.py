@@ -164,18 +164,25 @@ class Keyword(BaseContent):
 
         result = []
         objects = []
+        relations_library = getToolByName(self, 'relations_library')
 
         for r in reltypes:
             obs = self.getRefs(r)
+            for relobj in relations_library.getRulesets():
+             rel = r
+             if relobj.getId() == r:
+              if relobj.getId() != relobj.title_or_id():
+               rel=relobj.title_or_id()
+             
             for o in obs:
                 if not o in objects:
                     objects.append(o)
-                    result.append((o, [r]))
+                    result.append((o, [rel]))
                 else: #just append relationship
                     try:
                         idx = objects.find(o)
                         entry = result[idx]
-                        entry[1].append(r)
+                        entry[1].append(rel)
                     except:
                         pass
 
@@ -288,6 +295,7 @@ class Keyword(BaseContent):
         forth = ctool.getForth()
         back = ctool.getBack()
         storage = ctool.getStorage()
+        relations_library = getToolByName(self, 'relations_library')
 
         innernodes = self.findDependent(1, exact=True) # level 1 keywords
         outernodes = self.findDependent(2, exact=True) # level 2 keywords
@@ -310,13 +318,23 @@ class Keyword(BaseContent):
         if forth == '1':
          for rel in self.getRelationships():
             obs = self.getRefs(rel)
+            for relobj in relations_library.getRulesets():
+             rel_title = rel
+             if relobj.getId() == rel:
+              if relobj.getId() != relobj.title_or_id():
+               rel_title=relobj.title_or_id()
             for cnode in obs:
-                dot.relation(self, cnode, rel)
+                dot.relation(self, cnode, rel_title)
         if back == '1':
          for backrel in self.getBRelationships():
             obsback = self.getBRefs(backrel)
+            for relobj in relations_library.getRulesets():
+             backrel_title = backrel
+             if relobj.getId() == backrel:
+              if relobj.getId() != relobj.title_or_id():
+               backrel_title=relobj.title_or_id()
             for cnode in obsback:
-                dot.relation(cnode, self, backrel)
+                dot.relation(cnode, self, backrel_title)
 
 
         # from innernodes w/o back to central
@@ -325,26 +343,36 @@ class Keyword(BaseContent):
             rels = node.getRelationships() 
             for rel in rels:
                 obs = node.getRefs(rel)
+                for relobj in relations_library.getRulesets():
+                 rel_title = rel
+                 if relobj.getId() == rel:
+                  if relobj.getId() != relobj.title_or_id():
+                   rel_title=relobj.title_or_id()
                 try:
                     obs.remove(self)
                 except ValueError: # self not in list
                     pass
 
                 for cnode in obs:
-                    dot.relation(node, cnode, rel)
+                    dot.relation(node, cnode, rel_title)
 
         if back == '1':
          for node in innernodes:
             relsback = node.getBRelationships() 
             for backrel in relsback:
                 obsback = node.getBRefs(backrel)
+                for relobj in relations_library.getRulesets():
+                 rel_title = backrel
+                 if relobj.getId() == backrel:
+                  if relobj.getId() != relobj.title_or_id():
+                   backrel_title=relobj.title_or_id()
                 try:
                     obsback.remove(self)
                 except ValueError: # self not in list
                     pass
 
                 for cnode in obsback:
-                    dot.relation(cnode, node, backrel)
+                    dot.relation(cnode, node, backrel_title)
 
         dot.graphFooter()
 

@@ -477,6 +477,13 @@ class ClassificationTool(UniqueObject,
         zLOG.LOG(PROJECTNAME, zLOG.INFO,
                  "%s(%s,%s)." % (relation, src, dst))
 
+        relations_library = getToolByName(self, 'relations_library')
+
+        for r in relations_library.getRulesets():
+          if r.title_or_id() == relation:
+            if r.getId() != r.title_or_id():
+             relation=r.getId()        
+
         try:
             kw_src  = self.getKeyword(src)
         except NotFound:

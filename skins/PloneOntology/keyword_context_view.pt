@@ -22,14 +22,7 @@
 	<tal:block tal:define="obj python:child[0]; rels python:child[1]"><li>is <tal:block tal:repeat="rel rels"><span tal:replace="rel"/><span tal:replace="string:," tal:condition="not: repeat/rel/end"/></tal:block> 
 	<a tal:attributes="href string:${obj/absolute_url}/keyword_context_view" tal:content="obj/title_or_id"/>
 	<br/>
-<!-- <ul>
-	<tal:block tal:repeat="l2child obj/getWrappedKeywords">
-	<tal:block tal:define="obj2 python:l2child[0]; rels2 python:l2child[1]"><li>is <tal:block tal:repeat="rel2 rels2"><span tal:replace="rel2"/><span tal:replace="string:," tal:condition="not: repeat/rel2/end"/></tal:block> 
-	<a tal:attributes="href string:${obj2/absolute_url}/keyword_context_view" tal:content="obj2/title_or_id"/>
-</li>
-	</tal:block>
-	</tal:block>
-	</ul> --></li>
+    </li>
 	</tal:block>
 	</tal:block>
 	</ul>
