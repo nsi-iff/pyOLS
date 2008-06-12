@@ -1,0 +1,3 @@
+[actions]
+action.success = traverse_to:string:relations_adddelete
+action.failure = traverse_to:string:relations_adddelete

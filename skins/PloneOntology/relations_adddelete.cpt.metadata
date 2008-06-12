@@ -1,0 +1,15 @@
+[default]
+title=Add and Delete References
+
+[security]
+View=0:Authenticated
+
+[validators]
+validators..Delete=relations_adddelete_security,relations_adddelete_validate
+validators..Cancel=
+
+[actions]
+action.success..Delete=traverse_to:string:relations_adddelete
+action.success..Cancel=redirect_to_action:string:view
+action.success..Add = traverse_to:string:relations_adddelete_script
+action.failure=traverse_to:string:relations_adddelete

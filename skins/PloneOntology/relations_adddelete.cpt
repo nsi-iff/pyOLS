@@ -1,0 +1,100 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      lang="en"
+      metal:use-macro="here/main_template/macros/master">
+
+  <body>
+
+    <div metal:fill-slot="main"
+         tal:define="errors options/state/getErrors;
+                     vocabulary here/relations_adddelete_vocab;
+                     all_fields python:[];">
+
+      <h1>Add and Delete Keywordrelations for <span tal:replace="here/title_or_id" /></h1>
+      <a href=""
+	 class="link-parent"
+	 tal:attributes="href string:${here/absolute_url}/relations_form">
+	Back to Relations Overview
+      </a>
+
+      <form action="."
+            method="post"
+            tal:attributes="action string:${here/absolute_url}/${template/id}"><label>Deselect Keywordrelations to Delete:</label>
+	<fieldset>
+        <tal:repeat repeat="entry vocabulary">
+           <div class="field"
+                tal:define="field_id python:'relations_%s' % entry['id'];
+                            error python:errors.get(field_id, None);"
+                tal:attributes="class python:error and 'field error' or 'field'">
+             <label for="field_id"
+                    tal:define="dummy python:all_fields.append(field_id)"
+                    tal:attributes="for field_id"
+                    tal:content="entry/title">
+               Ruleset title
+	     </label>
+
+             <div tal:content="error">Validation error output</div>
+
+             <select multiple="multiple"
+                     tal:attributes="name string:${field_id}:list;
+                                     id field_id;
+                                     tabindex tabindex/next">
+               <tal:repeat repeat="item entry/tuples">
+
+                 <option selected tal:define="brain python:item[0]"
+                         tal:attributes="value brain/UID"
+                         tal:content="python:'%r at %s' % (brain.Title or brain.id, brain.getPath())">
+                   Target Title
+		 </option>
+
+	       </tal:repeat>
+             </select>	
+
+           </div>
+	</tal:repeat>      
+          <input class="context"
+                 type="submit"
+                 name="form.button.Delete"
+                 value="Delete"
+                 tal:attributes="tabindex tabindex/next" />
+
+ 
+	</fieldset>
+	
+	
+	<label>Add a Keywordrelation:</label>
+<fieldset><br />
+             <select size="1" name="rel">
+               <tal:repeat repeat="item python: here.relations_library.getRulesets()">
+                 <option tal:attributes="value python:item.Title()"
+                         tal:content="python:item.Title()">
+                                    Target Title
+		 </option>
+
+	       </tal:repeat>
+             </select>	<select size="1" name="dest">
+               <tal:repeat repeat="item python: here.portal_catalog.searchResults(portal_type='Keyword')">
+                 <option tal:attributes="value python:item.getObject().getName()"
+                         tal:content="python:item.getObject().getName()">
+                                    Target Title
+		 </option>
+
+	       </tal:repeat>
+             </select>          <input class="context"
+                 type="submit"
+                 name="form.button.Add"
+                 value="Add"
+                 tal:attributes="tabindex tabindex/next" />
+</fieldset>
+
+
+        <input type="hidden" name="all_fields:list" value=""
+               tal:repeat="field_id all_fields"
+               tal:attributes="value field_id" />
+        <input type="hidden" name="form.submitted" value="1" />
+      </form>
+
+    </div>
+
+  </body>
+
+</html>
