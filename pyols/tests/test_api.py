@@ -101,10 +101,28 @@ class TestOntologyTool:
     def testDelKeywordDoesntExist(self):
         self.ot.delKeyword(u"IdontExist")
 
-    def testDelKeywordCastcadingDelete(self):
-        # This will eventually make sure that deletes of keywords
-        # castcade to associated relationships and associations
-        raise SkipTest("This one will be finished later.")
+    def testDeletingThings(self):
+        # These are not exhaustive tests -- see test_model.py for those
+        kw0 = self.keyword_new(u"kw0")
+        kw1 = self.keyword_new(u"kw1")
+        kw2 = self.keyword_new(u"kw2")
+        rel = self.relation_new()
+        kwr = KeywordRelationship.new(left=kw0, relation=rel, right=kw1)
+        kwa = KeywordAssociation.new(keyword=kw2, path=u"/asdf/123")
+        db().flush()
+
+        # Removing the keyword should kill the KWA
+        self.ot.delKeyword(kw2.name)
+        db().flush()
+        assert_equal(KeywordAssociation.get_by(keyword=kw2), None)
+
+        # Deleting the relationship should cause the KWR to be deleted
+        # but the keywords should stick around
+        self.ot.delRelation(rel.name)
+        db().flush()
+        ok_(self.keyword_getby(name=kw0.name))
+        ok_(self.keyword_getby(name=kw1.name))
+        assert_equal(KeywordRelationship.get_by(left=kw0), None)
 
     def testKeywords(self):
         assert_equal(list(self.ot.queryKeywords()), [])
@@ -118,6 +136,11 @@ class TestOntologyTool:
         newRel = self.ot.addRelation(name=name, weight=weight, types=types,
                                      inverse=inverse)
         db().flush() # Simulate a web request -- flush
+        return newRel
+
+    def relation_new(self, name=u"testRel"):
+        newRel = Relation.new(name=name, namespace=self.ot._namespace)
+        db().flush()
         return newRel
 
     def testRelation(self):
@@ -161,7 +184,7 @@ class TestOntologyTool:
     def testAddKeywordRelationship(self):
         kw0 = self.keyword_new(name=u"kw0")
         kw1 = self.keyword_new(name=u"kw1")
-        rel = self.addRelation()
+        rel = self.relation_new()
         self.ot.addKeywordRelationship(kw0.name, rel.name, kw1.name)
         db().flush()
 

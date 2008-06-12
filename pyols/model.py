@@ -322,6 +322,10 @@ class KeywordAssociation(Entity, StorageMethods):
     
     using_options(tablename='keyword_associations')
 
+    def remove(self):
+        """ Remove the association. """
+        self.delete()
+
 class KeywordRelationship(Entity, StorageMethods):
     belongs_to('left', of_kind='Keyword', primary_key=True)
     belongs_to('relation', of_kind='Relation', primary_key=True)

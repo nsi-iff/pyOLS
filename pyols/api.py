@@ -148,12 +148,14 @@ class OntologyTool(object):
         return newrel
 
     @create_methods('get%s', (obj_with_args(Keyword),
-                              obj_with_args(Relation)))
-    def _generic_get(self, class_, name):
+                              obj_with_args(Relation),
+                              obj_with_args(KeywordAssociation),
+                              obj_with_args(KeywordRelationship)))
+    def _generic_get(self, class_, *args, **kwargs):
         """ Get a %(class_name)s from the ontology.  It is an
             error to request an item which does not exist. """
-        # This does not use _generic_query because it doesn't need to.  
-        return class_.fetch_by(name=name, namespace=self._namespace)
+        query = self._generate_query(class_, args, kwargs)
+        return class_.fetch_by(**query)
 
     @create_methods('del%s', (obj_with_args(Keyword),
                               obj_with_args(Relation),
