@@ -68,7 +68,7 @@ class GraphVizTool(UniqueObject, PloneFolder,
         
         options = " ".join(options)
         
-        (pout,pin) = popen2.popen4("%s %s" % (tool, options))
+        (pout,pin) = popen2.popen4(cmd = "%s %s" % (tool, options), mode = "b")
         pin.write(graph)
         pin.close()
 
