@@ -324,102 +324,97 @@ class OWLImporter(OWLBase):
     def importClass(self, cl):
         error_string=""
         ct = getToolByName(self._context, 'portal_classification')
-        kid = cl.getAttribute('rdf:ID').encode(ct.getEncoding())
+        kid = cl.getAttribute('rdf:ID').encode(ct.getEncoding()) or parseURIRef(cl.getAttribute('rdf:about'))['fragment'].encode(ct.getEncoding())
 
-        if kid:
+        try:
+            kw = ct.getKeyword(kid)
+        except ValidationException, e:
+            error_string += "Skipping class without name: %s" % e
+            return error_string
+        except NotFound:
             try:
-                kw = ct.getKeyword(kid)
+                kw = ct.addKeyword(kid)
+            except ValidationException, e:
+                error_string = error_string + "Cannot create keyword '%s': %s" % (kid, e)
+                return error_string
+            except NameError, e: # this should never happen.
+                error_string = error_string + "BUG: Cannot create keyword '%s': %s" % (kid, e)
+                return error_string
+
+        for label in cl.getElementsByTagName('rdfs:label'):
+            # ignore language and use value of first text or cdata node.
+            if label.firstChild:
+                try:
+                    kw.setTitle(label.firstChild.data.encode(ct.getEncoding()).strip())
+                except AttributeError: # fist child node has no 'data', i.e. it is no text or cdata node.
+                    continue
+                break
+
+        for comment in cl.getElementsByTagName('rdfs:comment'):
+            # ignore language and use value of first text or cdata node.
+            if comment.firstChild:
+                try:
+                    kw.setShortAdditionalDescription(comment.firstChild.data.encode(ct.getEncoding()).strip())
+                except AttributeError: # fist child node has no 'data', i.e. it is no text or cdata node.
+                    continue
+                break
+
+        for description in cl.getElementsByTagName('dc:description'):
+            # ignore language and use value of first text or cdata node.
+            if description.firstChild:
+                try:
+                    kw.setKwDescription(description.firstChild.data.encode(ct.getEncoding()).strip())
+                except AttributeError: # fist child node has no 'data', i.e. it is no text or cdata node.
+                    continue
+                break
+
+        kw.reindexObject()
+
+        src = kw.getName()
+        for equivalentClass in cl.getElementsByTagName('owl:equivalentClass'):
+            dst = parseURIRef(equivalentClass.getAttribute('rdf:resource'))['fragment'].encode(ct.getEncoding())
+            try:
+                ct.getKeyword(dst)
             except NotFound:
                 try:
-                    kw = ct.addKeyword(kid)
+                    ct.addKeyword(dst)
                 except ValidationException, e:
-                    error_string = error_string + "Cannot create keyword '%s': %s" % (kid, e)
-                    return error_string
+                    error_string += "Cannot create keyword '%s': %s" % (dst, e)
+                    continue
                 except NameError, e: # this should never happen.
-                    error_string = error_string + "BUG: Cannot create keyword '%s': %s" % (kid, e)
-                    return error_string
+                    error_string += "BUG: Cannot create keyword '%s': %s" % (dst, e)
+                    continue
+            try:
+                ct.addReference(src, dst, 'synonymOf')
+            except ValidationException, e:
+                error_string = error_string + "synonymOf(%s,%s): %s\n" % (src, dst, e.message)
+                continue
+            except NotFound:
+                error_string = error_string + "No such relation: synonymOf.\n"
+                continue
 
-            for label in cl.getElementsByTagName('rdfs:label'):
-                # ignore language and use first value.
-                if label.firstChild:
-                    kw.setTitle(label.firstChild.data.encode(ct.getEncoding()).strip())
-                    break
+        for superclass in cl.getElementsByTagName('rdfs:subClassOf'):
+            dsts = []
+            if superclass.hasAttribute('rdf:resource'):
+                dsts.append(parseURIRef(superclass.getAttribute('rdf:resource'))['fragment'].encode(ct.getEncoding()))
+            else:
+                for cls in superclass.getElementsByTagName('owl:Class'):
+                    if cls.hasAttribute('rdf:about'):
+                        dsts.append(parseURIRef(cls.getAttribute('rdf:about'))['fragment'].encode(ct.getEncoding()))
+                    elif cls.hasAttribute('rdf:ID'):
+                        dsts.append(cls.getAttribute('rdf:ID').encode(ct.getEncoding()))
 
-            for comment in cl.getElementsByTagName('rdfs:comment'):
-                # ignore language and use first value.
-                if comment.firstChild:
-                    kw.setShortAdditionalDescription(comment.firstChild.data.encode(ct.getEncoding()).strip())
-                    break
-
-            for description in cl.getElementsByTagName('dc:description'):
-                # ignore language and use first value.
-                if description.firstChild:
-                    kw.setKwDescription(description.firstChild.data.encode(ct.getEncoding()).strip())
-                    break
-
-            kw.reindexObject()
-
-            for superclass in cl.getElementsByTagName('rdfs:subClassOf'):
-                src = kw.getName()
-                dsts = []
-                if superclass.hasAttribute('rdf:resource'):
-                    dsts.append(parseURIRef(superclass.getAttribute('rdf:resource'))['fragment'].encode(ct.getEncoding()))
-                else:
-                    for cls in superclass.getElementsByTagName('owl:Class'):
-                        if cls.hasAttribute('rdf:about'):
-                            dsts.append(parseURIRef(cls.getAttribute('rdf:about'))['fragment'].encode(ct.getEncoding()))
-                        elif cls.hasAttribute('rdf:ID'):
-                            dsts.append(cls.getAttribute('rdf:ID').encode(ct.getEncoding()))
-
-                for dst in dsts:
-                    try:
-                        ct.addReference(src, dst, 'childOf')
-                    except ValidationException, e:
-                        error_string = error_string + "childOf(%s,%s): %s\n" % (src, dst, e.message)
-                    except NotFound:
-                        error_string = error_string + "No such relation: childOf.\n"
-
-            for classObjectProperty in self.objectProperties():
-                for prop in cl.getElementsByTagName(classObjectProperty.decode(ct.getEncoding())):
-                    src = kw.getName()
-                    dst = parseURIRef(prop.getAttribute('rdf:resource'))['fragment'].encode(ct.getEncoding())
-                    try:
-                        ct.getKeyword(dst)
-                    except NotFound:
-                        try:
-                            ct.addKeyword(dst)
-                        except ValidationException, e:
-                            error_string = error_string + "Cannot create keyword '%s': %s" % (dst, e)
-                            continue
-                        except NameError, e: # this should never happen.
-                            error_string = error_string + "BUG: Cannot create keyword '%s': %s" % (dst, e)
-                            continue
-
-                    try:
-                        propName = prop.tagName.encode(ct.getEncoding())
-                        ct.addReference(src, dst, propName)
-                    except ValidationException, e:
-                        error_string = error_string + "%s(%s,%s): %s\n" % (propName, src, dst, e.message)
-                    except NotFound:
-                        error_string = error_string + "No such relation: %s.\n" % propName
-
-        if cl.hasAttribute('rdf:about'):
-            for equivalentClass in cl.getElementsByTagName('owl:equivalentClass'):
-                src = parseURIRef(cl.getAttribute('rdf:about'))['fragment'].encode(ct.getEncoding())
-                dst = parseURIRef(equivalentClass.getAttribute('rdf:resource'))['fragment'].encode(ct.getEncoding())
-
+            for dst in dsts:
                 try:
-                    ct.getKeyword(src)
+                    ct.addReference(src, dst, 'childOf')
+                except ValidationException, e:
+                    error_string = error_string + "childOf(%s,%s): %s\n" % (src, dst, e.message)
                 except NotFound:
-                    try:
-                        ct.addKeyword(src)
-                    except ValidationException, e:
-                        error_string = error_string + "Cannot create keyword '%s': %s" % (src, e)
-                        return error_string
-                    except NameError, e: # this should never happen.
-                        error_string = error_string + "BUG: Cannot create keyword '%s': %s" % (src, e)
-                        return error_string
+                    error_string = error_string + "No such relation: childOf.\n"
 
+        for classObjectProperty in self.objectProperties():
+            for prop in cl.getElementsByTagName(classObjectProperty.decode(ct.getEncoding())):
+                dst = parseURIRef(prop.getAttribute('rdf:resource'))['fragment'].encode(ct.getEncoding())
                 try:
                     ct.getKeyword(dst)
                 except NotFound:
@@ -427,16 +422,17 @@ class OWLImporter(OWLBase):
                         ct.addKeyword(dst)
                     except ValidationException, e:
                         error_string = error_string + "Cannot create keyword '%s': %s" % (dst, e)
-                        return error_string
+                        continue
                     except NameError, e: # this should never happen.
                         error_string = error_string + "BUG: Cannot create keyword '%s': %s" % (dst, e)
-                        return error_string
+                        continue
 
                 try:
-                    ct.addReference(src, dst, 'synonymOf')
+                    propName = prop.tagName.encode(ct.getEncoding())
+                    ct.addReference(src, dst, propName)
                 except ValidationException, e:
-                    error_string = error_string + "synonymOf(%s,%s): %s\n" % (src, dst, e.message)
+                    error_string = error_string + "%s(%s,%s): %s\n" % (propName, src, dst, e.message)
                 except NotFound:
-                    error_string = error_string + "No such relation: synonymOf.\n"
+                    error_string = error_string + "No such relation: %s.\n" % propName
 
         return error_string
