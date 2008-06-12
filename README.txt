@@ -164,31 +164,27 @@ PloneOntology Readme
 
     Classifying content and the related portlet:
 
-      Classifiable content has an additional step in the edit
-      process. In this step one can search and select keywords 
-      (from the sites ontology) which best classify the content. 
-      For such classified content related content can be found in 
-      the *related* portlet. This also displays the score. A higher 
-      score meaning that the relation of the two content objects is higher.
-      The view of a classified object contains links to the keywords
-      it is classified with. From here one can browse the keyword ontology.
+      For all content types that are enabled for classification an
+      additional object tab is displayed, which allows to edit the
+      keyword references of that object.
+
+      To add a new keyword, first search for candidates. From the
+      result list pick the ones you want to include and press the
+      'Add' button.
+
+      Removal of keywords is similar. Just select the ones to delete
+      and press the 'Delete' button.
+
+      As soon as you classified some objects within your portal, the
+      related portlet shows related content, ranked according to Plone
+      Ontologies scoring mechanism.
 
     Making a content type classifiable:
 
-      To make a custom Archetypes content type classifiable, simply
-      import and add the ClassificationSchema to its Schema::
+      To make a custom Archetypes content type classifiable select it
+      in the list of content types within the Plone Ontology
+      configuration panel.
 
-        from Products.PloneOntology.schema import ClassificationSchema
-        ceschema = BaseSchema + ClassificationSchema 
-
-        class ClassificationExample(BaseContent):
-              schema = ceschema
-
-
-      An example of a classifiable content type can be found in
-      *example.py* in the PloneOntology product folder. This type
-      should be available for testing purposes after product 
-      installation, and may be disabled in the  *portal_types* tool.
 
     Getting Graphviz to work with PloneOntology
 

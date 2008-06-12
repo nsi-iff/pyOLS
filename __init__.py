@@ -17,8 +17,6 @@ import keyword
 import archive
 import graphviztool
 
-import example
-
 tools = (ClassificationTool, GraphVizTool)
 
 def initialize(context):    
