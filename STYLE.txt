@@ -34,7 +34,7 @@ Doc Strings
 ex. 
 
     def foo():
-        """Short summary in none line.
+        """Short summary in one line.
 
         longer description
         """
