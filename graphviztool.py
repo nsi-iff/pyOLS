@@ -7,6 +7,7 @@ from AccessControl.SecurityInfo import ClassSecurityInfo
 from config import PROJECTNAME
 import zLOG
 import popen2
+import os
 
 from warnings import warn
 from config import *

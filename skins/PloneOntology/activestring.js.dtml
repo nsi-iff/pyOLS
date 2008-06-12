@@ -23,7 +23,7 @@ Further modified by Rocky Burt and Jean-Paul Ladage.
 var activeStringReq = false;
 var t = null;
 var activeStringLast = "";
-var queryTarget = "searchVocabulary?field=";
+var activeStringQueryTarget = "searchVocabulary?field=";
 
 var searchForm = null;
 var searchInput = null; 
@@ -198,7 +198,7 @@ function launchSearch(inputId) {
 
 	activeStringReq = new XMLHttpRequest();
 	activeStringReq.onreadystatechange= httpRequestChangeHandler;
-	var url = activeStringRoot + queryTarget + inputId + "&searchTerm="+ input.value;
+	var url = activeStringRoot + activeStringQueryTarget + inputId + "&searchTerm="+ input.value;
 	activeStringReq.open("GET", url);
 	activeStringLast = input.value;
 	activeStringReq.send(null);
