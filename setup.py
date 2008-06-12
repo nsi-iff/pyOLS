@@ -20,14 +20,13 @@ setup(
     url = '',
     
     install_requires = [
-    'Schevo >= 3.1a1',
+        'SQLAlchemy >= 0.3.9',
+        'Elixir >= 0.5.2',
     ],
     
     tests_require = [
-    'nose >= 0.10.1',
+        'nose >= 0.10.1',
     ],
-
-    test_suite = 'nose.collector',
 
     extras_require = {
     },
