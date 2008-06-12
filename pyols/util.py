@@ -18,10 +18,11 @@ class curried(object):
         self.func = func
         self.args = args
         self.kwargs = kwargs
+        self.instance = ()
 
     def __call__(self, *args, **kwargs):
         kwargs.update(self.kwargs)
-        return self.func(*(self.args + args), **kwargs)
+        return self.func(*(self.instance + self.args + args), **kwargs)
 
     def __repr__(self):
         args = ", ".join([repr(a) for a in self.args])
@@ -29,8 +30,8 @@ class curried(object):
         args = ", ".join((args, kwargs))
         return '<curried %s(%s)>' % (self.func.__name__, args)
 
-    def __get__(self, instance, cls):
-        self.args = ((instance, ) + self.args)
+    def __get__(self, instance, type=None):
+        self.instance = (instance, )
         return self
 
 def create_methods(name, classes):
@@ -66,6 +67,7 @@ def _create_methods(name, classes, func):
         new_doc = (func.__doc__ or '') %{'class_name': class_.__name__}
         new_func.__doc__ = new_doc
         class_locals[name % (class_.__name__, )] = new_func
+    return func
 
 if __name__ == '__main__':
     import doctest

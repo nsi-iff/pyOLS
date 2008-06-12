@@ -24,7 +24,8 @@ class TestOntologyTool:
     def addKeyword(self, name=u"testKW", disambiguation=u"dis",
                    description=u"desc"):
         """ Add a keyword using a call to the OT. """
-        self.ot.addKeyword(name, disambiguation, description)
+        self.ot.addKeyword(name=name, disambiguation=disambiguation,
+                           description=description)
         db().flush() # Mimic the flush that hapens at the end of each request
 
     def checkKeyword(self, kw, name=u"testKW", disambiguation=u"dis",
@@ -105,11 +106,11 @@ class TestOntologyTool:
         raise SkipTest("This one will be finished later.")
 
     def testKeywords(self):
-        assert_equal(list(self.ot.keywords()), [])
+        assert_equal(list(self.ot.queryKeywords()), [])
 
         for x in range(3):
             self.keyword_new(name=u"testKW%d"%(x))
-            kws = list(self.ot.keywords())
+            kws = list(self.ot.queryKeywords())
             assert_equal(len(kws), x+1)
 
     def addRelation(self, name=u"testRel", weight=1.0, types=[], inverse=None):
@@ -137,7 +138,7 @@ class TestOntologyTool:
         assert_raises(PyolsNotFound, self.ot.getRelation, name=u"relD")
 
         assert_equal(set(["relA", "relB", "relC"]),
-                     set([r.name for r in self.ot.relations()]))
+                     set([r.name for r in self.ot.queryRelations()]))
 
     @raises(PyolsNotFound)
     def testGetBadRelation(self):

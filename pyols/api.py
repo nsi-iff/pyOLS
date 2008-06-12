@@ -74,32 +74,16 @@ class OntologyTool(object):
         return self._namespace.name
     namespace = property(_get_namespace, _set_namespace)
 
-    def addKeyword(self, name, disambiguation='', description=''):
-        """ Create a keyword in the ontology.
-            An error will be raised if a keyword with the same name
-            and disambiguation exists in the current namespace. """
+    @create_methods('add%s', (Keyword, ))
+    def _generic_add(self, class_, *args, **kwargs):
+        """ Add a %(class_name)s to the ontology.  It is an error
+            to add duplicate items.  The new instance is returned. """
 
-        newkw = Keyword.new(namespace_id=self._namespace.id, name=name,
-                            disambiguation=disambiguation,
-                            description=description)
-        newkw.assert_valid()
-        return newkw
-
-    def getKeyword(self, name):
-        """ Return keyword 'name' from current ontology.
-            An exception is raised if the keyword is not found. """
-        return Keyword.fetch_by(name=name, namespace=self._namespace)
-
-    def delKeyword(self, name):
-        """ Remove keyword 'name', along with all dependent associatons
-            and relationships from the current ontology. """
-
-        kw = self.getKeyword(name)
-        kw.remove()
-
-    def keywords(self):
-        """ Return an iterator over all the keywords in the current NS. """
-        return Keyword.query_by(namespace=self._namespace)
+        # Note that namespace_id must be used, otherwise
+        # assert_unique may fail.
+        new = class_.new(namespace_id=self._namespace.id, **kwargs)
+        new.assert_valid()
+        return new
 
     def addRelation(self, name, weight=1.0, types=[], inverse=None):
         """ Create a keyword relation 'name' in the Plone Relations
@@ -130,18 +114,24 @@ class OntologyTool(object):
         newrel.inverse = inverse
         return newrel
 
-    def getRelation(self, name):
-        """ Return Relation name.  Raise an exception if it is not found. """
-        return Relation.fetch_by(name=name, namespace_id=self._namespace.id)
+    @create_methods('get%s', (Keyword, Relation))
+    def _generic_get(self, class_, name):
+        """ Get a %(class_name)s from the ontology.  It is an
+            error to request an item which does not exist. """
+        return class_.fetch_by(name=name, namespace=self._namespace)
 
-    def delRelation(self, name):
-        """ Remove Relation name and all dependant associations. """
-        rel = self.getRelation(name)
-        rel.remove()
+    @create_methods('del%s', (Keyword, Relation))
+    def _generic_del(self, class_, name):
+        """ Remove %(class_name)s, along with all dependencies,
+            from the current ontology. """
+        i = self._generic_get(class_, name=name)
+        i.remove()
 
-    def relations(self):
-        """ Return an iterator over all the relations in the current NS. """
-        return Relation.query_by(namespace=self._namespace)
+    @create_methods("query%ss", (Keyword, Relation))
+    def _generic_query(self, class_, **kwargs):
+        """ Return an iterator over all the %(class_name)ss in the current
+            namespace matching kwargs.  kwargs may be empty. """
+        return class_.query_by(namespace=self._namespace, **kwargs)
 
     def addRelationship(self, left, relation, right):
         """ Create a relationship of kind 'relation' between keywords 'left'

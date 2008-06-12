@@ -14,7 +14,7 @@ class Spam(object):
         return class_(self.thing)
  
     @create_methods('set_as_%s', (str, int))
-    def _to_something(self, class_, new_thing):
+    def _set_as_something(self, class_, new_thing):
         # Docstring left intentionally blank
         self.thing = class_(new_thing)
  
@@ -24,6 +24,9 @@ def test_create_methods():
     assert_equal(s.to_int(), 123)
     assert_equal(s.to_int.__doc__, "Convert the thing to int.")
 
+    # It should still be possible to call the function directly
+    assert_equal(s._to_something(int), 123)
+
     s.set_as_int("123")
     assert_equal(s.thing, 123)
 
@@ -31,6 +34,7 @@ def test_create_methods():
     assert_raises(TypeError,
                   create_methods('no_%%_s_formatter', (str,)),
                   lambda: 42)
+
 
 
 def test_curried():
@@ -49,6 +53,8 @@ def test_curried():
     class CurriedTester: pass
     CurriedTester.c = curried(lambda self, ft: (self, ft), 42)
     c = CurriedTester()
+    assert_equal(c.c(), (c, 42))
+    # Test for a bug in handling __get__
     assert_equal(c.c(), (c, 42))
 
     # Obviously the particular formatting is not important,
