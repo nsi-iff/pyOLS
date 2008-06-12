@@ -1,0 +1,5 @@
+[actions]
+action.success..import = traverse_to:string:importVocab
+action.success..impOWL = traverse_to:string:impOWL
+action.success..export = traverse_to:string:exportVocab
+action.success..expOWL = traverse_to:string:expOWL

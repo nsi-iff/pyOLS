@@ -1,0 +1,178 @@
+<?xml version="1.0" ?>
+<!DOCTYPE rdf:RDF [
+            <!ENTITY owl "http://www.w3.org/2002/07/owl#"    >
+            <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+            <!ENTITY dc  "http://www.purl.org/dc/elements/1.1/">
+            <!ENTITY nip "http://www.neuroinf.de/ontology/0.1/">
+        ]>
+<rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:nip="http://www.neuroinf.de/ontology/0.1/" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:xsd="http://www.w3.org/2001/XMLSchema#">
+	
+        
+        
+	<owl:Ontology rdf:about="">
+		
+            
+		<rdfs:comment>
+			OWL ontology test for neuroinf.de
+		</rdfs:comment>
+		
+            
+		<rdfs:label>
+			neuroinf.de ontology test
+		</rdfs:label>
+		
+        
+	</owl:Ontology>
+	
+        
+        
+	<owl:AnnotationProperty rdf:about="http://www.purl.org/dc/elements/1.1/title"/>
+	
+        
+	<owl:AnnotationProperty rdf:about="http://www.purl.org/dc/elements/1.1/description"/>
+	
+        
+	<owl:AnnotationProperty rdf:about="http://www.neuroinf.de/ontology/0.1/weight"/>
+	
+        
+        
+	<owl:ObjectProperty rdf:ID="childOf">
+		<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+		<owl:inverseOf rdf:resource="#parentOf"/>
+		<rdfs:domain rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+		<rdfs:range rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+		<nip:weight>
+			0.5
+		</nip:weight>
+	</owl:ObjectProperty>
+	<owl:ObjectProperty rdf:ID="relatedTo">
+		<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+		<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+		<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#InverseFunctionalProperty"/>
+		<rdfs:domain rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+		<rdfs:range rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+		<nip:weight>
+			0.7
+		</nip:weight>
+	</owl:ObjectProperty>
+	<owl:ObjectProperty rdf:ID="parentOf">
+		<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+		<owl:inverseOf rdf:resource="#childOf"/>
+		<rdfs:domain rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+		<rdfs:range rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+		<nip:weight>
+			0.5
+		</nip:weight>
+	</owl:ObjectProperty>
+	<owl:ObjectProperty rdf:ID="synonymOf">
+		<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+		<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+		<rdfs:domain rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+		<rdfs:range rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+		<nip:weight>
+			1.0
+		</nip:weight>
+	</owl:ObjectProperty>
+	<owl:Class rdf:ID="abdominal_ganglion">
+		<rdfs:subClassOf rdf:resource="#invertebrate_structure"/>
+		<rdfs:label xml:lang="en">
+			The abdominal ganglion
+		</rdfs:label>
+		<dc:title>
+			Abdominal ganglion
+		</dc:title>
+		<dc:description>
+			The abdominal ganglion is abdominal
+		</dc:description>
+	</owl:Class>
+	<owl:Class rdf:ID="abducens_nerve">
+		<rdfs:subClassOf rdf:resource="#cranial_nerve"/>
+		<dc:title>
+			Abducens nerve
+		</dc:title>
+		<relatedTo rdf:resource="#accessory_nerve"/>
+		<relatedTo rdf:resource="#abducens_nerve_nucleus"/>
+	</owl:Class>
+	<owl:Class rdf:ID="abducens_nerve_nucleus">
+		<rdfs:subClassOf rdf:resource="#cranial_nerve_nucleus"/>
+		<dc:title>
+			Abducens nerve nucleus
+		</dc:title>
+		<relatedTo rdf:resource="#abducens_nerve"/>
+	</owl:Class>
+	<owl:Class rdf:ID="abstract_mathematical_analysis_and_modeling">
+		<rdfs:subClassOf rdf:resource="#mathematical_and_theoretical_issue"/>
+		<dc:title>
+			Abstract mathematical analysis and modeling
+		</dc:title>
+		<relatedTo rdf:resource="#accessory_nerve_spinal_root_nucleus"/>
+	</owl:Class>
+	<owl:Class rdf:ID="accessory_nerve">
+		<rdfs:subClassOf rdf:resource="#cranial_nerve"/>
+		<dc:title>
+			Accessory nerve
+		</dc:title>
+	</owl:Class>
+	<owl:Class rdf:ID="accessory_nerve_spinal_root_nucleus">
+		<rdfs:subClassOf rdf:resource="#cranial_nerve_nucleus"/>
+		<dc:title>
+			Accessory nerve spinal root nucleus
+		</dc:title>
+		<relatedTo rdf:resource="#accessory_nerve"/>
+	</owl:Class>
+	<owl:Class rdf:ID="accessory_oculomotor_nerve_nucleus">
+		<rdfs:subClassOf rdf:resource="#cranial_nerve_nucleus"/>
+		<dc:title>
+			Accessory oculomotor nerve nucleus
+		</dc:title>
+	</owl:Class>
+	<owl:Class rdf:ID="acetylcholine">
+		<rdfs:subClassOf rdf:resource="#neurotransmitter_or_modulator"/>
+		<dc:title>
+			Acetylcholine
+		</dc:title>
+		<relatedTo rdf:resource="#cholinergic"/>
+	</owl:Class>
+	<owl:Class rdf:ID="acetylcholine_muscarinic_receptor">
+		<rdfs:subClassOf rdf:resource="#acetylcholine_receptor"/>
+		<dc:title>
+			Acetylcholine-muscarinic receptor
+		</dc:title>
+		<relatedTo rdf:resource="#muscarin"/>
+	</owl:Class>
+	<owl:Class rdf:ID="acetylcholine_nicotinic_receptor">
+		<rdfs:subClassOf rdf:resource="#acetylcholine_receptor"/>
+		<dc:title>
+			Acetylcholine-nicotinic receptor
+		</dc:title>
+	</owl:Class>
+	<owl:Class rdf:ID="acetylcholine_receptor">
+		<rdfs:subClassOf rdf:resource="#receptor"/>
+		<dc:title>
+			Acetylcholine receptor
+		</dc:title>
+		<relatedTo rdf:resource="#acetylcholine"/>
+	</owl:Class>
+	<owl:Class rdf:ID="acetylcholin_rezeptor">
+		<dc:title>
+			Acetylcholin Rezeptor
+		</dc:title>
+	</owl:Class>
+	<owl:Class rdf:about="acetylcholin_rezeptor">
+		<owl:equivalentClass rdf:resource="#acetylcholine_receptor"/>
+	</owl:Class>
+	<owl:Class rdf:ID="cholinergic"/>
+	<owl:Class rdf:ID="computability_and_complexity"/>
+	<owl:Class rdf:ID="cranial_nerve"/>
+	<owl:Class rdf:ID="cranial_nerve_nucleus"/>
+	<owl:Class rdf:ID="invertebrate_structure"/>
+	<owl:Class rdf:ID="kernel_based_method"/>
+	<owl:Class rdf:ID="mathematical_and_theoretical_issue"/>
+	<owl:Class rdf:ID="muscarin"/>
+	<owl:Class rdf:ID="neurotransmitter_or_modulator"/>
+	<owl:Class rdf:ID="nicotine"/>
+	<owl:Class rdf:ID="nonlinear_dynamics"/>
+	<owl:Class rdf:ID="phase_space_analysis"/>
+	<owl:Class rdf:ID="receptor"/>
+	<owl:Class rdf:ID="statistical_mechanics"/>
+</rdf:RDF>

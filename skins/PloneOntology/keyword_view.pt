@@ -1,0 +1,43 @@
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xml:lang="en-US"
+      lang="en-US"
+      metal:use-macro="here/main_template/macros/master"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      i18n:domain="archetypes">
+<head><title></title></head>
+<body>
+<div metal:fill-slot="main">
+    
+      <metal:main_macro define-macro="main">
+
+        <metal:header_macro define-macro="header">
+          <h1 tal:content="string:Keyword: ${here/title_or_id}" />
+        </metal:header_macro>
+
+        <metal:body_macro metal:define-macro="body"
+	         tal:define="ctool python: here.portal_classification;
+                             storage python:ctool.getStorage();
+                             related python: ctool.getRelatedKeywords(here.getId()).keys();
+			     ">
+	   <span tal:replace="structure here/getKwDescription"/>
+        
+	
+	   <div tal:condition="related">
+	   <h2>Related Keywords</h2>
+
+	   <tal:block tal:repeat="kw related">
+	      <a tal:define="ob python: storage.get(kw);"
+	         tal:attributes="href ob/absolute_url"
+		 tal:content="ob/title_or_id">
+		</a><span tal:replace="string:, " tal:condition="not: repeat/kw/end"/>
+	   </tal:block>
+	   </div>
+
+	</metal:body_macro>
+
+      </metal:main_macro>
+</div>
+</body>
+</html>

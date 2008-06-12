@@ -1,0 +1,250 @@
+from StringIO import StringIO
+
+from Products.PloneOntology.config import *
+from Products.PloneOntology.poapi import ProposalArchive
+
+from Products.PythonScripts.PythonScript import PythonScript
+from Products.CMFCore.utils import getToolByName
+from Products.Archetypes.public import listTypes
+from Products.Archetypes.Extensions.utils import installTypes, install_subskin
+from Products.CMFFormController.FormAction import FormAction, FormActionKey
+
+def checkDependencies(portal, out):
+    """Check whether dependency products are installed"""
+
+    qi = getToolByName(portal, "portal_quickinstaller")
+
+    ok = True
+    
+    for d in DEPENDENCIES:
+        if not qi.isProductInstalled(d[0]):
+            ok = False
+            out.write("Product '%s' is missing (see %s).\n" % d)
+
+    if not ok:
+        raise "DEPENDENCY PRODUCTS ARE MISSING\n\n %s" % out.getvalue()
+    
+def setupTool(portal, out):
+    """
+    adds the tool to the portal root folder
+    creates kw_storage if necessary
+    """
+    if hasattr(portal, 'portal_classification'):
+        portal.manage_delObjects(['portal_classification'])
+        out.write('Deleting old classification tool')
+        
+    addTool = portal.manage_addProduct[PROJECTNAME].manage_addTool
+    addTool('Classification Tool', None)
+
+    #default keyword relations
+    ctool = getToolByName(portal, 'portal_classification')
+#    ctool.registerKeywordRelation('parentOf', factor=0.5)
+#    ctool.registerKeywordRelation('childOf', factor=0.5)
+#    ctool.registerKeywordRelation('synonymOf', factor=1)
+#    ctool.registerKeywordRelation('relatedTo', factor=0.7)
+
+    out.write("\nAdded the classification tool to the portal root folder.\n")
+    if hasattr(portal, 'graphviz_tool'):
+        portal.manage_delObjects(['graphviz_tool'])
+        out.write('Deleting old graphviz tool')
+
+    addTool = portal.manage_addProduct[PROJECTNAME].manage_addTool
+    addTool('GraphViz Tool', None)
+
+    out.write("\nAdded the graphviz tool to the portal root folder.\n")
+
+def deleteTool(portal, out):
+    """
+    removes the tool from the portal root folder
+    """
+    if hasattr(portal, 'portal_classification'):
+        ctool = getToolByName(portal, 'portal_classification')
+
+        portal.manage_delObjects(['portal_classification'])
+        out.write('Removing the classification tool from the portal root folder.')
+
+def registerConfiguration(portal, out):
+    portal_conf=getToolByName(portal,'portal_controlpanel')
+    portal_conf.registerConfiglet( PROJECTNAME
+                                   , PROJECTNAME
+                                   , 'string:${portal_url}/configure_tool_properties' 
+                                   , ''                   # a condition   
+                                   , 'Manage portal'      # access permission
+                                   , 'Products'           # section to which the configlet should be added: 
+                                   #(Plone,Products,Members) 
+                                   , 1                    # visibility
+                                   , PROJECTNAME                                  
+                                   , 'logoIcon.gif' # icon in control_panel, put your own icon in the 
+                                   # /skins folder of your product and change 
+                                   #'site_icon.gif' to 'yourfile'
+                                   , 'Sitewide configuration of the classification tool'
+                                   , None
+                                   )
+
+def addCustomFormControllerTransitions(portal, out):
+    # st = getToolByName(portal, 'portal_skins')
+    # pt = st.archetypes.base_edit
+    container = getToolByName(portal, 'portal_form_controller')
+
+    container.addFormAction('base_edit', 'success','',
+                            'search', 'traverse_to',
+                            'string:base_edit')
+    container.addFormAction('base_edit', 'success','',
+                            'search2', 'traverse_to',
+                            'string:base_edit')
+    container.addFormAction('base_edit', 'success','',
+                            'search3', 'traverse_to',
+                            'string:classification_edit')
+    container.addFormAction('base_edit', 'failure','',
+                            'search4', 'traverse_to',
+                            'string:classification_edit')
+    container.addFormAction('base_edit', 'failure','',
+                            'search5', 'traverse_to',
+                            'string:classification_edit')
+    container.addFormAction('base_edit', 'success','',
+                            'search4', 'traverse_to',
+                            'string:classification_edit')
+    container.addFormAction('base_edit', 'success','',
+                            'search5', 'traverse_to',
+                            'string:classification_edit')
+    container.addFormAction('base_edit', 'success','',
+                             'add', 'traverse_to',
+                             'string:classification_edit')
+    container.addFormAction('base_edit', 'success','',
+                             'delete', 'traverse_to',
+                             'string:classification_edit')
+    container.addFormAction('base_edit', 'success','',
+                             'sel', 'traverse_to',
+                             'string:classification_edit')
+    container.addFormAction('base_edit', 'success','',
+                             'sel2', 'traverse_to',
+                             'string:classification_edit')
+    container.addFormAction('base_edit', 'failure','',
+                             'sel2', 'traverse_to',
+                             'string:classification_edit')
+    container.addFormAction('base_edit', 'success','',
+                             'sel3', 'traverse_to',
+                             'string:classification_edit')
+    container.addFormAction('base_edit', 'failure','',
+                             'sel3', 'traverse_to',
+                             'string:classification_edit')
+    
+def removeCustomFormControllerTransitions(portal, out):
+    fc = getToolByName(portal, 'portal_form_controller')
+    #BAAH no Python API for deleting actions in FormController
+    #lets get our hands dirty
+    container = fc.actions
+    try:
+        container.delete(FormActionKey('base_edit', 'success', '',
+                                       'search', fc))
+    except KeyError: pass
+    try:
+        container.delete(FormActionKey('base_edit', 'success', '',
+                                       'search2', fc))
+    except KeyError: pass
+    try:
+        container.delete(FormActionKey('base_edit', 'success', '',
+                                       'delete', fc))
+    except KeyError: pass
+    try:
+        container.delete(FormActionKey('base_edit', 'success', '',
+                                       'add', fc))
+    except KeyError: pass
+    try:
+        container.delete(FormActionKey('base_edit', 'success', '',
+                                       'search3', fc))
+    except KeyError: pass
+    try:
+        container.delete(FormActionKey('base_edit', 'success', '',
+                                       'search4', fc))
+    except KeyError: pass
+    try:
+        container.delete(FormActionKey('base_edit', 'success', '',
+                                       'search5', fc))
+    except KeyError: pass
+    try:
+        container.delete(FormActionKey('base_edit', 'success', '',
+                                       'sel', fc))
+    except KeyError: pass
+    try:
+        container.delete(FormActionKey('base_edit', 'success', '',
+                                       'sel2', fc))
+    except KeyError: pass
+    try:
+        container.delete(FormActionKey('base_edit', 'success', '',
+                                       'sel3', fc))
+    except KeyError: pass
+    try:
+        container.delete(FormActionKey('base_edit', 'failure', '',
+                                       'sel3', fc))
+    except KeyError: pass
+    try:
+        container.delete(FormActionKey('base_edit', 'failure', '',
+                                       'search4', fc))
+    except KeyError: pass
+    try:
+        container.delete(FormActionKey('base_edit', 'failure', '',
+                                       'search5', fc))
+    except KeyError: pass
+    try:
+        container.delete(FormActionKey('base_edit', 'failure', '',
+                                       'sel2', fc))
+    except KeyError: pass
+    
+def setupKWPWorkflow(portal, out):
+    """the proposal wf"""
+    wf_tool = getToolByName(portal, 'portal_workflow')
+    wf_tool.manage_addWorkflow( id='kw_proposal_workflow',
+                                workflow_type='kw_proposal_workflow '+\
+                                '(KWPWorkflow [NIP])'
+                                )
+#    wf_tool.setChainForPortalTypes('KeywordProposal', 'kw_proposal_workflow ')
+    out.write("Set up KWPWorkflow")
+
+def setupRelationPWorkflow(portal, out):
+    """the proposal wf II"""
+    wf_tool = getToolByName(portal, 'portal_workflow')
+    wf_tool.manage_addWorkflow( id='relation_proposal_workflow',
+                                workflow_type='relation_proposal_workflow (RelationPWorkflow [NIP])'
+                                )
+#    wf_tool.setChainForPortalTypes('KeywordProposal', 'kw_proposal_workflow ')
+    out.write("Set up RelationPWorkflow")
+
+def addArchive(portal, out):
+    """ the kw proposal storage """
+    try:
+        pt=getToolByName(portal, 'portal_types')
+        pt.getTypeInfo('ProposalArchive').global_allow=True
+        portal.invokeFactory('ProposalArchive', id = 'accepted_kws',
+                             title='Accepted KW Proposals')
+        pt.getTypeInfo('ProposalArchive').global_allow=False
+        out.write("Set up Proposal Archive.\n")
+    except:
+        out.write("Couldn't setup proposal archive.\n")
+
+def install(portal):
+    out = StringIO()
+    checkDependencies(portal, out)
+    setupKWPWorkflow(portal, out)
+    setupRelationPWorkflow(portal, out)
+    installTypes(portal, out, listTypes(PROJECTNAME), PROJECTNAME, GLOBALS)
+    addArchive(portal, out)
+    setupTool(portal, out)
+    wf_tool = getToolByName(portal, 'portal_workflow')
+    wf_tool.setChainForPortalTypes('KeywordProposal', 'kw_proposal_workflow ')
+    wf_tool.setChainForPortalTypes('Keyword', '(Default)')
+    wf_tool.setChainForPortalTypes('RelationProposal', 'relation_proposal_workflow ')
+    registerConfiguration(portal, out)
+    addCustomFormControllerTransitions(portal, out)
+
+    return out.getvalue()
+
+def uninstall(portal):
+    out = StringIO()
+
+    portal_conf=getToolByName(portal,'portal_controlpanel')
+    portal_conf.unregisterConfiglet(PROJECTNAME)
+    removeCustomFormControllerTransitions(portal, out)
+    deleteTool(portal, out)
+    
+    return out.getvalue()

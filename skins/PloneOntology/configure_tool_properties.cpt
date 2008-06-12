@@ -1,0 +1,75 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US"
+    lang="en-US"
+    metal:use-macro="here/prefs_main_template/macros/master">
+
+<tal:block metal:fill-slot="head_slot">
+<tal:block tal:define="dummy python:request.set('disable_border',1)" />
+</tal:block>
+
+<body>
+
+<div metal:fill-slot="prefs_configlet_main"
+     tal:define="ctool python:here.portal_classification;
+                 gtool python:here.graphviz_tool;
+                 relations python:ctool.relations(here.relations_library);
+                ">
+
+<div class="configlet">
+
+<div class="documentEditable">
+
+    <!-- simulating views until we have real objects. -->
+    <ul class="contentViews">
+        <li class="selected">
+        <a href=""
+        tal:attributes="href string:${template/id}"
+        i18n:translate="">Properties</a>
+        </li>
+
+        <li class="">
+        <a href=""
+        tal:attributes="href string: configure_tool_relations"
+        i18n:translate="">Relations</a>
+        </li>
+
+	<li class="">
+        <a href=""
+        tal:attributes="href string: configure_tool_import"
+        i18n:translate="">Import/Export</a>
+        </li>
+
+        <li class="">
+        <a href=""
+        tal:attributes="href string: configure_tool_readme"
+        i18n:translate="">ReadMe</a>
+        </li>
+    </ul>
+
+    <div class="contentActions">
+    &nbsp;
+    </div>
+    <!-- End of tabs -->
+
+    <div class="documentContent">
+      <h1>Classificator Management</h1>
+
+      <form method="POST" tal:attributes="action string:${here/absolute_url}/${template/getId}"
+      tal:define="cutoff ctool/getSearchCutoff|python:0.1;
+                  storage python: ctool.getStorageId();">
+      
+<table><tr><td>Search Cutoff</td><td><input name="cutoff:float" size="5" tal:attributes="value cutoff"/></td></tr>
+       <tr><td>Keyword Storage</td><td><input name="storage" tal:attributes="value storage"/></td></tr>
+       <tr><td>Graphviz Layouter</td><td><select name="tool" size="1" tal:define="values python: gtool.toollist()">
+       <option tal:repeat="value values"
+               tal:content="value"
+               tal:attributes="value value;
+                               selected python:test(value == gtool.getLayouter())" />
+       </select></td></tr><table>
+      <input type="submit" name="form.button.change" value="Save Changes"/>
+      <input type="hidden" name="form.submitted" value="1" />
+      </form>
+    </div>
+</div></div>
+
+</div></body></html>
+

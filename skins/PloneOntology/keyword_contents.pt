@@ -1,0 +1,76 @@
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xml:lang="en-US"
+      lang="en-US"
+      metal:use-macro="here/main_template/macros/master"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      i18n:domain="archetypes">
+  <head><title></title></head>
+  <body>
+
+    <div metal:fill-slot="main"
+     tal:define="ctool python:here.portal_classification;
+                 content python:ctool.search(here.getId());
+             ">
+
+     <h1>Content related to "<it tal:content="here/title_or_id"/>"</h1>
+     <dl tal:condition="content">
+       <metal:block tal:repeat="item content">
+	   <tal:block tal:define="obj python:item[1];
+	                          user obj/Creator;
+	                     fac python:item[0];">
+	     <dt tal:define="url python: obj.absolute_url()+test(obj.isPrincipiaFolderish,'/','');
+                                icon python: obj.getIcon(1)">
+		<span tal:replace="string:(${fac})"/>
+                <a href="#" tal:attributes="href url">
+                        <img src="" alt=""
+                                        tal:attributes="src string:${here/portal_url}/${icon};alt here/title" />
+                </a>
+
+                <a href="#" tal:condition="python: obj.portal_type not in ['Link', 'Image']"
+                            tal:attributes="href url"
+                            tal:content="obj/title_or_id" />
+
+                <a href="#" tal:condition="python: obj.portal_type == 'Image'"
+                            tal:attributes="href python: url + '/view'"
+                            tal:content="obj/title_or_id" />
+
+                <a href="#" 
+                   tal:condition="python: obj.portal_type == 'Link'"
+                   tal:attributes="href obj/getRemoteUrl;"
+                   class="link-plain"
+                   tal:content="obj/title_or_id" />
+
+                <span class="discreet"
+                      tal:condition="python: obj.portal_type == 'Event'">
+    
+                    &nbsp;
+                    <span tal:replace="obj/location">Oslo</span>,
+                    <span tal:replace="python: obj.start().ISO()">from date</span> -
+                    <span tal:replace="python: obj.end().ISO()">to date</span>
+                    
+                </span>
+		
+<!--
+		<span class="discreet" i18n:translate="text_creator_date">
+                        by <span tal:replace="obj/Creator" i18n:name="creator" />,
+                        last updated: <span tal:replace="python: localized_time(obj.modified(), long_format=1, context=here)" i18n:name="date" />
+                </span>
+	-->	
+                </dt>
+
+                <dd>
+
+                    <span tal:content="structure python:test(obj.Description(), obj.Description(), '&nbsp;')"> description </span>
+                </dd>
+		</tal:block>
+		    </metal:block>
+            </dl>
+
+	 <span tal:condition="not: content">No content is classified for this keyword</span>
+
+    </div>
+
+  </body>
+</html>

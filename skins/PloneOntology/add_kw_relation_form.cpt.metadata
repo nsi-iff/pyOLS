@@ -1,0 +1,3 @@
+[actions]
+action.success..add=traverse_to:string:add_kw_relation
+action.failure=traverse_to:string:add_kw_relation_form

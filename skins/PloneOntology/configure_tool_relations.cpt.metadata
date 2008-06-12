@@ -1,0 +1,9 @@
+[default]
+title=
+
+[actions]
+action.success..change=traverse_to:string:set_relevance_factors
+action.success..delete=traverse_to:string:del_kw_relation
+action.success..add=traverse_to:string:add_kw_relation_form
+
+action.failure=traverse_to:string:configure_tool_relations

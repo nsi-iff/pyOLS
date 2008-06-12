@@ -1,0 +1,92 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US"
+    lang="en-US"
+    metal:use-macro="here/prefs_main_template/macros/master">
+
+<tal:block metal:fill-slot="head_slot">
+<tal:block tal:define="dummy python:request.set('disable_border',1)" />
+</tal:block>
+
+<body>
+
+<div metal:fill-slot="prefs_configlet_main"
+     tal:define="ctool python:here.portal_classification;
+                 relations python:ctool.relations(here.relations_library);
+                ">
+
+<div class="configlet">
+
+<div class="documentEditable">
+
+    <!-- simulating views until we have real objects. -->
+    <ul class="contentViews">
+        <li class="">
+        <a href=""
+        tal:attributes="href string: configure_tool_properties"
+        i18n:translate="">Properties</a>
+        </li>
+
+        <li class="selected">
+        <a href=""
+        tal:attributes="href string: ${template/id}"
+        i18n:translate="">Relations</a>
+        </li>
+
+	<li class="">
+        <a href=""
+        tal:attributes="href string: configure_tool_import"
+        i18n:translate="">Import/Export</a>
+        </li>
+
+        <li class="">
+        <a href=""
+        tal:attributes="href string: configure_tool_readme"
+        i18n:translate="">ReadMe</a>
+        </li>
+    </ul>
+
+    <div class="contentActions">
+    &nbsp;
+    </div>
+    <!-- End of tabs -->
+
+    <div class="documentContent">
+      <h1>Classificator Management</h1>
+
+      <p>When following links between keywords, the value of the linked keyword is estimated as the product of the source value and a specific relevance factor for the link. That way it is possible to give links different weights.</p>
+
+
+
+<form action="" method="POST" tal:attributes="action string:${here/absolute_url}/${template/getId}">
+
+<tal:block tal:condition="relations">
+
+<table>
+<tr><th>Relation</th><th>Relevance Factor</th></tr>
+<tr tal:repeat="rel relations">
+<td><input type="checkbox" name="ids:list:string"
+tal:attributes="value rel;"/><tal:block tal:replace="rel"/></td>
+<td><input size="5" tal:attributes="value python: ctool.getWeight(rel);
+         name string:factors.${rel}:record;
+"/></td>
+</tr>
+</table>
+
+<input type="submit" name="form.button.change" value="Save Changes"/>
+<input type="submit" name="form.button.delete" value="Delete"/>
+
+</tal:block>
+
+<tal:block tal:condition="not: relations">
+No relations are defined between keywords.
+</tal:block>
+
+
+<input type="submit" value="Add Relation" name="form.button.add"/>
+<input type="hidden" name="form.submitted" value="1" />
+</form>
+
+     </div>
+</div></div>
+
+</div></body></html>
+

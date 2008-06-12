@@ -1,0 +1,40 @@
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xml:lang="en-US"
+      lang="en-US"
+      metal:use-macro="here/main_template/macros/master"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n">
+ <head>
+  <title></title>
+ </head>
+ <body>
+  <div metal:fill-slot="main">
+   <h4><span tal:replace="here/title_or_id"/></h4>
+      <tal:block tal:repeat="kind here/objectOfIds">
+      <tal:block condition="python: len(kind.getWrappedKeywords())>1">
+    <b><a tal:attributes="href string:${kind/absolute_url}/keyword_context_view" tal:content="kind/title_or_id"/></b> is
+     <br />
+   <ul> 
+     <tal:block tal:repeat="child kind/getWrappedKeywords">
+      <tal:block tal:define="obj python:child[0]; rels python:child[1]">
+       <li>
+        <tal:block tal:repeat="rel rels"><span tal:replace="rel"/><span tal:replace="string:," tal:condition="not: repeat/rel/end"/></tal:block>
+        <a tal:attributes="href string:${obj/absolute_url}/keyword_context_view" tal:content="obj/title_or_id"/>
+       </li>
+       <!-- <tal:block tal:repeat="l2child obj/getWrappedKeywords">
+	<tal:block tal:define="obj2 python:l2child[0]; rels2 python:l2child[1]">
+         <tal:block condition="python: rels2==['parentOf']">
+	  is <tal:block tal:repeat="rel2 rels2"><span tal:replace="rel2"/><span tal:replace="string:," tal:condition="not: repeat/rel2/end"/></tal:block>
+          <a tal:attributes="href string:${obj2/absolute_url}/keyword_context_view" tal:content="obj2/title_or_id"/>
+         </tal:block>
+        </tal:block>
+       </tal:block> -->
+      </tal:block>     
+      </tal:block>
+     </ul>
+    </tal:block>
+   </tal:block>   
+  </div>
+ </body>
+</html>

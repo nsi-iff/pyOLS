@@ -1,0 +1,17 @@
+Thomas Förster <t.foerster@biologie.hu-berlin.de>
+
+* general concept
+
+* first prototype
+
+
+David Baehrens <d.baehrens@biologie.hu-berlin.de>
+
+* OWL import/export
+
+
+Stefan Kröger <s.kroeger@biologie.hu-berlin.de>
+
+* active search support
+
+* GraphViz support
