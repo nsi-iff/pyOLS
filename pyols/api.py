@@ -74,7 +74,7 @@ class OntologyTool(object):
             An error will be raised if a keyword with the same name
             and disambiguation exists in the current namespace. """
 
-        newkw = Keyword.new(namespace=self._namespace, name=name,
+        newkw = Keyword.new(namespace_id=self._namespace.id, name=name,
                             disambiguation=disambiguation,
                             description=description)
         newkw.assert_valid()
@@ -82,7 +82,7 @@ class OntologyTool(object):
     def getKeyword(self, name):
         """ Return keyword 'name' from current ontology.
             An exception is raised if the keyword is not found. """
-        return Keyword.fetch_by(name=name)        
+        return Keyword.fetch_by(name=name, namespace=self._namespace)
 
     def delKeyword(self, name):
         """ Remove keyword 'name', along with all dependent associatons
@@ -92,11 +92,7 @@ class OntologyTool(object):
         kw.expunge()
 
     def keywords(self):
-        """Return a list of all existing keyword names.
-        """
-        catalog = getToolByName(self, 'portal_catalog')
-
-        return [kw_res.getObject().getName() for kw_res in catalog.searchResults(portal_type='Keyword')]
+        """ Return all the keywords from the current namespace. """
 
     def addRelation(self, name, weight=0.0, types=[], inverses=[], uid=""):
         """Create a keyword relation 'name' in the Plone Relations library, if non-existant.

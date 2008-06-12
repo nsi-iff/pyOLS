@@ -87,10 +87,10 @@ class StorageMethods:
             query[col] = getattr(self, col)
 
         if self.get_by(**query):
-            vals = ", ".join(["=".join(a) for a in query.items()])
+            vals = ", ".join(["=".join(map(str, a)) for a in query.items()])
             raise PyolsValidationError(
                     "A %s already exists with %s."
-                    %(self.__class__.__name__, values))
+                    %(self.__class__.__name__, vals))
 
     def flush(self):
         """ Flush this instance to disk, making it persistant.
