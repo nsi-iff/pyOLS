@@ -1,5 +1,6 @@
 from pyols.model import Namespace, Relation
 from pyols.tests import run_tests, db
+from pyols.exceptions import PyolsValidationError
 
 from nose.plugins.skip import SkipTest
 from nose.tools import raises, assert_raises, assert_equal, ok_
@@ -55,6 +56,26 @@ class TestRelation:
 
 
     def testSetTypes(self):
-        raise Exception("You need to write this test!")
+        rel = self.relation_new(types=['transitive'])
+        assert_equal(rel.types, ['transitive'])
+        # Use a tuple (instead of a list) here to ensure
+        # that it is not modified by _set_types
+        to_check = (('transitive', 'symmetric'),
+                    ('functional', ),
+                    ('inverse_functional', 'transitive'))
+        for check in to_check:
+            rel.types = check
+            # It's imortant to wrap each one in set(...) because
+            # their order is not guarenteed
+            assert_equal(set(rel.types), set(check))
+
+    @raises(PyolsValidationError)
+    def testSetInvalidTypes(self):
+        rel = self.relation_new(types=['transitive'])
+        rel.types = ['symmetric', 'invalid_type']
+
+    def testGetTypes(self):
+        rel = self.relation_new(types=['transitive', 'symmetric'])
+        assert_equal(set(rel.types), set(['transitive', 'symmetric']))
 
 run_tests(__name__)

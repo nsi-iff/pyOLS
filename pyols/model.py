@@ -80,7 +80,8 @@ class StorageMethods:
 
     def assert_unique(self):
         """ Raise an exception if the instance is not unique with
-            respect to it's unique constraints. """
+            respect to it's unique constraints.
+            NOTE: This does not check for PK constraints (see #12). """
         constraints = [x for x in self.table.constraints
                                if isinstance(x, UniqueConstraint)]
 
@@ -88,6 +89,10 @@ class StorageMethods:
             raise PyolsProgrammerError(
                     "assert_unique will not behave correctly if there is more "
                     "than one unique constraint on a table.")
+
+        if not constraints:
+            # There are no unique constraints.
+            return
 
         query = {}
         for col in constraints[0].columns.keys():
@@ -197,18 +202,21 @@ class Relation(Entity, StorageMethods):
     def _get_types(self):
         return [type.name for type in self._types]
     def _set_types(self, new_types):
-        for type in self._types:
+        # Make a copy of the new types because we will be modifying it
+        new_types = list(new_types)
+        # Need to wrap self._types in list(...) because we'll be
+        # modifying it during the loop.
+        for type in list(self._types):
             if type.name not in new_types:
+                self._types.remove(type)
                 type.expunge()
             else: # The type is in the new_types
                 new_types.remove(type.name)
+
         for type in new_types:
-            type = RelationType.new(name=type, relation=self)
+            type = RelationType.new(name=type)
             type.assert_valid()
             self._types.append(type)
-        for type in self._types:
-            type.flush()
-        self.flush()
     types = property(_get_types, _set_types)
 
     def assert_valid(self):
@@ -220,8 +228,6 @@ class Relation(Entity, StorageMethods):
                                        %(self.weight, self.name))
 
          
-
-
 class RelationType(Entity, StorageMethods):
     has_field('name', Integer, primary_key=True)
     belongs_to('relation', of_kind='Relation', primary_key=True)
@@ -232,16 +238,10 @@ class RelationType(Entity, StorageMethods):
 
     def assert_valid(self):
         if self.name not in self.valid_types:
-            return PyolsProgrammerError("%s is not a valid relation type. "
-                                        "Valid types are %s." \
-                                        %(self.name, ", ".join(self.valid_types)))
+            raise PyolsValidationError("%s is not a valid relation type. "
+                                       "Valid types are %s." \
+                                       %(self.name, ", ".join(self.valid_types)))
         StorageMethods.assert_valid(self)
-
-
-    has_field('transitive', Boolean, default=False)
-    has_field('symmetric', Boolean, default=False)
-    has_field('functional', Boolean, default=False)
-    has_field('inverse_functional', Boolean, default=False)
 
 
 class Keyword(Entity, StorageMethods):
