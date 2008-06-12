@@ -18,11 +18,13 @@ from Products.Relations.exception import ValidationException
 
 from owl import OWLExporter, OWLImporter
 
-myschema = Schema((LinesField('RootKWs',
-                              vocabulary='idsOfTopLevel',
+myschema = Schema((LinesField('rootKeywords',
+                              vocabulary='getKeywordNames',
+                              default='',
+                              label='Root Keywords',
                               description='Top level keywords for the ontology view',
                               multivalued=1,
-                              widget=LinesWidget(),
+                              widget=PicklistWidget(),
                               description_msgid='Ontology_help_rootkws',
                               i18n_domain='Ontology',
                               ),
@@ -41,41 +43,37 @@ class Ontology(BaseBTreeFolder):
     allowed_content_types = ('Keyword',)
     content_icon = "ontology.gif"
 
+    def getKeywordNames(self):
+        """Return list of all existing keyword names in ontology. Vocabulary wrapper for schema above.
+        """
+        ctool = getToolByName(self, 'portal_classification')
+        return ctool.keywords()
 
     def getTopLevel(self):
-        """try to guess the most 'rootlike' Kewords by looking which KWs are only parents and parent to more than one KW.
+        """Return the root keywords which have no parents.
         """
-        listOfObjects=[]
-
-        number=0
-        for el in getToolByName(self, 'portal_classification').getStorage().contentValues():
-            if u'parentOf' in el.getRelations() and u'childOf' not in el.getRelations():
-                for il in el.getRelations():
-                    if il == u'parentOf':
-                        number=number+1
-                if number > 0:
-                    listOfObjects.append(el)
-
-        return listOfObjects
+        ctool = getToolByName(self, 'portal_classification')
+        return [kw for kw in [ctool.getKeyword(name) for name in ctool.keywords()] if not 'childOf' in kw.getRelations()]
 
     def idsOfTopLevel(self):
+        """Return names of top level keywords.
         """
-        """
-        idList=[]
-        for el in self.getTopLevel():
-            idList.append(el.getName())
-##             for il in self.RootKW:
-##                 idList.append(il)
+        return [kw.getName() for kw in self.getTopLevel()]
 
-        return idList
+    def at_post_create_script(self):
+        if not self.rootKeywords:
+            self.rootKeywords = self.idsOfTopLevel()
 
+    def at_post_edit_script(self):
+        if not self.rootKeywords:
+            self.rootKeywords = self.idsOfTopLevel()
 
     def objectOfIds(self):
         """
         """
         kwstorage = getToolByName(self, 'portal_classification').getStorage()
         objList=[]
-        for el in self.RootKWs:
+        for el in self.rootKeywords:
             objList.append(getattr(kwstorage, el))
         if objList==[]:
             objList=self.getTopLevel()
@@ -281,6 +279,10 @@ class Ontology(BaseBTreeFolder):
                 error_string = error_string + el.updateKwMap(levels=2)
         except zExceptions.NotFound:
                 pass # ignore NotFound exception for silent operation without graphviz
+
+        # Set root keywords
+        if not self.rootKeywords:
+                self.rootKeywords = self.idsOfTopLevel()
 
         return error_string
 
