@@ -28,6 +28,7 @@ class TestKeywordProposalWF(PloneTestCase.PloneTestCase):
         self.ct.addKeyword("Bar")
         test_ruleset = self.ct.addRelation('testOf')
         self.folder.invokeFactory('KeywordProposal', id='kwp')
+        self.folder.kwp.setTitle('KWP')
         self.folder.kwp.setShortAdditionalDescription('shorty')
         self.folder.kwp.setKeywordProposalDescription('described it is')
         prop=getattr(self.folder, 'kwp')

@@ -100,7 +100,6 @@ tool=context.portal_workflow
 new_kws_list=[]
 
 # retrieve the state
-tool.getInfoFor(kwprop, "review_state", None)
 for thing in reflist:
  if tool.getInfoFor(thing, "review_state") == "pending":
   try:
@@ -277,15 +276,17 @@ relid=relprop.getId()
 srcFldr = relprop.aq_parent
 storage=context.portal_classification.getStorage()
 one=0
+id=""
 new_kws_list=[]
-try:
- kwobj=context.portal_classification.getKeyword(relprop.getSearchKWA())
- id=kwobj.getName()
-except:
- proposalobj=context.portal_classification.getKeywordProposal(relprop.getSearchKWA())
- context.portal_classification.manage_addKeyword(name=proposalobj.generateName(proposalobj.getKPTitle(),proposalobj.getShortAdditionalDescription()), title=proposalobj.title_or_id(), shortAdditionalDescription=proposalobj.getShortAdditionalDescription(), description=proposalobj.getKeywordProposalDescription())
- kwobj=context.portal_classification.getKeyword(name=proposalobj.generateName(proposalobj.getKPTitle(),proposalobj.getShortAdditionalDescription()))
- id=kwobj.getName()
+for el in context.portal_catalog.searchResults(portal_type='Keyword'):
+ if el.getObject().Title() == relprop.getSearchKWA():
+  kwobj=el.getObject()
+  id=kwobj.getName()
+if id == "":
+  proposalobj=context.portal_classification.getKeywordProposal(relprop.getSearchKWA())
+  context.portal_classification.manage_addKeyword(name=proposalobj.generateName(proposalobj.getKPTitle(),proposalobj.getShortAdditionalDescription()), title=proposalobj.title_or_id(), shortAdditionalDescription=proposalobj.getShortAdditionalDescription(), description=proposalobj.getKeywordProposalDescription())
+  kwobj=context.portal_classification.getKeyword(name=proposalobj.generateName(proposalobj.getKPTitle(),proposalobj.getShortAdditionalDescription()))
+  id=kwobj.getName()
 
 try:
  relation_object=context.portal_classification.getKeyword(relprop.getSearchKWB())

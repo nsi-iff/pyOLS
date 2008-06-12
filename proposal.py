@@ -52,7 +52,7 @@ class KeywordProposal(BaseFolder):
     meta_type = portal_type = 'KeywordProposal'
     archetype_name = 'Keyword Proposal'
 
-    security.declarePublic('getPKWDescription')
+    security.declarePublic('setTitle')
     def setTitle(self, value,):
         """custom mutator to change the id and title as well"""
         id = self.getId()
@@ -86,10 +86,8 @@ class KeywordProposal(BaseFolder):
         """
         new_id = _normalize(value)
         x=1
-        while new_id in self.aq_inner.aq_parent.objectIds():
-         for objId in self.aq_inner.aq_parent.objectIds():
-          if objId == new_id:
-            if getattr(self, objId).UID() != self.UID():
+        if new_id in self.aq_inner.aq_parent.objectIds():
+            if getattr(self, new_id).UID() != self.UID():
               id_list = new_id.split('_')
               new_id = id_list[0] + '_' + str(x)
               x=x+1

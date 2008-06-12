@@ -214,11 +214,16 @@ class ClassificationTool(UniqueObject,
             NotFound : There is no keywordproposal 'name'
         """
         catalog = getToolByName(self, 'portal_catalog')
-
         try:
-            return catalog.searchResults(portal_type='KeywordProposal', Title=name)[0].getObject()
+         return catalog.searchResults(portal_type='Keyword', name=name)[0].getObject()
         except:
-            raise NotFound, "KeywordProposal '%s' not found" % name
+         x=0
+         for el in catalog.searchResults(portal_type='KeywordProposal'):
+          if el.getObject().Title() == name:
+           X=1
+           return el.getObject()
+         if x == 0:
+          raise NotFound, "KeywordProposal '%s' not found" % name
 
     def delKeyword(self, name):
         """Remove keyword from ontology.
@@ -450,7 +455,7 @@ class ClassificationTool(UniqueObject,
         ruleset = self.getRelation(name)
         return [rule.getInverseRuleset().getId() for rule in ruleset.getComponents(interfaces.IRule) if re.match('inverseOf', rule.getId())]
 
-    def addReference(self, src, dst, relation):
+    def addReference(self, src, dst, relation, ):
         """Create an Archetype reference of type 'relation' from keyword with name
         'src' to keyword with name 'dst', if non-existant.
 
@@ -696,7 +701,6 @@ class ClassificationTool(UniqueObject,
         """Return keywords matching a search string.
         """
         #XXX obj in method signature is obsolete
-
         storage = self.getStorage()
         catalog = getToolByName(self, 'portal_catalog')
 

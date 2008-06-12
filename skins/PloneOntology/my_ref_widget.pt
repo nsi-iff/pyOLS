@@ -8,7 +8,52 @@
 
   <body>
 
-    <metal:view_macro define-macro="view">
+    <metal:view_macro define-macro="view"><tal:comment replace="nothing">
+      <tal:define define="refs python:here.getReferenceImpl(field.relationship)"
+                  condition="refs">
+        <tal:block tal:condition="not:field/multiValued"
+               tal:define="ref python:refs[0];
+                           obj ref/getTargetObject">
+
+            <a href="#"
+               tal:attributes="href obj/absolute_url;
+                               class python:obj.portal_type.replace(' ', '_')"
+               tal:content="python:obj.Title() or obj.absolute_url(relative=1)">
+              Sole target object's title
+            </a>
+
+            <a href="#"
+               tal:condition="python:portal.portal_interface.objectImplements(ref,'Products.Archetypes.interfaces.referenceengine.IContentReference')"
+               tal:attributes="href python:ref.getContentObject().absolute_url();
+                               class python:obj.portal_type.replace(' ', '_')"
+               tal:content="field/relationship">
+              reference object link
+            </a>
+
+        </tal:block>
+
+        <ul tal:condition="field/multiValued">
+          <li tal:repeat="ref refs">
+             <tal:block tal:define="obj ref/getTargetObject">
+                <a href="#"
+                   tal:attributes="href obj/absolute_url;
+                                   class python:obj.portal_type.replace(' ', '_')"
+                   tal:content="python:obj.Title() or obj.absolute_url(relative=1)">
+                  Target Title
+                </a>
+
+                <a href="#"
+                   tal:condition="python:portal.portal_interface.objectImplements(ref,'Products.Archetypes.interfaces.referenceengine.IContentReference')"
+                   tal:attributes="href python:ref.getContentObject().absolute_url();
+                                   class python:obj.portal_type.replace(' ', '_')"
+                   tal:content="field/relationship">
+                  reference object link
+                </a>
+             </tal:block>
+          </li>
+        </ul>
+
+      </tal:define></tal:comment>
     </metal:view_macro>
 
     <metal:edit_macro define-macro="edit">
@@ -32,15 +77,25 @@
               <tal:block tal:define="item_tabindex tabindex/next;
                                    item_id string:${fieldName}_${item_tabindex};
                                    no_ref python: value is None and item == ''">
-             <tal:block condition="python: item in uids">
-              <label tal:attributes="for item_id"
+             <tal:block condition="python:test((item in uids) or no_ref)">
+                <input class="noborder"
+                       tabindex=""
+                       type="radio"
+                       tal:attributes="name fieldName;
+                                       checked python:test((item in uids) or no_ref, 'checked', nothing);
+                                       tabindex item_tabindex;
+                                       value item;
+                                       id item_id;
+                                       type python:multiVal and 'checkbox' or 'radio'"
+                       />
+
+                <label tal:attributes="for item_id"
                        tal:content="python: here.archetype_tool.lookupObject(item).title_or_id()" />
 
 
                 <br/>
-                           </tal:block>
-          </tal:block>
-
+              </tal:block>
+             </tal:block>
             </tal:item>
 
 
