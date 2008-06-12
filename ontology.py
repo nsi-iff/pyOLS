@@ -52,7 +52,7 @@ class Ontology(BaseBTreeFolder):
 
     actions = (
         {
-            'name'     : "map View",
+            'name'     : "Map View",
             'id'       : "kw_map_view",
             'action'   : "string: ${object_url}/map_view",
             'category' : "object_tabs",

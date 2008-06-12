@@ -42,10 +42,10 @@
 		      </tal:block>
 		    </tr>
 		  </table>
-		  <input type="submit" name="form.button.sel3" value="Select"/><font color='#ff0000'> 'select' before 'save' or no keywords will be added </font>
+		  <input type="submit" name="form.button.sel3" value="Select"/><font color='#ff0000'><p i18n:translate="Ontology_select_before"> 'select' before 'save' or no keywords will be added</p> </font>
 		</div>
 
-		<p tal:condition="not:results">No matching keywords found. Please try another search term.</p>
+		<p tal:condition="not:results" i18n:translate="Ontology_no_keywords">No matching keywords found. Please try another search term.</p>
 	      </tal:block>
 	    </tal:block>
 

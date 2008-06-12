@@ -57,7 +57,7 @@
                                       storage ctool/getStorageId;
                                       fontpath ctool/getFontPath;">
        <fieldset>
-        <legend>general</legend>
+        <legend i18n:translate="Ontology_legend_general">general</legend>
         <table>
          <tr>
           <td><span align="justify" i18n:translate="Ontology_highlight_search_cutoff">Search Cutoff</span>
@@ -85,7 +85,7 @@
         </table>
        </fieldset>
        <fieldset>
-        <legend>graphviz general<sup>*)</sup></legend>
+        <legend i18n:translate="Ontology_legend_graphviz_general">graphviz general<sup>*)</sup></legend>
         <table>
          <tr>
           <td><span i18n:translate="Ontology_highlight_forward_relations">Forward Relations</span>
@@ -106,121 +106,121 @@
           </td>
          </tr>
          <tr>
-          <td><span>Keyword Font</span>
+          <td><span i18n:translate="Ontology_highlight_keyword_font">Keyword Font</span>
           </td>
           <td><select name="font" size="1" tal:define="values python: ctool.getGVFontList()"><option tal:repeat="value values" tal:content="value" tal:attributes="value value; selected python:test(value == ctool.getGVFont())" /></select>
           </td>
          </tr>
          <tr>
-          <td><span>Arrow Font</span></td><td><select name="relfont" size="1" tal:define="values python: ctool.getGVFontList()"><option tal:repeat="value values" tal:content="value" tal:attributes="value value; selected python:test(value == ctool.getRelFont())" /></select>
+          <td><span i18n:translate="Ontology_highlight_arrow_font">Arrow Font</span></td><td><select name="relfont" size="1" tal:define="values python: ctool.getGVFontList()"><option tal:repeat="value values" tal:content="value" tal:attributes="value value; selected python:test(value == ctool.getRelFont())" /></select>
           </td>
          </tr>
         </table>
        </fieldset>
-       <fieldset><legend>focus keyword appearance<sup>*)</sup></legend>
+       <fieldset><legend i18n:translate="Ontology_legend_focus_keyword">focus keyword appearance<sup>*)</sup></legend>
         <table>
          <tr>
-          <td><span>Shape</span></td><td><select name="focus_nodeshape" size="1" tal:define="values python: ctool.getGVNodeShapesList()"><option tal:repeat="value values" tal:content="value" tal:attributes="value value; selected python:test(value == ctool.getFocusNodeShape())" /></select>
+          <td><span i18n:translate="Ontology_highlight_shape">Shape</span></td><td><select name="focus_nodeshape" size="1" tal:define="values python: ctool.getGVNodeShapesList()"><option tal:repeat="value values" tal:content="value" tal:attributes="value value; selected python:test(value == ctool.getFocusNodeShape())" /></select>
           </td>
          </tr>
          <tr>
-          <td><span>Fillcolor</span></td><td><input name="focus_nodecolor" size="15" tal:attributes="value python: ctool.getFocusNodeColor()"/>
+          <td><span i18n:translate="Ontology_highlight_fillcolor">Fillcolor</span></td><td><input name="focus_nodecolor" size="15" tal:attributes="value python: ctool.getFocusNodeColor()"/>
           </td>
          </tr>
          <tr>
-          <td><span>Fontcolor</span></td><td><input name="focus_node_font_color" size="15" tal:attributes="value python: ctool.getFocusNodeFontColor()"/>
+          <td><span i18n:translate="Ontology_highlight_fontcolor">Fontcolor</span></td><td><input name="focus_node_font_color" size="15" tal:attributes="value python: ctool.getFocusNodeFontColor()"/>
           </td>
          </tr>
          <tr>
-          <td><span>Fontsize</span></td><td><input name="focus_node_font_size" size="3" tal:attributes="value python: ctool.getFocusNodeFontSize()"/>
+          <td><span i18n:translate="Ontology_highlight_fontsize">Fontsize</span></td><td><input name="focus_node_font_size" size="3" tal:attributes="value python: ctool.getFocusNodeFontSize()"/>
           </td>
          </tr>
         </table>
        </fieldset>
-       <fieldset><legend>first keyword appearance<sup>*)</sup></legend>
+       <fieldset><legend i18n:translate="Ontology_legend_first_keyword">first keyword appearance<sup>*)</sup></legend>
         <table>
          <tr>
-          <td><span>Shape</span>
+          <td><span i18n:translate="Ontology_highlight_shape">Shape</span>
           </td>
           <td><select name="first_nodeshape" size="1" tal:define="values python: ctool.getGVNodeShapesList()"><option tal:repeat="value values" tal:content="value" tal:attributes="value value; selected python:test(value == ctool.getFirstNodeShape())" /></select>
           </td>
          </tr>
          <tr>
-          <td><span>Fillcolor</span>
+          <td><span i18n:translate="Ontology_highlight_fillcolor">Fillcolor</span>
           </td>
           <td><input name="first_nodecolor" size="15" tal:attributes="value python: ctool.getFirstNodeColor()"/>
           </td>
          </tr>
          <tr>
-          <td><span>Fontcolor</span>
+          <td><span i18n:translate="Ontology_highlight_fontcolor">Fontcolor</span>
           </td>
           <td><input name="first_node_font_color" size="15" tal:attributes="value python: ctool.getFirstNodeFontColor()"/>
           </td>
          </tr>
          <tr>
-          <td><span>Fontsize</span>
+          <td><span i18n:translate="Ontology_highlight_fontsize">Fontsize</span>
           </td>
           <td><input name="first_node_font_size" size="3" tal:attributes="value python: ctool.getFirstNodeFontSize()"/>
           </td>
          </tr>
         </table>
        </fieldset>
-       <fieldset><legend>second keyword appearance<sup>*)</sup></legend>
+       <fieldset><legend i18n:translate="Ontology_legend_second_keyword">second keyword appearance<sup>*)</sup></legend>
         <table>
          <tr>
-          <td><span>Shape</span>
+          <td><span i18n:translate="Ontology_highlight_shape">Shape</span>
           </td>
           <td><select name="second_nodeshape" size="1" tal:define="values python: ctool.getGVNodeShapesList()"><option tal:repeat="value values" tal:content="value" tal:attributes="value value; selected python:test(value == ctool.getSecondNodeShape())" /></select>
           </td>
          </tr>
          <tr>
-          <td><span>Fillcolor</span>
+          <td><span i18n:translate="Ontology_highlight_fillcolor">Fillcolor</span>
           </td>
           <td><input name="second_nodecolor" size="15" tal:attributes="value python: ctool.getSecondNodeColor()"/>
           </td>
          </tr>
          <tr>
-          <td><span>Fontcolor</span>
+          <td><span i18n:translate="Ontology_highlight_fontcolor">Fontcolor</span>
           </td>
           <td><input name="second_node_font_color" size="15" tal:attributes="value python: ctool.getSecondNodeFontColor()"/>
           </td>
          </tr>
          <tr>
-          <td><span>Fontsize</span>
+          <td><span i18n:translate="Ontology_highlight_fontsize">Fontsize</span>
           </td>
           <td><input name="second_node_font_size" size="3" tal:attributes="value python: ctool.getSecondNodeFontSize()"/>
           </td>
          </tr>
         </table>
        </fieldset>
-       <fieldset><legend>arrow appearance<sup>*)</sup></legend>
+       <fieldset><legend i18n:translate="Ontology_legend_arrow_appearance">arrow appearance<sup>*)</sup></legend>
         <table>
          <tr>
-          <td><span>Shape</span>
+          <td><span i18n:translate="Ontology_highlight_shape">Shape</span>
           </td>
           <td><select name="edgeshape" size="1" tal:define="values python: ctool.getGVEdgeShapesList()"><option tal:repeat="value values" tal:content="value" tal:attributes="value value; selected python:test(value == ctool.getEdgeShape())" /></select>
           </td>
          </tr>
          <tr>
-          <td><span>Fillcolor</span>
+          <td><span i18n:translate="Ontology_highlight_fillcolor">Fillcolor</span>
           </td>
           <td><input name="edgecolor" size="15" tal:attributes="value python: ctool.getEdgeColor()"/>
           </td>
          </tr>
          <tr>
-          <td><span>Fontcolor</span>
+          <td><span i18n:translate="Ontology_highlight_fontcolor">Fontcolor</span>
           </td>
           <td><input name="edge_font_color" size="15" tal:attributes="value python: ctool.getEdgeFontColor()"/>
           </td>
          </tr>
          <tr>
-          <td><span>Fontsize</span></td><td><input name="edge_font_size" size="3" tal:attributes="value python: ctool.getEdgeFontSize()"/>
+          <td><span i18n:translate="Ontology_highlight_fontsize">Fontsize</span></td><td><input name="edge_font_size" size="3" tal:attributes="value python: ctool.getEdgeFontSize()"/>
           </td>
          </tr>
         </table>
        </fieldset>
        <tal:block condition="python: len(ctool.getGVFontList()) == 0"><br />
-        <span>Systems Font Path (only necessary if no fonts are found above)</span><input name="fontpath" tal:attributes="value fontpath" />
+        <span i18n:translate="Ontology_font_note">Systems Font Path (only necessary if no fonts are found above)</span><input name="fontpath" tal:attributes="value fontpath" />
        </tal:block>
        <font color="#ff0000"><small i18n:translate="Ontology_note"><sup>*)</sup> Be aware that changing these properties results in redrawing of <b>all</b> Keyword Graphs and thus may be very time consuming.</small>
        </font><br /><br />

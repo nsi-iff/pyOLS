@@ -119,7 +119,7 @@ class Keyword(BaseContent):
             'category' : "object_tabs",
         },
         {
-            'name'     : "manage relations",
+            'name'     : "Manage Relations",
             'id'       : "manageRelations",
             'action'   : "string: ${object_url}/relations_adddelete",
             'category' : "object_tabs",

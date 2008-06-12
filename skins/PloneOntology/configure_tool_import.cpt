@@ -58,7 +58,7 @@
      <!-- End of tabs -->
 
     <div class="documentContent">
-      <h1 i18n:translate="Ontology_label_classificator_management">Classificator Management</h1>
+      <h1 i18n:translate="Ontology_label_classificator">Classificator Management</h1>
 
       <form method="POST" 
             enctype="multipart/form-data" 

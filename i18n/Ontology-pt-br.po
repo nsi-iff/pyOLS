@@ -17,65 +17,15 @@ msgstr ""
 "Preferred-Encodings: latin1 utf-8\n"
 "Domain: Ontology\n"
 
-#. Default: "short additional description"
-#: proposal.py
-msgid "Ontology_label_description"
-msgstr "Breve Descrição Adicional"
-
-#. Default: "in case there are two completely different meanings for a keyword, please specify e.g. Neuron (the cell) or Neuron (the simulation software)"
-#: proposal.py
-msgid "Ontology_help_description"
-msgstr "No caso pode haver dois significados completamente diferentes para uma palavra-chave, por favor especifique por exemplo Neurônio (a célula) ou Neurônio (software de simulação)."
-
-#. Default: "description of new keyword"
-#: proposal.py
-msgid "Ontology_label_kp_description"
-msgstr "Descrição de uma Nova Palavra-chave"
-
-#. Default: "description of new keyword"
-#: proposal.py
-msgid "Ontology_help_kp_description"
-msgstr "Descrição de uma nova palavra-chave."
-
-#. Default: "RelationProposals"
-#: proposal.py
-msgid "Ontology_label_relation"
-msgstr "Relações Propostas"
-
-#. Default: "KeywordA"
-#: proposal.py
-msgid "Ontology_label_keyworda"
-msgstr "Palavra-chave A"
-
-#. Default: "Relation"
-#: proposal.py
-msgid "Ontology_label_relation"
-msgstr "Relação"
-
-#. Default: "How keyword a is related to keyword b"
-#: proposal.py
-msgid "Ontology_help_relation"
-msgstr "Como a palavra-chave A está relacionada com a palavra-chave B."
-
-#. Default: "KeywordB"
-#: proposal.py
-msgid "Ontology_label_keywordb"
-msgstr "Palavra-chave B"
-
-#. Default: "New Keyword"
-#: proposal.py
-msgid "Ontology_label_new_keyword"
-msgstr "Nova Palavra-chave"
-
-#. Default: "Can contain capital letters, spaces etc."
-#: proposal.py
-msgid "Ontology_help_new_keyword"
-msgstr "Pode conter letras maiúsculas, espaços, etc."
-
 #. Default: "Description"
 #: keyword.py
 msgid "Ontology_label_kw_description"
 msgstr "Descrição"
+
+#. Default: "short additional description"
+#: proposal.py, keyword.py
+msgid "Ontology_label_description"
+msgstr "Breve Descrição Adicional"
 
 #. Default: "Used to distinguish homonymous Titles"
 #: keyword.py
@@ -92,15 +42,65 @@ msgstr "Nome"
 msgid "Ontology_help_name"
 msgstr "Identificador NCName XML na ontologia."
 
-#. Default: "Relation"
-#: keyword.py
-msgid "Ontology_help_name"
-msgstr "Identificador NCName XML na ontologia."
-
 #. Default: "Top level keywords for the ontology view"
 #: ontology.py
 msgid "Ontology_help_rootkws"
 msgstr "Nível superior das palavras-chaves para a visão da ontologia."
+
+#. Default: "New Keyword"
+#: proposal.py
+msgid "Ontology_label_new_keyword"
+msgstr "Nova Palavra-chave"
+
+#. Default: "Can contain capital letters, spaces etc."
+#: proposal.py
+msgid "Ontology_help_new_keyword"
+msgstr "Pode conter letras maiúsculas, espaços, etc."
+
+#. Default: "in case there are two completely different meanings for a keyword, please specify e.g. Neuron (the cell) or Neuron (the simulation software)"
+#: proposal.py
+msgid "Ontology_help_short_description"
+msgstr "No caso pode haver dois significados completamente diferentes para uma palavra-chave, por favor especifique por exemplo Neurônio (a célula) ou Neurônio (software de simulação)."
+
+#. Default: "description of new keyword"
+#: proposal.py
+msgid "Ontology_label_kp_description"
+msgstr "Descrição de uma Nova Palavra-chave"
+
+#. Default: "description of new keyword"
+#: proposal.py
+msgid "Ontology_help_kp_description"
+msgstr "Descrição de uma nova palavra-chave."
+
+#. Default: "RelationProposals"
+#: proposal.py
+msgid "Ontology_label_relation_proposal"
+msgstr "Relações Propostas"
+
+#. Default: "add Relations to existing Keywords or KeywordProposals"
+#: proposal.py
+msgid "Ontology_help_relation_proposal"
+msgstr "Adicionar relacionamentos às palavras-chaves existentes ou às palavras-chaves propostas."
+
+#. Default: "KeywordA"
+#: proposal.py
+msgid "Ontology_label_keyworda"
+msgstr "Palavra-chave A"
+
+#. Default: "Relation"
+#: proposal.py
+msgid "Ontology_label_relation"
+msgstr "Relacionamento"
+
+#. Default: "How keyword a is related to keyword b"
+#: proposal.py
+msgid "Ontology_help_relation"
+msgstr "Como a palavra-chave A está relacionada com a palavra-chave B."
+
+#. Default: "KeywordB"
+#: proposal.py
+msgid "Ontology_label_keywordb"
+msgstr "Palavra-chave B"
 
 #. Default: "Properties"
 #: skins/PloneOntology/configure_tool_properties.cpt
@@ -115,147 +115,37 @@ msgstr "Relacionamentos"
 #. Default: "Import/Export"
 #: skins/PloneOntology/configure_tool_properties.cpt
 msgid "Ontology_import_export"
-msgstr "Importação/Exportação"
+msgstr "Importar/Exportar"
+
+#. Default: "Upgrade"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_upgrade"
+msgstr "Atualizar"
 
 #. Default: "ReadMe"
 #: skins/PloneOntology/configure_tool_properties.cpt
 msgid "Ontology_readme"
 msgstr "Leia-me"
 
-#. Default: "Classificator Management"
-#: skins/PloneOntology/configure_tool_properties.cpt
-msgid "Ontology_label_classificator"
-msgstr "Gerenciador de Classificação"
-
-#. Default: "Search Cutoff"
-#: skins/PloneOntology/configure_tool_properties.cpt
-msgid "Ontology_highlight_search_cutoff"
-msgstr "Ponto de Corte da Busca"
-
-#. Default: "Keyword Storage"
-#: skins/PloneOntology/configure_tool_properties.cpt
-msgid "Ontology_highlight_keyword_storage"
-msgstr "Armazenamento das Palavras-chaves"
-
-#. Default: "Graphviz Layouter"
-#: skins/PloneOntology/configure_tool_properties.cpt
-msgid "Ontology_highlight_graphviz_layouter"
-msgstr "Formato do Gráfico"
-
-#. Default: "Graphviz Font"
-#: skins/PloneOntology/configure_tool_properties.cpt
-msgid "Ontology_highlight_graphviz_font"
-msgstr "Fonte do Gráfico"
-
-#. Default: "Forward Relations"
-#: skins/PloneOntology/configure_tool_properties.cpt
-msgid "Ontology_highlight_forward_relations"
-msgstr "Relações Posteriores"
-
-#. Default: "Backward Relations"
-#: skins/PloneOntology/configure_tool_properties.cpt
-msgid "Ontology_highlight_backward_relations"
-msgstr "Relações Anteriores"
-
-#. Default: "Types that allow classification"
-#: skins/PloneOntology/configure_tool_properties.cpt
-msgid "Ontology_highlight_types"
-msgstr "Tipos que Permitem Classificação"
-
-#. Default: "Be aware that changing the Font, the Layouter and/or the Directions of the Relations results in redrawing of the Keyword Graphs and thus may be very time consuming."
-#: skins/PloneOntology/configure_tool_properties.cpt
-msgid "Ontology_note"
-msgstr "Observe que a modificação da fonte, formato e/ou as direções das relações resultam no redesenho dos gráficos das palavras-chaves, consequentemente leva ao aumento do tempo de execução."
-
-#. Default: "Save Changes"
-#: skins/PloneOntology/configure_tool_properties.cpt
-msgid "Save Changes"
-msgstr "Salvar Configurações"
-
-#. Default: "When following links between keywords, the value of the linked keyword is estimated as the product of the source value and a specific relevance factor for the link. That way it is possible to give links different weights."
-#: skins/PloneOntology/configure_tool_relations.cpt
-msgid "Ontology_relation_description"
-msgstr "Ao relacionar links entre as palavras-chaves, o valor da palavra-chave linkada é estimado através do valor do produto e o fator específico relevante para o link. Desta forma é possível dar aos links pesos diferentes."
-
-#. Default: "Relevance Factor"
-#: skins/PloneOntology/configure_tool_relations.cpt
-msgid "Ontology_highlight_relevance_factor"
-msgstr "Fator Relevante"
-
-#. Default: "Relation"
-#: skins/PloneOntology/configure_tool_relations.cpt
-msgid "Ontology_highlight_relation"
-msgstr "Relação"
-
-#. Default: "Delete"
-#: skins/PloneOntology/configure_tool_relations.cpt
-msgid "Delete"
-msgstr "Excluir"
-
-#. Default: "Add Relation"
-#: skins/PloneOntology/configure_tool_relations.cpt
-msgid "Add Relation"
-msgstr "Adicionar Relação"
-
-#. Default: "No relations are defined between keywords."
-#: skins/PloneOntology/configure_tool_relations.cpt
-msgid "Ontology_no_relations"
-msgstr "Nenhuma relação foi definida entre as palavras-chaves."
-
 #. Default: "Register new keyword relation"
 #: skins/PloneOntology/add_kw_relation_form.cpt
 msgid "Ontology_label_register_kwr"
 msgstr "Registro de nova relação de palavras-chaves"
 
-#. Default: "Id"
+#. Default: "Name"
 #: skins/PloneOntology/add_kw_relation_form.cpt
 msgid "Ontology_label_id"
-msgstr "Identificador"
+msgstr "Nome"
 
 #. Default: "Relevance Factor"
 #: skins/PloneOntology/add_kw_relation_form.cpt
 msgid "Ontology_label_relevance"
 msgstr "Fator de Relevância"
 
-#. Default: "Classificator Management"
-#: skins/PloneOntology/configure_tool_import.cpt
-msgid "Ontology_label_classificator_management"
-msgstr "Gerenciador da Classificação"
-
-#. Default: "Import"
-#: skins/PloneOntology/configure_tool_import.cpt
-msgid "Ontology_label_import"
-msgstr "Impotar"
-
-#. Default: "Export"
-#: skins/PloneOntology/configure_tool_import.cpt
-msgid "Ontology_label_export"
-msgstr "Exportar"
-
-#. Default: "Export OWL Ontology"
-#: skins/PloneOntology/configure_tool_import.cpt
-msgid "Export OWL Ontology"
-msgstr "Exportar Ontologia OWL"
-
-#. Default: "Import OWL Ontology"
-#: skins/PloneOntology/configure_tool_import.cpt
-msgid "Import OWL Ontology"
-msgstr "Importar Ontologia OWL"
-
-#. Default: "Filename"
-#: skins/PloneOntology/configure_tool_import.cpt
-msgid "Ontology_label_filename"
-msgstr "Nome do arquivo"
-
-#. Default: "No content is classified for this keyword"
-#: skins/PloneOntology/keyword_contents.cpt
-msgid "Ontology_no_content"
-msgstr "Nenhum conteúdo foi classificado para esta palavra-chave."
-
-#. Default: "Content related to"
-#: skins/PloneOntology/keyword_contents.pt
-msgid "Content related to ${content_title}"
-msgstr "Conteúdo relacionado à ${content_title}"
+#. Default: "Add Relation"
+#: skins/PloneOntology/configure_tool_relations.cpt
+msgid "Add Relation"
+msgstr "Adicionar Relação"
 
 #. Default: "search for new keywords for referencing"
 #: skins/PloneOntology/classify_form.cpt
@@ -277,22 +167,280 @@ msgstr "Adicionar/Buscar"
 msgid "Add References"
 msgstr "Adicionar Referências"
 
+#. Default: "No matching keywords found. Please try another search term."
+msgid "Ontology_no_keywords"
+msgstr "Nenhuma palavra foi encontrada. Por favor tente realizar a busca novamente."
+
 #. Default: "current refenced keywords"
 #: skins/PloneOntology/classify_form.cpt
 msgid "Ontology_label_current_reference"
 msgstr "Palavras-chaves referenciadas"
-
-#. Default: "Add References"
-#: skins/PloneOntology/classify_form.cpt
-msgid "Add References"
-msgstr "Adicionar Referências"
 
 #. Default: "Remove References"
 #: skins/PloneOntology/classify_form.cpt
 msgid "Remove References"
 msgstr "Remover Referências"
 
+#. Default: "Classificator Management"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_label_classificator"
+msgstr "Gerenciador da Classificação"
+
+#. Default: "Import"
+#: skins/PloneOntology/configure_tool_import.cpt
+msgid "Ontology_label_import"
+msgstr "Impotar"
+
+#. Default: "Filename"
+#: skins/PloneOntology/configure_tool_import.cpt
+msgid "Ontology_label_filename"
+msgstr "Nome do arquivo"
+
+#. Default: "Import OWL Ontology"
+#: skins/PloneOntology/configure_tool_import.cpt
+msgid "Import OWL Ontology"
+msgstr "Importar Ontologia OWL"
+
+#. Default: "Export"
+#: skins/PloneOntology/configure_tool_import.cpt
+msgid "Ontology_label_export"
+msgstr "Exportar"
+
+#. Default: "Export OWL Ontology"
+#: skins/PloneOntology/configure_tool_import.cpt
+msgid "Export OWL Ontology"
+msgstr "Exportar Ontologia OWL"
+
+#. Default: "general"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_legend_general"
+msgstr "Configurações Gerais"
+
+#. Default: "Search Cutoff"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_highlight_search_cutoff"
+msgstr "Ponto de Corte da Busca"
+
+#. Default: "Keyword Storage"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_highlight_keyword_storage"
+msgstr "Armazenamento das Palavras-chaves"
+
+#. Default: "AT Reference for Classification"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_highlight_classify_reference"
+msgstr "Referência para a Classificação"
+
+#. Default: "Types that allow classification"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_highlight_types"
+msgstr "Tipos que Permitem Classificação"
+
+#. Default: "graphviz general"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_legend_graphviz_general"
+msgstr "Configurações do Gráfico"
+
+#. Default: "Forward Relations"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_highlight_forward_relations"
+msgstr "Relações Posteriores"
+
+#. Default: "Backward Relations"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_highlight_backward_relations"
+msgstr "Relações Anteriores"
+
+#. Default: "Graphviz Layouter"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_highlight_graphviz_layouter"
+msgstr "Formato do Gráfico"
+
+#. Default: "Keyword Font"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_highlight_keyword_font"
+msgstr "Fonte da Palavra-chave"
+
+#. Default: "Arrow Font"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_highlight_arrow_font"
+msgstr "Fonte da Seta"
+
+#. Default: "focus keyword appearance"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_legend_focus_keyword"
+msgstr "Foco na Palavra-chave"
+
+#. Default: "Shape"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_highlight_shape"
+msgstr "Formato"
+
+#. Default: "Fillcolor"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_highlight_fillcolor"
+msgstr "Cor de Preenchimento"
+
+#. Default: "Fontcolor"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_highlight_fontcolor"
+msgstr "Cor da Fonte"
+
+#. Default: "Fontsize"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_highlight_fontsize"
+msgstr "Tamanho da Fonte"
+
+#. Default: "first keyword appearance"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_legend_first_keyword"
+msgstr "Aparência da Primeira Palavra-chave"
+
+#. Default: "second keyword appearance"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_legend_second_keyword"
+msgstr "Aparência da Segunda Palavra-chave"
+
+#. Default: "arrow appearance"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_legend_arrow_appearance"
+msgstr "Aparência da Seta"
+
+#. Default: "Systems Font Path (only necessary if no fonts are found above)"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_font_note"
+msgstr "Localização da Fonte (somente necessário se nenhuma fonte acima for encontrada)"
+
+#. Default: "Be aware that changing the Font, the Layouter and/or the Directions of the Relations results in redrawing of the Keyword Graphs and thus may be very time consuming."
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Ontology_note"
+msgstr "Observe que a modificação da fonte, formato e/ou as direções das relações resultam no redesenho dos gráficos das palavras-chaves, consequentemente leva ao aumento do tempo de execução."
+
+#. Default: "Save Changes"
+#: skins/PloneOntology/configure_tool_properties.cpt
+msgid "Save Changes"
+msgstr "Salvar Configurações"
+
+#. Default: "When following links between keywords, the value of the linked keyword is estimated as the product of the source value and a specific relevance factor for the link. That way it is possible to give links different weights."
+#: skins/PloneOntology/configure_tool_relations.cpt
+msgid "Ontology_relation_description"
+msgstr "Ao relacionar links entre as palavras-chaves, o valor da palavra-chave linkada é estimado através do valor do produto e o fator específico relevante para o link. Desta forma é possível dar aos links pesos diferentes."
+
+#. Default: "Relation"
+#: skins/PloneOntology/configure_tool_relations.cpt
+msgid "Ontology_highlight_relation"
+msgstr "Relação"
+
+#. Default: "Relevance Factor"
+#: skins/PloneOntology/configure_tool_relations.cpt
+msgid "Ontology_highlight_relevance_factor"
+msgstr "Fator de Relevância"
+
+#. Default: "Inverse of"
+#: skins/PloneOntology/configure_tool_relations.cpt
+msgid "Ontology_highlight_inverseof"
+msgstr "Inverso de"
+
+#. Default: "T = Transitive"
+#: skins/PloneOntology/configure_tool_relations.cpt
+msgid "Ontology_highlight_transitive"
+msgstr "T = Transitivo"
+
+#. Default: "S = Symmetric"
+#: skins/PloneOntology/configure_tool_relations.cpt
+msgid "Ontology_highlight_symmetric"
+msgstr "S = Simétrico"
+
+#. Default: "F = Functional"
+#: skins/PloneOntology/configure_tool_relations.cpt
+msgid "Ontology_highlight_functional"
+msgstr "F = Funcional"
+
+#. Default: "IF = Inversefunctional"
+#: skins/PloneOntology/configure_tool_relations.cpt
+msgid "Ontology_highlight_inverse"
+msgstr "IF = Funcional Inverso"
+
+#. Default: "Delete"
+#: skins/PloneOntology/configure_tool_relations.cpt
+msgid "Delete"
+msgstr "Excluir"
+
+#. Default: "No relations are defined between keywords."
+#: skins/PloneOntology/configure_tool_relations.cpt
+msgid "Ontology_no_relations"
+msgstr "Nenhuma relação foi definida entre as palavras-chaves."
+
+#. Default: "Upgrade"
+#: skins/PloneOntology/configure_tool_upgrade.cpt
+msgid "Ontology_label_upgrade"
+msgstr "Atualizar"
+
+#. Default: "Upgrade from earlier installations. This migrates the ontology and the content classification to the currently installed product version."
+#: skins/PloneOntology/configure_tool_upgrade.cpt
+msgid "Ontology_label_upgrade_form"
+msgstr "Atualização de instalações anteriores. Migra a ontologia e a classificação do conteúdo para a versão atual do produto instalada."
+
+#. Default: "WARNING: Before upgrading be sure to backup your ZODB! Please report any problem to the <a href="http://plone.org/products/ploneontology/issues">issue tracker</a>"
+#: skins/PloneOntology/configure_tool_upgrade.cpt
+msgid "Ontology_label_warning"
+msgstr "AVISO: Antes de atualizar assegure-se de que você tenha feito uma cópia de segurança do seu ZODB! Por favor, informe qualquer problema em nossa página de relatos de erros: http://plone.org/products/ploneontology/issues."
+
+#. Default: "Upgrade"
+msgid "Upgrade"
+msgstr "Atualizar"
+
+#. Default: "Content related to"
+#: skins/PloneOntology/keyword_contents.pt
+msgid "Content related to ${content_title}"
+msgstr "Conteúdo relacionado à ${content_title}"
+
+#. Default: "No content is classified for this keyword"
+#: skins/PloneOntology/keyword_contents.cpt
+msgid "Ontology_no_content"
+msgstr "Nenhum conteúdo foi classificado para esta palavra-chave."
+
 #. Default: "Related Keywords"
 #: skins/PloneOntology/keyword_view.pt
 msgid "Ontology_label_related_kw"
 msgstr "Palavras-chaves Relacionadas"
+
+#. Default: "Related"
+#: skins/PloneOntology/portlet_related.pt
+msgid "box_related"
+msgstr "Relacionados"
+
+#. Default: "Local resources"
+#: skins/PloneOntology/portlet_related.pt
+msgid "box_local_resources"
+msgstr "Recursos Locais"
+
+#. Default: "External link"
+#: skins/PloneOntology/portlet_related.pt
+msgid "box_external_links"
+msgstr "Links Externos"
+
+#. Default: "Add and Delete Keywordrelations for"
+#: skins/PloneOntology/relations_adddelete.cpt
+msgid "Add and Delete Keywordrelations for ${keyword_relation}"
+msgstr "Adicionar e Excluir Relacionamentos de ${keyword_relation}"
+
+#. Default: "Back to Relations Overview"
+#: skins/PloneOntology/relations_adddelete.cpt
+msgid "Ontology_back"
+msgstr "Voltar para a visão das relações"
+
+#. Default: "Deselect Keywordrelations to Delete:"
+#: skins/PloneOntology/relations_adddelete.cpt
+msgid "Ontology_label_deselect_to_delete"
+msgstr "Para deletar a relação entre a palavra-chave desmarque-a. Observe que as relações marcadas permanecerão e as desmarcadas é que serão deletadas."
+
+#. Default: "Add a Keywordrelation:"
+#: skins/PloneOntology/relations_adddelete.cpt
+msgid "Ontology_label_add_keywordrelation"
+msgstr "Adicionar um Relacionamento à Palavra-chave:"
+
+#. Default: "Add"
+msgid "Add"
+msgstr "Adicionar"
+

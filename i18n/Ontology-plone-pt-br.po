@@ -49,29 +49,114 @@ msgstr "Aprovar"
 msgid "Approve"
 msgstr "Aprovar"
 
-#. Default: "Add Relation Proposal"
-msgid "Add Relation Proposal"
-msgstr "Adicionar Relação Proposta"
-
 #. Default: "Related Content"
 msgid "Related Content"
 msgstr "Conteúdo Relacionado"
 
-#. Default: "Search"
-msgid "Search"
-msgstr "Buscar"
+#. Default: "Manage Relations"
+msgid "Manage Relations"
+msgstr "Gerenciar Relacionamentos"
+
+#. Default: "Relations"
+msgid "Relations"
+msgstr "Relacionamentos"
+
+#. Default: "Map View"
+msgid "Map View"
+msgstr "Visualização do Mapa"
 
 #. Default: "PloneOntology"
 msgid "PloneOntology"
 msgstr "Configuração da Ontologia"
 
+#. Default: "Select"
+msgid "Select"
+msgstr "Selecionar"
+
+#. Default: "'select' before 'save' or no keywords will be added"
+msgid "Ontology_select_before"
+msgstr "Clicar no botão 'Select' antes de clicar no botão 'Salvar', senão nenhuma palavra será adicionada."
+
+#. Default: "No matching keywords found. Please try another search term."
+msgid "Ontology_no_keywords"
+msgstr "Nenhuma palavra foi encontrada. Por favor tente realizar a busca novamente."
+
+#. Default: "Name has to be an XML NCName (e.g. no spaces)"
+msgid "Name has to be an XML NCName (e.g. no spaces)"
+msgstr "O nome tem que ser um NCName XML válido (ou seja, sem espaços)"
+
+#. Default: "Name already exists."
+msgid "Name already exists."
+msgstr "O nome já existe."
+
 #. Default: "New keyword relation added."
 msgid "New keyword relation added."
 msgstr "Nova relação de palavra-chave adicionada."
 
+#. Default: "Selected keywords added."
+msgid "Selected keywords added."
+msgstr "Adicionadas palavras-chaves selecionadas."
+
+#. Default: "Selected keyword added."
+msgid "Selected keyword added."
+msgstr "Adicionada palavra-chave selecionada."
+
+#. Default: "No keywords selected."
+msgid "No keywords selected."
+msgstr "Nenhuma palavra-chave selecionada."
+
+#. Default: "Selected keywords removed."
+msgid "Selected keywords removed."
+msgstr "Removida palavra-chave selecionada."
+
 #. Default: "Removed selected relations."
 msgid "Removed selected relations."
 msgstr "Removidas relações selecionadas."
+
+#. Default: "No relations selected for removal."
+msgid "No relations selected for removal."
+msgstr "Nenhuma relação selecionada para ser removida."
+
+#. Default: "Successfully added reference."
+msgid "Successfully added reference."
+msgstr "Referência adicionada com sucesso."
+
+#. Default: "Relations changed."
+msgid "Relations changed."
+msgstr "Os relacionamentos foram alterados."
+
+#. Default: "Error: Enter a positive float value."
+msgid "Error: Enter a positive float value."
+msgstr "Erro: Informe um valor positivo."
+
+#. Default: "Error: keyword graphs could not be updated."
+msgid "Error: keyword graphs could not be updated."
+msgstr "Erro: O gráfico não pode ser atualizado."
+
+#. Default: "Properties changed."
+msgid "Properties changed."
+msgstr "Propriedades alteradas."
+
+#. Default: "Classify"
+msgid "Classify"
+msgstr "Classificar"
+
+#. Default: "Nothing needed to be upgraded."
+msgid "Nothing needed to be upgraded."
+msgstr "Nada a ser atualizado."
+
+
+#. Default: "Add Relation Proposal"
+msgid "Add Relation Proposal"
+msgstr "Adicionar Relação Proposta"
+
+#. Default: "Search"
+msgid "Search"
+msgstr "Buscar"
+
+#. Default: "Upgrade"
+msgid "Upgrade"
+msgstr "Atualizar"
 
 #. Default: "Reference Added."
 msgid "Reference Added."
@@ -85,10 +170,15 @@ msgstr "Nova Referência Criada."
 msgid "Accepted KW Proposals"
 msgstr "Propostas Aceitas de Palavras-chaves"
 
-#. Default: "Classify"
-msgid "Classify"
-msgstr "Classificar"
-
 #. Default: "Relevance factors changed."
 msgid "Relevance factors changed."
 msgstr "Fatores relevantes alterados."
+
+#. Default: "Nothing to do."
+msgid "Nothing to do."
+msgstr "Nada foi excluido."
+
+#. Default: "Successfully updated references."
+msgid "Successfully updated references."
+msgstr "Referências atualizadas com sucesso."
+

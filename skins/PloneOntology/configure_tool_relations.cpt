@@ -74,7 +74,7 @@
 <th>S</th>
 <th>F</th>
 <th>IF</th>
-<th>Inverse of</th>
+<th i18n:translate="Ontology_highlight_inverseof">Inverse of</th>
 </tr>
 <tr tal:repeat="rel relations">
 <td  valign="top"><input type="checkbox" name="ids:list:string"
@@ -124,10 +124,10 @@ tal:attributes="value rel;"/><tal:block tal:replace="rel"/></td>
 </td>
 </tr>
 </table>
-T = Transitive<br />  
-S = Symmetric<br />
-F = Functional<br />
-IF = Inversefunctional<br />
+<span i18n:translate="Ontology_highlight_transitive">T = Transitive</span><br />  
+<span i18n:translate="Ontology_highlight_symmetric">S = Symmetric</span><br />
+<span i18n:translate="Ontology_highlight_functional">F = Functional</span><br />
+<span i18n:translate="Ontology_highlight_inverse">IF = Inversefunctional</span><br />
 <br />
 <input type="submit" 
        name="form.button.change"

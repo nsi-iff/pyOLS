@@ -58,13 +58,13 @@
      <!-- End of tabs -->
 
     <div class="documentContent">
-      <h1 i18n:translate="Ontology_label_classificator_management">Classificator Management</h1>
+      <h1 i18n:translate="Ontology_label_classificator">Classificator Management</h1>
 
-      <h4>Upgrade</h4>
+      <h4 i18n:translate="Ontology_label_upgrade">Upgrade</h4>
 
-      <p>Upgrade from earlier installations. This migrates the ontology and the content classification to the currently installed product version.</p>
+      <p i18n:translate="Ontology_label_upgrade_form">Upgrade from earlier installations. This migrates the ontology and the content classification to the currently installed product version.</p>
 
-      <p><font color="ff0000">WARNING: Before upgrading be sure to backup your ZODB! Please report any problem to the <a href="http://plone.org/products/ploneontology/issues">issue tracker</a>.</font></p>
+      <p i18n:translate="Ontology_label_warning"><font color="ff0000">WARNING: Before upgrading be sure to backup your ZODB! Please report any problem to the <a href="http://plone.org/products/ploneontology/issues">issue tracker</a>.</font></p>
 
       <form method="POST"
             enctype="multipart/form-data"
