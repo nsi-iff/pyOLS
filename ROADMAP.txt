@@ -1,17 +1,12 @@
 Roadmap for PloneOntology
 =========================
 
-0.9
+1.0
 ---
 
 * skip automatic storage creation
 
-* integration with ATCT
-
-1.0
----
-
-* multiple ontologies at once
+* use multiple ontologies at once
 
 * cleaner UI, esp. nice icons :-)
 
