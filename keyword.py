@@ -116,7 +116,11 @@ class Keyword(BaseContent):
          'action' : "string: ${object_url}/keyword_context_view",
          'category' : "object_tabs",
          },
-
+        {'name' : "manage relations",
+         'id' : "manageRelations",
+         'action' : "string: ${object_url}/relations_adddelete",
+         'category' : "object_tabs",
+         },
         )
 
     security = ClassSecurityInfo()
