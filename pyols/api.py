@@ -91,7 +91,7 @@ class OntologyTool(object):
             and relationships from the current ontology. """
 
         kw = self.getKeyword(name)
-        kw.expunge()
+        kw.remove()
 
     def keywords(self):
         """ Return an iterator over all the keywords in the current NS. """
@@ -133,7 +133,7 @@ class OntologyTool(object):
     def delRelation(self, name):
         """ Remove Relation name and all dependant associations. """
         rel = self.getRelation(name)
-        rel.expunge()
+        rel.remove()
 
     def relations(self):
         """ Return an iterator over all the relations in the current NS. """
@@ -159,7 +159,7 @@ class OntologyTool(object):
         kwr = KeywordRelationship.fetch_by(left=left,
                                            relation=relation,
                                            right=right)
-        kwr.expunge()
+        kwr.remove()
 
     def addAssociation(self, keyword, path):
         """ Create an association between 'keyword' and 'path'. """
@@ -188,7 +188,7 @@ class OntologyTool(object):
         """ Remove the association between keyword and path. """
         keyword = self.getKeyword(keyword)
         kwa = KeywordAssociation.fetch_by(keyword=keyword, path=path)
-        kwa.expunge()
+        kwa.remove()
 
     def search(self, kwName, links="all"):
         """Search Content for a given keyword with name 'kwName'.

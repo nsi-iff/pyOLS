@@ -79,5 +79,5 @@ class DatabaseManager:
 
     def flush(self):
         """ Flush all changes made to persistant objects to disk.
-            This includes both new, modified and expunged objects. """
+            This includes both new, modified and removed objects. """
         objectstore.flush()

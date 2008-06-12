@@ -132,7 +132,7 @@ class TestOntologyTool:
         assert_equal(relD.weight, 0.5)
 
         from nose.tools import set_trace; set_trace() #BREAK
-        relD.expunge()
+        relD.remove()
         self.ot.delRelation(u"relD")
         db().flush()
         assert_raises(PyolsNotFound, self.ot.getRelation, name=u"relD")

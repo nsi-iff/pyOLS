@@ -112,7 +112,7 @@ class StorageMethods:
         # Note: Just like get_by, this method is overriden by Elixir, so
         #       this code here will never get called.
 
-    def expunge(self):
+    def remove(self):
         """ Remove the instance from persistant storage.
             This may also involve removing dependant objects.
             Does NOT guarentee that the object or any dependants
@@ -220,7 +220,7 @@ class Relation(Entity, StorageMethods):
         for type in list(self._types):
             if type.name not in new_types:
                 self._types.remove(type)
-                type.expunge()
+                type.remove()
             else: # The type is in the new_types
                 new_types.remove(type.name)
 
@@ -270,14 +270,14 @@ class Keyword(Entity, StorageMethods):
     using_options(tablename='keywords')
     using_table_options(UniqueConstraint('namespace_id', 'name', 'disambiguation'))
 
-    def expunge(self):
+    def remove(self):
         """ Remove the keyword, along with all KeywordRelationships and
             KeywordAssociations to which it belongs. """
         for d in chain(self.right_relations,
                        self.left_relations,
                        self.associations):
             # Delete each dependency that is associated with this KW
-            d.expunge()
+            d.remove()
         self.delete()
 
 
