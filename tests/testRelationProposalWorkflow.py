@@ -20,7 +20,7 @@ class TestRelationProposalWF(PloneOntologyTestCase):
         self.portal.portal_catalog.reindexObject(prop, )
         kwa=self.ct.searchMatchingKeywordsFor(object, search="Bar", search_kw_proposals='false', search_linked_keywords='true')[0].getName()
         kwb=self.ct.searchMatchingKeywordsFor(object, search="Foo", search_kw_proposals='false', search_linked_keywords='true')[0].getName()
-        prop.setRelation(prop.definedRelations()[0])
+        prop.setRelation('testOf')
         prop.setSearchKWA(kwa)
         prop.setSearchKWB(kwb)
 
@@ -30,7 +30,7 @@ class TestRelationProposalWF(PloneOntologyTestCase):
         self.wf.doActionFor(prop, 'submit', wf_id, )
         self.assertEqual(self.wf.getHistoryOf(wf_id, prop)[-1]['review_state'], 'pending')
         #test if we don't have Relationships yet:
-        self.assertEqual(len(self.portal.portal_catalog.searchResults(portal_type='Keyword')[0].getObject().getRelations()), 0)
+        self.assertEqual(len(self.ct.getKeyword('Bar').getRelations()), 0)
         print "RelationProposal submitted"
         self.wf.doActionFor(prop, 'reject', wf_id, )
         self.assertEqual(self.wf.getHistoryOf(wf_id, prop)[-1]['review_state'], 'private')
@@ -42,9 +42,9 @@ class TestRelationProposalWF(PloneOntologyTestCase):
         self.assertEqual(self.wf.getHistoryOf(wf_id, prop)[-1]['review_state'], 'approved')
         print "RelationProposal approved"
         #test if we do have Relationships now, after going through the workflow:
-        self.assertEqual(self.portal.portal_catalog.searchResults(portal_type='Keyword')[0].getObject().getRelations()[0], 'testOf')
-        self.assertEqual(self.portal.portal_catalog.searchResults(portal_type='Keyword')[1].getObject().getBackRelations()[0], 'testOf')
-        self.assertEqual(self.portal.portal_catalog.searchResults(portal_type='Keyword')[0].getObject().getReferences()[0], self.portal.portal_catalog.searchResults(portal_type='Keyword')[1].getObject())
+        self.assertEqual(self.ct.getKeyword('Bar').getRelations()[0], 'testOf')
+        self.assertEqual(self.ct.getKeyword('Foo').getBackRelations()[0], 'testOf')
+        self.assertEqual(self.ct.getKeyword('Bar').getReferences()[0], self.ct.getKeyword('Foo'))
 
 def test_suite():
     from unittest import TestSuite, makeSuite
