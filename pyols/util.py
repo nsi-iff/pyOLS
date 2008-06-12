@@ -1,3 +1,5 @@
+from pyols.exceptions import PyolsProgrammerError
+
 import sys
 
 class curried(object):
@@ -22,8 +24,10 @@ class curried(object):
         return self.func(*(self.args + args), **kwargs)
 
     def __repr__(self):
-        return '<curried %s() with %s %s>' % (self.func.__name__, `self.args`,
-                                              `self.kwargs`)
+        args = ", ".join([repr(a) for a in self.args])
+        kwargs = ", ".join(["%s=%r"%kw for kw in self.kwargs.items()])
+        args = ", ".join((args, kwargs))
+        return '<curried %s(%s)>' % (self.func.__name__, args)
 
     def __get__(self, instance, cls):
         self.args = ((instance, ) + self.args)
@@ -51,29 +55,18 @@ def create_methods(name, classes):
     # with the function as an argument.
     return curried(_create_methods, name, classes)
 
-def _create_methods(name, classes, function):
+def _create_methods(name, classes, func):
     """ A helper to create_methods. """
-    def _link_to_new(cls, *args, **kwargs):
-        for (name, func, class_) in cls.__link_map:
-            new_func = curried(func, class_)
-            new_func.__doc__ = func.__doc__ %({'class_name': class_.__name__})
-            setattr(cls, name, new_func)
-        # Call the __new__ method of this object's super class.
-        # See the suggestion at http://docs.python.org/ref/customization.html
-        return super(cls.__class__, cls).__new__(cls, *args, **kwargs)
-
     # We need to jump up two levels, because the frame
     # directly above us will be the call to curried.
     class_locals = sys._getframe(2).f_locals
 
-    if class_locals.get('__new__', _link_to_new) != _link_to_new:
-        raise PyolsProgrammerError("create_methods cannot be used "
-                                   "in a class which already has an "
-                                   "__new__ method defined.")
-
-    class_locals['__new__'] = _link_to_new
-    # The link map links names to functions to actual functions,
-    # which _link_to_new will wire up when it is called.
-    lm = class_locals.setdefault('__link_map', [])
     for class_ in classes:
-        lm.append((name %(class_.__name__, ), function, class_))
+        new_func = curried(func, class_)
+        new_doc = (func.__doc__ or '') %{'class_name': class_.__name__}
+        new_func.__doc__ = new_doc
+        class_locals[name % (class_.__name__, )] = new_func
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()

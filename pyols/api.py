@@ -1,7 +1,7 @@
 from pyols.model import Keyword, Namespace, Relation
 from pyols.fonts import findFonts
 from pyols.exceptions import PyolsNotFound, PyolsProgrammerError
-from pyols.utils import create_methods
+from pyols.util import create_methods
 
 import difflib
 from types import *
