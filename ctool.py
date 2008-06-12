@@ -694,22 +694,21 @@ class ClassificationTool(UniqueObject,
             return False
 
     def getKeywordProposal(self, name):
-        """Return keywordproposal 'name'
+        """Return keyword proposal 'name'.
 
         Exceptions:
-            NotFound : There is no keywordproposal 'name'
+            NotFound            : There is no keywordproposal 'name'.
+            ValidationException : 'name' is empty.
         """
         catalog = getToolByName(self, 'portal_catalog')
+
+        if not name:
+            raise ValidationException, "Empty keyword proposal name."
+
         try:
-         return catalog.searchResults(portal_type='Keyword', name=name)[0].getObject()
-        except:
-         x=0
-         for el in catalog.searchResults(portal_type='KeywordProposal'):
-          if el.getObject().Title() == name:
-           X=1
-           return el.getObject()
-         if x == 0:
-          raise NotFound, "KeywordProposal '%s' not found" % name
+            return catalog.searchResults(portal_type='KeywordProposal', name=name.decode(self.getEncoding()))[0].getObject()
+        except IndexError:
+            raise NotFound, "KeywordProposal '%s' not found" % name
 
     def delKeyword(self, name):
         """Remove keyword from ontology.
