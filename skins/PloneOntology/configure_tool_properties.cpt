@@ -56,7 +56,8 @@
 
       <form method="POST" tal:attributes="action string:${here/absolute_url}/${template/getId}"
       tal:define="cutoff ctool/getSearchCutoff|python:0.1;
-                  storage python: ctool.getStorageId(); ">
+                  storage ctool/getStorageId;
+                  fontpath ctool/getFontPath;">
       
 <table><tr><td i18n:translate="Ontology_highlight_search_cutoff">Search Cutoff</td><td><input name="cutoff:float" size="5" tal:attributes="value cutoff"/></td></tr>
        <tr><td i18n:translate="Ontology_highlight_keyword_storage">Keyword Storage</td><td><input name="storage" tal:attributes="value storage"/></td></tr>
@@ -72,6 +73,7 @@
                tal:attributes="value value;
                                selected python:test(value == ctool.getGVFont())" />
        </select></td></tr>
+       <tr><td>Systems Font Path (only necessary if no fonts are found above)</td><td><input name="fontpath"  tal:attributes="value fontpath" /></td></tr>
        <tr><td i18n:translate="Ontology_highlight_forward_relations">Forward Relations</td><td><tal:block condition="python: ctool.getForth() == '1'"><input name="forth" type="checkbox" checked value="1" /></tal:block><tal:block condition="python: ctool.getForth() != '1'"><input name="forth" type="checkbox" value="1" /></tal:block></td></tr>
        <tr><td i18n:translate="Ontology_highlight_backward_relations">Backward Relations</td><td><tal:block condition="python: ctool.getBack() == '1'"><input name="back" type="checkbox" checked value="1" /></tal:block><tal:block condition="python: ctool.getBack() != '1'"><input name="back" type="checkbox" value="1" /></tal:block></td></tr>
        <tr><td i18n:translate="Ontology_highlight_types">Types that allow classification</td><td><select name="types" size="7" multiple tal:define="values python: ctool.reftypes()">

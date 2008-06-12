@@ -5,7 +5,7 @@
 ##bind script=script
 ##bind state=state
 ##bind subpath=traverse_subpath
-##parameters=cutoff=0.1, storage='kw_storage', tool='fdp', types=[], font='', forth=0, back=0
+##parameters=cutoff=0.1, storage='kw_storage', tool='fdp', types=[], font='', forth=0, back=0, fontpath=''
 ##title=
 ##
 
@@ -35,6 +35,7 @@ if font != ctool.getGVFont():
 if tool != gtool.getLayouter():
     changes=1
 
+ctool.setFontPath(fontpath)
 ctool.setGVFont(font)
 ctool.setBack(back)
 ctool.setForth(forth)

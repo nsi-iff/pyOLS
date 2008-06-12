@@ -54,7 +54,7 @@ def _unifyRawResults(results):
 
 ##         children = kws.values()
 
-###Taken from TTF Query from Michael C. Fletcher ToDO: include copyright notice
+###the following code has been taken from TTF Query from Michael C. Fletcher ToDO: include copyright notice
 """Find system fonts (only works on Linux and Win32 at the moment)"""
 import sys, os, glob, re
 
@@ -134,8 +134,10 @@ def linuxFontDirectories( ):
 		directories = [
 			# what seems to be the standard installation point
 			"/usr/X11R6/lib/X11/fonts/TTF/",
+			"/usr/share/X11/fonts/TTF/",
 			# common application, not really useful
 			"/usr/lib/openoffice/share/fonts/truetype/",
+			"/usr/lib/openoffice.org2.0/share/fonts/truetype/",
 			# documented as a good place to install new fonts...
 			"/usr/share/fonts",
 			# okay, now the OS X variants...
@@ -208,6 +210,7 @@ class ClassificationTool(UniqueObject,
          elif "/" in el:
           self._fonts.append(el.split("/")[len(el.split("/"))-1][-4:])
         self._fonts.sort()
+        self._fontpath=''
         self.relevance_factors = PersistentMapping()
         self._cutoff = 0.1
         self._use_gv_tool = 0
@@ -221,6 +224,30 @@ class ClassificationTool(UniqueObject,
         """Return the current gv font list.
         """
         return self._fonts
+
+    def getFontPath(self):
+        """Return the saved systems font path.
+        """
+        return self._fontpath        
+
+    def setFontPath(self, path=''):
+        """set the systems font path manually.
+        """
+        if path == '':
+         for el in findFonts():
+          if "\\" in el:
+           self._fonts.append(el.split("\\")[len(el.split("\\"))-1][:-4])
+          elif "/" in el:
+           self._fonts.append(el.split("/")[len(el.split("/"))-1][-4:])
+        else:
+         self._fonts=[]
+         for el in findFonts(path):
+          if "\\" in el:
+           self._fonts.append(el.split("\\")[len(el.split("\\"))-1][:-4])
+          elif "/" in el:
+           self._fonts.append(el.split("/")[len(el.split("/"))-1][-4:])
+        self._fonts.sort()
+        self._fontpath=path
 
     def getGVFont(self):
         """Return the current gv font.
