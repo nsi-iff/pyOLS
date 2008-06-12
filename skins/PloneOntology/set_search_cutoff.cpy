@@ -12,60 +12,57 @@
 ctool = context.portal_classification
 gtool = context.graphviz_tool
 
+updateMap = False
+if focus_nodeshape        != ctool.getFocusNodeShape():
+    updateMap = True
+if first_nodeshape        != ctool.getFirstNodeShape():
+    updateMap = True
+if second_nodeshape       != ctool.getSecondNodeShape():
+    updateMap = True
+if edgeshape              != ctool.getEdgeShape():
+    updateMap = True
+if forth                  != ctool.getForth():
+    updateMap = True
+if back                   != ctool.getBack():
+    updateMap = True
+if font                   != ctool.getGVFont():
+    updateMap = True
+if relfont                != ctool.getRelFont():
+    updateMap = True
+if tool                   != gtool.getLayouter():
+    updateMap = True
+if focus_nodecolor        != ctool.getFocusNodeColor():
+    updateMap = True
+if focus_node_font_color  != ctool.getFocusNodeFontColor():
+    updateMap = True
+if focus_node_font_size   != ctool.getFocusNodeFontSize():
+    updateMap = True
+if first_nodecolor        != ctool.getFirstNodeColor():
+    updateMap = True
+if first_node_font_color  != ctool.getFirstNodeFontColor():
+    updateMap = True
+if first_node_font_size   != ctool.getFirstNodeFontSize():
+    updateMap = True
+if second_nodecolor       != ctool.getSecondNodeColor():
+    updateMap = True
+if second_node_font_color != ctool.getSecondNodeFontColor():
+    updateMap = True
+if second_node_font_size  != ctool.getSecondNodeFontSize():
+    updateMap = True
+if edgecolor              != ctool.getEdgeColor():
+    updateMap = True
+if edge_font_color        != ctool.getEdgeFontColor():
+    updateMap = True
+if edge_font_size         != ctool.getEdgeFontSize():
+    updateMap = True
+
 ctool.setStorageId(storage)
 ctool.setClassifyRelationship(classify)
 ctool.setClassifyTypes(types)
-
 try:
     ctool.setSearchCutoff(cutoff)
 except ValueError:
     return state.set(portal_status_message='Error: Enter a positive float value.')
-
-changes=0
-
-if focus_nodeshape != ctool.getFocusNodeShape():
-    changes=1
-if first_nodeshape != ctool.getFirstNodeShape():
-    changes=1
-if second_nodeshape != ctool.getSecondNodeShape():
-    changes=1
-if edgeshape != ctool.getEdgeShape():
-    changes=1
-if forth != ctool.getForth():
-    changes=1
-if back != ctool.getBack():
-    changes=1
-if font != ctool.getGVFont():
-    changes=1
-if relfont != ctool.getRelFont():
-    changes=1
-if tool != gtool.getLayouter():
-    changes=1
-if focus_nodecolor != ctool.getFocusNodeColor():
-    changes=1
-if focus_node_font_color != ctool.getFocusNodeFontColor():
-    changes=1
-if focus_node_font_size != ctool.getFocusNodeFontSize():
-    changes=1
-if first_nodecolor != ctool.getFirstNodeColor():
-    changes=1
-if first_node_font_color != ctool.getFirstNodeFontColor():
-    changes=1
-if first_node_font_size != ctool.getFirstNodeFontSize():
-    changes=1
-if second_nodecolor != ctool.getSecondNodeColor():
-    changes=1
-if second_node_font_color != ctool.getSecondNodeFontColor():
-    changes=1
-if second_node_font_size != ctool.getSecondNodeFontSize():
-    changes=1
-if edgecolor != ctool.getEdgeColor():
-    changes=1
-if edge_font_color != ctool.getEdgeFontColor():
-    changes=1
-if edge_font_size != ctool.getEdgeFontSize():
-    changes=1
-
 ctool.setFocusNodeColor(focus_nodecolor)
 ctool.setFocusNodeFontColor(focus_node_font_color)
 ctool.setFocusNodeFontSize(focus_node_font_size)
@@ -90,7 +87,7 @@ ctool.setForth(forth)
 gtool.setLayouter(tool)
 
 msg = ''
-if changes == 1:
+if updateMap:
     try:
         for el in ctool.getStorage().contentValues('Keyword'):
             msg = msg + el.updateKwMap(levels=2)
@@ -98,7 +95,7 @@ if changes == 1:
         pass # ignore NotFound exception for silent operation without graphviz
     #    return state.set(portal_status_message='Error: keyword graphs could not be updated.')
     ctool.getStorage().updateGraphvizMap()
-    
+
 if msg:
     return state.set(portal_status_message=msg)
 else:

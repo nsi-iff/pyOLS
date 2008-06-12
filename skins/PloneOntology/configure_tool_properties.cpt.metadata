@@ -1,6 +1,3 @@
-[default]
-title=
-
 [actions]
-action.success=traverse_to:string:set_search_cutoff
-action.failure=traverse_to:string:edit_classification
+action.success..save = traverse_to:string:set_search_cutoff
+action.success       = traverse_to:string:set_search_cutoff

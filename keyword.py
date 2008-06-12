@@ -19,6 +19,8 @@ import zLOG, string
 
 from zExceptions import NotFound
 
+module_security = ModuleSecurityInfo('Products.PloneOntology.keyword')
+
 class XMLNCNameValidator:
     __implements__ = (ivalidator,)
     def __init__(self, name):
@@ -83,8 +85,6 @@ kwSchema = BaseSchema + Schema((
               ),
 
     ))
-
-module_security = ModuleSecurityInfo('keyword')
 
 module_security.declarePublic('generateName')
 def generateName(title, shortDescription=""):

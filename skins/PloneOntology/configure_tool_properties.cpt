@@ -10,34 +10,40 @@
                    relations python:ctool.relations(here.relations_library);
                   ">
    <div class="configlet">
-    <div class="documentEditable">
-     <!-- simulating views until we have real objects. -->
-     <ul class="contentViews">
-      <li class="selected">
-       <a href=""
-          tal:attributes="href string:${template/id}"
-          i18n:translate="Ontology_properties">Properties
-       </a>
-      </li>
-      <li class="">
-       <a href=""
-          tal:attributes="href string: configure_tool_relations"
-          i18n:translate="Ontology_relations">Relations
-       </a>
-      </li>
-      <li class="">
-       <a href=""
-          tal:attributes="href string: configure_tool_import"
-          i18n:translate="Ontology_import_export">Import/Export
-       </a>
-      </li>
-      <li class="">
-       <a href=""
-          tal:attributes="href string: configure_tool_readme"
-          i18n:translate="Ontology_readme">ReadMe
-       </a>
-      </li>
-     </ul>
+   <div class="documentEditable">
+    <!-- simulating views until we have real objects. -->
+    <ul class="contentViews">
+        <li class="selected">
+            <a href=""
+                tal:attributes="href string: configure_tool_properties"
+                i18n:translate="Ontology_properties">Properties
+            </a>
+        </li>
+        <li class="">
+            <a href=""
+                tal:attributes="href string: configure_tool_relations"
+                i18n:translate="Ontology_relations">Relations
+            </a>
+        </li>
+        <li class="">
+            <a href=""
+                tal:attributes="href string: configure_tool_import"
+                i18n:translate="Ontology_import_export">Import/Export
+            </a>
+        </li>
+        <li class="">
+            <a href=""
+                tal:attributes="href string: configure_tool_upgrade"
+                i18n:translate="Ontology_upgrade">Upgrade
+            </a>
+        </li>
+        <li class="">
+            <a href=""
+                tal:attributes="href string: configure_tool_readme"
+                i18n:translate="Ontology_readme">ReadMe
+            </a>
+        </li>
+    </ul>
 
      <div class="contentActions">
       &nbsp;
@@ -219,7 +225,7 @@
        <font color="#ff0000"><small i18n:translate="Ontology_note"><sup>*)</sup> Be aware that changing these properties results in redrawing of <b>all</b> Keyword Graphs and thus may be very time consuming.</small>
        </font><br /><br />
        <input type="submit" 
-              name="save"
+              name="from.button.save"
               value="Save Changes"
               i18n:attributes="value" />
        <input type="hidden" name="form.submitted" value="1" />

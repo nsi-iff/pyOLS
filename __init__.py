@@ -13,6 +13,8 @@ registerDirectory(SKINS_DIR, GLOBALS)
 from poapi import ClassificationTool, GraphVizTool
 
 ModuleSecurityInfo("zExceptions").declarePublic("NotFound")
+allow_module("Products.PloneOntology.utils")
+allow_module("re")
 
 import workflow
 import proposal

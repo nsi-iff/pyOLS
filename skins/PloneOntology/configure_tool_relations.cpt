@@ -21,34 +21,41 @@
     <!-- simulating views until we have real objects. -->
     <ul class="contentViews">
         <li class="">
-        <a href=""
-        tal:attributes="href string: configure_tool_properties"
-        i18n:translate="Ontology_properties">Properties</a>
+            <a href=""
+                tal:attributes="href string: configure_tool_properties"
+                i18n:translate="Ontology_properties">Properties
+            </a>
         </li>
-
         <li class="selected">
-        <a href=""
-        tal:attributes="href string: ${template/id}"
-        i18n:translate="Ontology_relations">Relations</a>
+            <a href=""
+                tal:attributes="href string: configure_tool_relations"
+                i18n:translate="Ontology_relations">Relations
+            </a>
         </li>
-
-	<li class="">
-        <a href=""
-        tal:attributes="href string: configure_tool_import"
-        i18n:translate="Ontology_import_export">Import/Export</a>
-        </li>
-
         <li class="">
-        <a href=""
-        tal:attributes="href string: configure_tool_readme"
-        i18n:translate="Ontology_readme">ReadMe</a>
+            <a href=""
+                tal:attributes="href string: configure_tool_import"
+                i18n:translate="Ontology_import_export">Import/Export
+            </a>
+        </li>
+        <li class="">
+            <a href=""
+                tal:attributes="href string: configure_tool_upgrade"
+                i18n:translate="Ontology_upgrade">Upgrade
+            </a>
+        </li>
+        <li class="">
+            <a href=""
+                tal:attributes="href string: configure_tool_readme"
+                i18n:translate="Ontology_readme">ReadMe
+            </a>
         </li>
     </ul>
 
-    <div class="contentActions">
-    &nbsp;
-    </div>
-    <!-- End of tabs -->
+     <div class="contentActions">
+      &nbsp;
+     </div>
+     <!-- End of tabs -->
 
     <div class="documentContent">
       <h1 i18n:translate="Ontology_label_classificator">Classificator Management</h1>

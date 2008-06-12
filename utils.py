@@ -1,8 +1,9 @@
 """Utility functions found scattered around classes"""
 
-from string import letters, digits
+from string   import letters, digits
 from DateTime import DateTime
-from random import random
+from random   import random
+
 
 def _normalize(text):
     """lowers and removes all non-ascii characters"""
