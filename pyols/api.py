@@ -1,5 +1,6 @@
-from pyols.model import Keyword, Namespace
+from pyols.model import Keyword, Namespace, Relation
 from pyols.fonts import findFonts
+from pyols.exceptions import PyolsNotFound
 
 import difflib
 from types import *
@@ -113,30 +114,21 @@ class OntologyTool(object):
             try:
                 inverse = self.getRelation(inverse)
             except PyolsNotFound:
-                inverse = self.addRelation(name, weight, types)
+                inverse = self.addRelation(inverse, weight, types)
+                # This must be flushed here to prevent circular dependency
+                # problems when it's set as the inverse of the other relation
+                inverse.flush()
 
         newrel = Relation.new(namespace_id=self._namespace.id,
-                              name=name, weight=weight, inverse=inverse)
-        newrel.types = types
+                              name=name, weight=weight, types=types)
         newrel.assert_valid()
+        newrel.flush()
+        newrel.inverse = inverse
         return newrel
 
     def getRelation(self, name):
-        """Return ruleset for keyword relation 'name' of current ontology from the Plone Relations library.
-
-        Exceptions:
-            NotFound            : There is no relation 'name' in current ontology.
-            ValidationException : 'name' is empty.
-        """
-        catalog = getToolByName(self, 'portal_catalog')
-
-        if not name:
-            raise ValidationException, "Empty relation name."
-
-        try:
-            return catalog.searchResults(portal_type='Ruleset', Title=name)[0].getObject()
-        except IndexError:
-            raise NotFound, "Relation '%s' not found in current ontology" % name
+        """ Return Relation name.  Raise an exception if it is not found. """
+        return Relation.fetch_by(name=name, namespace_id=self._namespace.id)
 
     def delRelation(self, name):
         """Remove the keyword relation 'name' from current ontology, if it exists.

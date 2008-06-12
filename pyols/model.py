@@ -191,12 +191,23 @@ class Relation(Entity, StorageMethods):
             self._inverse._inverse = None
             self._inverse.flush()
 
-        self._inverse = new_inverse
+        if new_inverse is None:
+            self._inverse = new_inverse
+            return
 
-        if new_inverse is not None:
-            new_inverse._inverse = self
-            new_inverse.flush()
+        if not (new_inverse.id and self.id):
+            raise PyolsProgrammerError("Due to ugly issues with circular "
+                                       "dependencies, both of the Relations "
+                                       "must have an id (ie, been flush()'d "
+                                       "before setting the inverse.")
+        # First set one side of the inverse ...
+        new_inverse._inverse = self
+        new_inverse.flush()
+        # ... and then the next ...
+        self._inverse = new_inverse
         self.flush()
+        # ... and everyone is happy :)
+
     inverse = property(_get_inverse, _set_inverse)
 
     def _get_types(self):

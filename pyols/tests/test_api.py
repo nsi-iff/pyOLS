@@ -111,7 +111,24 @@ class TestOntologyTool:
             kws = list(self.ot.keywords())
             assert_equal(len(kws), x+1)
 
+    def addRelation(self, name=u"testRel", weight=1.0, types=[], inverse=None):
+        newRel = self.ot.addRelation(name=name, weight=weight, types=types,
+                                     inverse=inverse)
+        db().flush() # Simulate a web request -- flush
+        return newRel
+
     def testAddRelation(self):
-        raise SkipTest("Finish this test after testSetTypes in test_model.")
+        relA = self.addRelation(name=u"relA")
+        relB = self.addRelation(name=u"relB", inverse=relA.name)
+        assert_equal(relA, relB.inverse)
+
+        # Ensure that the inverse is properly created
+        relC = self.addRelation(name=u"relC", types=['transitive'],
+                                weight=0.5, inverse=u"relD")
+        relD = self.ot.getRelation(u"relD")
+        ok_(relD)
+        assert_equal(relD.inverse, relC)
+        assert_equal(relD.types, ['transitive'])
+        assert_equal(relD.weight, 0.5)
 
 run_tests(__name__)
