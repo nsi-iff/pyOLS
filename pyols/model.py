@@ -158,7 +158,7 @@ class Relation(Entity, StorageMethods):
     belongs_to('namespace', of_kind='Namespace', required=True)
     has_field('name', Unicode(128), required=True)
 
-    has_field('revelance', Float, default=1)
+    has_field('weight', Float, default=1)
     has_many('_types', of_kind='RelationType')
     # Note: the original documentation suggested that a relation could
     #       have more than one inverse.  After much though on the matter,
@@ -248,7 +248,6 @@ class Relation(Entity, StorageMethods):
                                        "Weights must be in the range [0,1]."\
                                        %(self.weight, self.name))
 
-         
 class RelationType(Entity, StorageMethods):
     has_field('name', Integer, primary_key=True)
     belongs_to('relation', of_kind='Relation', primary_key=True)

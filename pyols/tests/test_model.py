@@ -14,8 +14,8 @@ class TestRelation:
     def teardown(self):
         db().abort_txn()
 
-    def relation_new(self, name=u"testRel", revelance=1.0, types=[], inverse=None):
-        r = Relation.new(namespace=self.ns, name=name, revelance=revelance,
+    def relation_new(self, name=u"testRel", weight=1.0, types=[], inverse=None):
+        r = Relation.new(namespace=self.ns, name=name, weight=weight,
                          types=types, inverse=inverse)
         r.flush()
         return r
@@ -79,6 +79,21 @@ class TestRelation:
     def testGetTypes(self):
         rel = self.relation_new(types=['transitive', 'symmetric'])
         assert_equal(set(rel.types), set(['transitive', 'symmetric']))
+
+    def testValid(self):
+        def new(weight):
+            return Relation.new(name=u"testRel", namespace=self.ns,
+                                weight=weight)
+
+        # These should explode
+        for weight in (-1, 4):
+            rel = new(weight)
+            assert_raises(PyolsValidationError, rel.assert_valid)
+
+        # These are all valid
+        for weight in (0, 1, 0.5):
+            rel = new(weight)
+            rel.assert_valid()
 
     def testRemove(self):
         # Make sure a "naked" relation with no dependencies works
