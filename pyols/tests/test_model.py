@@ -64,6 +64,7 @@ class TestRelation:
                     ('functional', ),
                     ('inverse_functional', 'transitive'))
         for check in to_check:
+            db().flush() # Pretend we're in a web request
             rel.types = check
             # It's imortant to wrap each one in set(...) because
             # their order is not guarenteed

@@ -119,7 +119,8 @@ class StorageMethods:
             will hit the disk. """
         raise NotImplementedError("This method should be implemented in "
                                   "subclasses so they can clean up any "
-                                  "dangling relations. ")
+                                  "dangling relations. Offending class: "
+                                  "%s" %(self.__class__.__name__))
 
 """
 Namespaces are primarly used to separate ontologies.  For example,
@@ -230,6 +231,15 @@ class Relation(Entity, StorageMethods):
             self._types.append(type)
     types = property(_get_types, _set_types)
 
+    def remove(self):
+        """ Remove the relation and all dependent KeywordRelationships
+            and KeywordTypes. """
+        self.inverse = None
+        for d in chain(KeywordRelationship.query_by(relation=self),
+                       self._types):
+            d.remove()
+        self.delete()
+
     def assert_valid(self):
         StorageMethods.assert_valid(self)
 
@@ -253,6 +263,10 @@ class RelationType(Entity, StorageMethods):
                                        "Valid types are %s." \
                                        %(self.name, ", ".join(self.valid_types)))
         StorageMethods.assert_valid(self)
+
+    def remove(self):
+        """ Remove this type. """
+        self.delete()
 
 
 class Keyword(Entity, StorageMethods):
@@ -287,9 +301,13 @@ class KeywordAssociation(Entity):
     
     using_options(tablename='keyword_associations')
 
-class KeywordRelationship(Entity):
+class KeywordRelationship(Entity, StorageMethods):
     belongs_to('left', of_kind='Keyword', primary_key=True)
     belongs_to('relation', of_kind='Relation', primary_key=True)
     belongs_to('right', of_kind='Keyword', primary_key=True)
 
     using_options(tablename='keyword_relationships')
+
+    def remove(self):
+        """ Remove this relationship. """
+        self.delete()

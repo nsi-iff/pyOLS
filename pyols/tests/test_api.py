@@ -131,8 +131,6 @@ class TestOntologyTool:
         assert_equal(relD.types, ['transitive'])
         assert_equal(relD.weight, 0.5)
 
-        from nose.tools import set_trace; set_trace() #BREAK
-        relD.remove()
         self.ot.delRelation(u"relD")
         db().flush()
         assert_raises(PyolsNotFound, self.ot.getRelation, name=u"relD")
@@ -140,9 +138,13 @@ class TestOntologyTool:
         assert_equal(set(["relA", "relB", "relC"]),
                      set([r.name for r in self.ot.relations()]))
 
-    @raises
+    @raises(PyolsNotFound)
+    def testGetBadRelation(self):
+        self.ot.delRelation(u'doesnt_exist')
+
+    @raises(PyolsNotFound)
     def testDelBadRelation(self):
-        self.ot.delRelation('doesnt_exist')
+        self.ot.delRelation(u'doesnt_exist')
 
 
 run_tests(__name__)
