@@ -26,10 +26,12 @@
           tal:attributes="action python:here.absolute_url()+'/'+template.id">
 
 
-    <tal:block tal:define="results python:here.portal_classification.searchMatchingKeywordsFor(here, kw_search,);
-                           existing_refs python:here.getRefs(relationship='classifiedAs',)">
+    <tal:block tal:define="existing_refs python:here.getRefs(relationship='classifiedAs',);
+                           kw_active_search python: request.get('kw_active_search','');
+                           kw_search python: request.get('kw_search','')">
 
  <fieldset><legend>search for new keywords for referencing</legend>
+<div class="formHelp">if your browser has javascript enabled, a drop down box should appear while you type. select a keyword and press the button. if javascript does not work, the box functions as a search box</div>
          <input type="text"
 	    name="kw_search"
 	    value=""
@@ -50,6 +52,9 @@
                value="" />
 
      <input type="submit" name="form.button.kw_search" value="Add/Search"/>
+		<div tal:condition="kw_search">
+                <tal:block tal:define="results python:here.portal_classification.searchMatchingKeywordsFor(here, kw_search,)">
+		<div tal:condition="python: kw_active_search==''">
 		<div tal:condition="results">
 		  <table> <!-- Table Header ??? -->
 		    <tr tal:repeat="item results">
@@ -63,8 +68,9 @@
 		      </tal:block>
 		    </tr>
 		  </table>
-		  <input type="submit" name="form.button.add_ref" value="Add References"/>
-		</div>
+		  <input type="submit" name="form.button.add_ref" value="Add References"/></div></div>
+		<p tal:condition="not:results">No matching keywords found. Please try another search term.</p>
+</tal:block></div>
 
 	 </fieldset>
 		<span tal:condition="python: existing_refs!=[]">
