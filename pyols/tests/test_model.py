@@ -1,4 +1,4 @@
-from pyols.model import Namespace, Relation
+from pyols.model import *
 from pyols.tests import run_tests, db
 from pyols.exceptions import PyolsValidationError
 
@@ -79,5 +79,24 @@ class TestRelation:
     def testGetTypes(self):
         rel = self.relation_new(types=['transitive', 'symmetric'])
         assert_equal(set(rel.types), set(['transitive', 'symmetric']))
+
+    def testRemove(self):
+        rel = self.relation_new(types=['transitive', 'symmetric'])
+        kw0 = Keyword.new(namespace=self.ns, name=u"kw0")
+        kw1 = Keyword.new(namespace=self.ns, name=u"kw1")
+        kwr = KeywordRelationship.new(left=kw0, relation=rel, right=kw1)
+        db().flush()
+
+        rel.remove()
+        db().flush()
+
+        # No instances of these types should exist...
+        empty_types = (KeywordRelationship, Relation, RelationType)
+        for type in empty_types:
+            assert_equal(list(type.query_by()), [])
+
+        # ... but the two keywords should remain.
+        assert_equal(set([kw.name for kw in Keyword.query_by()]),
+                     set(["kw0", "kw1"]))
 
 run_tests(__name__)

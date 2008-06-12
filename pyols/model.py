@@ -274,8 +274,8 @@ class Keyword(Entity, StorageMethods):
     belongs_to('namespace', of_kind='Namespace', required=True)
     has_field('name', Unicode(128), required=True)
 
-    has_field('disambiguation', UnicodeText, default='')
-    has_field('description', UnicodeText, default='')
+    has_field('disambiguation', UnicodeText, default=u'')
+    has_field('description', UnicodeText, default=u'')
 
     has_many('associations', of_kind='KeywordAssociation')
     has_many('left_relations', of_kind='KeywordRelationship', inverse='left')
