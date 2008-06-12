@@ -1,4 +1,4 @@
-from pyols.db import get_db
+from pyols.db import DatabaseManager
 from pyols import log
 
 import sys
@@ -29,7 +29,7 @@ class RequestDispatcher(SimpleXMLRPCDispatcher):
     def start_request(self, call_list):
         """ Setup the database, then pass the call list on to dispatch_many
             to handle them. """
-        db = get_db()
+        db = DatabaseManager.get_instance()
         db.begin_txn()
         try:
             results = self.dispatch_many(call_list)
