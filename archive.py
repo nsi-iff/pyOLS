@@ -8,6 +8,7 @@ class ProposalArchive(BaseBTreeFolder):
     schema = BaseBTreeFolderSchema
     filter_content_types = True
     allowed_content_types = ('KeywordProposal', 'RelationProposal')
+    content_icon = "proposal_archive.gif"
     global_allow = False
     security = ClassSecurityInfo()
     security.declareObjectProtected("Manage Site")

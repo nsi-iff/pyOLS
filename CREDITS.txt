@@ -1,16 +1,16 @@
-Thomas Förster <t.foerster@biologie.hu-berlin.de>
+Thomas Förster <t (dot) foerster (at) biologie (dot) hu-berlin (dot) de>
 
 * general concept
 
 * first prototype
 
 
-David Baehrens <d.baehrens@biologie.hu-berlin.de>
+David Baehrens <d (dot) baehrens (at) biologie (dot) hu-berlin (dot) de>
 
 * OWL import/export
 
 
-Stefan Kröger <s.kroeger@biologie.hu-berlin.de>
+Stefan Kröger <s (dot) kroeger (at) biologie (dot) hu-berlin (dot) de>
 
 * active search support
 
