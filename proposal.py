@@ -333,7 +333,7 @@ class RelationProposal(BaseContent):
         this=at.lookupObject(kw)
         return this.title_or_id()
 
-    security.declarePublic('setRequired')
+    security.declarePublic('showKWA')
     def showKWA(self):
         '''shows SearchKWA Field unless we have a Relation within a KWProposal'''
         if self.getParentNode().meta_type != 'KeywordProposal':

@@ -232,7 +232,9 @@ def addArchive(portal, out):
         pt=getToolByName(portal, 'portal_types')
         pt.getTypeInfo('ProposalArchive').global_allow=True
         portal.invokeFactory('ProposalArchive', id = 'accepted_kws',
-                             title='Accepted KW Proposals')
+                             title='Accepted KW Proposals',)
+        getattr(portal, 'accepted_kws')._updateProperty('exclude_from_nav', 1)
+        getToolByName(portal, 'portal_catalog').reindexObject(getattr(portal, 'accepted_kws'))
         pt.getTypeInfo('ProposalArchive').global_allow=False
         out.write("Set up Proposal Archive.\n")
     except:
