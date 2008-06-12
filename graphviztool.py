@@ -93,7 +93,9 @@ class GraphVizTool(UniqueObject, PloneFolder,
 
         options = " ".join(options)
 
-        (pout,pin) = popen2.popen4(cmd = "%s %s" % (tool, options), mode = "b")
+        # 2006-08-03 Seperate streams for output and error. Avoids problems with fonts not found.
+        # TODO: Return error messages.
+        (pout, pin, perr) = popen2.popen3(cmd = "%s %s" % (tool, options), mode = "b")
         pin.write(graph)
         pin.close()
 
