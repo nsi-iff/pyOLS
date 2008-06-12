@@ -1,18 +1,11 @@
 #!/usr/bin/env python
+
+from pyols.web import autoreload
+
 from SimpleXMLRPCServer import SimpleXMLRPCServer, CGIXMLRPCRequestHandler, \
                                SimpleXMLRPCDispatcher
 from scgi import scgi_server
 import BaseHTTPServer
-
-import autoreload
-
-class RPCFunctions(object):
-    def add(self, a, b):
-        return a + b
-
-    def hello(self, who='World'):
-        return 'Hello, %s!' %(who,)
-
 
 class ServerInterface(object):
     def __init__(self, obj, *args, **kwargs):
@@ -26,13 +19,34 @@ class ServerInterface(object):
             In the case of CGI, handle the current request. """
 
 
-class StandaloneServer(SimpleXMLRPCServer):
+class _StandaloneServer(SimpleXMLRPCServer):
+    """ This is the "real" standalone server. """
     def __init__(self, obj, port=8000):
-        SimpleXMLRPCServer.__init__(self, ("localhost", port))
+        SimpleXMLRPCServer.__init__(self, ("0.0.0.0", port))
         self.register_instance(obj)
 
     def serve(self):
         self.serve_forever()
+
+class StandaloneServer(object):
+    """ A "fake" standalone server, posing as a wrapper around the
+        real one to make life with autoreload easier.
+        All of the methods here that are prefixed with _ will be called
+        by autoreload. """
+    def __init__(self, obj, port=8000):
+        self._obj = obj
+        self._port = port
+
+    def serve(self):
+        """ A "fake" serve function, for the benefit of autoreload. """
+        autoreload.main(self._serve, self._modification_callback)
+
+    def _serve(self):
+        """ The "actual" serve function. """
+        _StandaloneServer(self._obj, self._port).serve()
+
+    def _modification_callback(self, file):
+        print "%s was modified.  Restarting." %(file, )
 
 
 class CGIServer(CGIXMLRPCRequestHandler):
@@ -140,7 +154,6 @@ class SCGIHandler(scgi_server.SCGIHandler, SimpleXMLRPCDispatcher):
 
             self.handle_xmlrpc(request_text)
 
-
 class SCGIServer(object):
     def __init__(self, obj, port=4000):
         SCGIHandler.rpc_obj = obj
@@ -150,12 +163,4 @@ class SCGIServer(object):
     def serve(self):
         self._server.serve()
 
-
-def mod_callback(file):
-    print "%s was modified.  Restarting." %(file, )
-
-def run():
-    s = StandaloneServer(RPCFunctions())
-    s.serve()
-
-autoreload.main(run, mod_callback)
+server_classes = {'scgi': SCGIServer, 'standalone': StandaloneServer, 'cgi': CGIServer}

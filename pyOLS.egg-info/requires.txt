@@ -1,3 +1,2 @@
 SQLAlchemy >= 0.3.9
 Elixir >= 0.5.2
-pysqlite >= 2.2

@@ -46,6 +46,8 @@ setup(
 
     package_data={},
 
-    entry_points="""
-    """,
-    )
+    entry_points= {
+        'console_scripts':
+            ['pyols = pyols.web.cmdline:run']
+    }
+)

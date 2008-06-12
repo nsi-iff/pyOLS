@@ -1,2 +1,3 @@
+[console_scripts]
+pyols = pyols.web.cmdline:run
 
-    
