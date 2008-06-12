@@ -1,14 +1,3 @@
-# -*- coding: UTF-8 -*-
-
-##################################################
-#                                                
-#    Copyright (C), 2004, 2005 Thomas Förster         
-#    <t.foerster@biologie.hu-berlin.de>          
-#
-#    Humboldt University of Berlin               
-#                                                
-##################################################
-
 from Products.CMFCore.CMFCorePermissions import AddPortalContent
 from Products.CMFCore.DirectoryView import registerDirectory
 from Products.CMFCore import utils as cmfutils

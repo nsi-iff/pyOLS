@@ -1,4 +1,4 @@
-Thomas Förster <t.foerster@biologie.hu-berlin.de>
+Thomas FÃ¶rster <t.foerster@biologie.hu-berlin.de>
 
 * general concept
 
@@ -10,7 +10,7 @@ David Baehrens <d.baehrens@biologie.hu-berlin.de>
 * OWL import/export
 
 
-Stefan Kröger <s.kroeger@biologie.hu-berlin.de>
+Stefan KrÃ¶ger <s.kroeger@biologie.hu-berlin.de>
 
 * active search support
 
