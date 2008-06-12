@@ -1,5 +1,5 @@
 from pyols.api import OntologyTool
-from pyols.model import Keyword, Namespace
+from pyols.model import Keyword, Namespace, Relation
 from pyols.tests import run_tests, db
 from pyols.exceptions import PyolsNotFound, PyolsValidationError
 
@@ -117,7 +117,7 @@ class TestOntologyTool:
         db().flush() # Simulate a web request -- flush
         return newRel
 
-    def testAddRelation(self):
+    def testRelation(self):
         relA = self.addRelation(name=u"relA")
         relB = self.addRelation(name=u"relB", inverse=relA.name)
         assert_equal(relA, relB.inverse)
@@ -131,8 +131,18 @@ class TestOntologyTool:
         assert_equal(relD.types, ['transitive'])
         assert_equal(relD.weight, 0.5)
 
-    def testDelRelation(self):
-        # When all the other bits are in place, then I can test this easily.
-        raise SkipTest("Later...")
+        from nose.tools import set_trace; set_trace() #BREAK
+        relD.expunge()
+        self.ot.delRelation(u"relD")
+        db().flush()
+        assert_raises(PyolsNotFound, self.ot.getRelation, name=u"relD")
+
+        assert_equal(set(["relA", "relB", "relC"]),
+                     set([r.name for r in self.ot.relations()]))
+
+    @raises
+    def testDelBadRelation(self):
+        self.ot.delRelation('doesnt_exist')
+
 
 run_tests(__name__)

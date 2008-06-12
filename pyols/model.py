@@ -282,8 +282,8 @@ class Keyword(Entity, StorageMethods):
 
 
 class KeywordAssociation(Entity):
-    has_field('path', Unicode(512), primary_key=True)
     belongs_to('keyword', of_kind='Keyword', primary_key=True)
+    has_field('path', Unicode(512), primary_key=True)
     
     using_options(tablename='keyword_associations')
 

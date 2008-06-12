@@ -139,51 +139,56 @@ class OntologyTool(object):
         """ Return an iterator over all the relations in the current NS. """
         return Relation.query_by(namespace=self._namespace)
 
-    def addReference(self, src, dst, relation, ):
-        """Create an Archetype reference of type 'relation' from keyword with name
-        'src' to keyword with name 'dst', if non-existant.
+    def addRelationship(self, left, relation, right):
+        """ Create a relationship of kind 'relation' between keywords 'left'
+            and 'right'.
+            For example, addRelationsihp('pear', 'typeOf', 'fruit') """
+        left = self.getKeyword(left)
+        right = self.getKeyword(right)
+        relation = self.getRelation(relation)
+        newkwr = KeywordRelationship.new(left=left, relation=relation, right=right)
+        newkwr.assert_valid()
+        return newkwa
 
-        'src' and 'dst' are created, if non-existant. The reference is created through Plone Relations library, so relation-specific rulesets are honored.
+    def delRelationship(self, left, relation, right):
+        """ Destroy the relationship of kind 'relation' between keywords 
+            'left' and 'right'. """
+        left = self.getKeyword(left)
+        right = self.getKeyword(right)
+        relation = self.getRelation(relation)
+        kwr = KeywordRelationship.fetch_by(left=left,
+                                           relation=relation,
+                                           right=right)
+        kwr.expunge()
 
-        Exceptions:
-            NotFound            : No relation 'relation' in current ontology.
-            ValidationException : Reference does not validate in the relation ruleset or 'src' or 'dst' are invalid XMLNCNames
-        """
-        zLOG.LOG(PROJECTNAME, zLOG.INFO,
-                 "%s(%s,%s)." % (relation, src, dst))
+    def addAssociation(self, keyword, path):
+        """ Create an association between 'keyword' and 'path'. """
+        keyword = self.getKeyword(keyword)
+        newkwa = KeywordAssociation.new(keyword=keyword, path=path)
+        newkwa.assert_valid()
+        return newkwa
 
-        relations_library = getToolByName(self, 'relations_library')
+    def getAssociations(self, keyword=None, path=None):
+        """ Get an iterable of  associations for either the specified 'keyword'
+            or the specified 'path'.  It is not an error to supply both.  It
+            just doesn't make a lot of sense. """
+        query = {}
+        if keyword is not None:
+            query['keyword'] = self.getKeyword(keyword)
+        if path is not None:
+            query['path'] = path
 
-        try:
-            kw_src  = self.getKeyword(src)
-        except NotFound:
-            kw_src  = self.addKeyword(src)
+        if not query:
+            raise PyolsProgrammerError("Neither a keyword or a path was given "
+                                       "to getAssociations")
 
-        try:
-            kw_dst  = self.getKeyword(dst)
-        except NotFound:
-            kw_dst  = self.addKeyword(dst)
+        return KeywordAssociation.query_by(**query)
 
-        process(self, connect=((kw_src.UID(), kw_dst.UID(), self.getRelation(relation).getId()),))
-
-
-    def delReference(self, src, dst, relation):
-        """Remove the Archetype reference of type 'relation' from keyword with
-        name 'src' to keyword with name 'dst', if the reference exists.
-
-        'src' and 'dst' are created, if non-existant. The reference is removed through Plone Relations library, so relation-specific rulesets are honored.
-
-        Exceptions:
-            NotFound            : No relation 'relation' in current ontology.
-            ValidationException : Unreference does not validate in the relation ruleset.
-        """
-        try:
-            kw_src = self.getKeyword(src)
-            kw_dst = self.getKeyword(dst)
-        except NotFound:
-            return
-
-        process(self, disconnect=((kw_src.UID(), kw_dst.UID(), self.getRelation(relation).getId()),))
+    def delAssociations(self, keyword, path):
+        """ Remove the association between keyword and path. """
+        keyword = self.getKeyword(keyword)
+        kwa = KeywordAssociation.fetch_by(keyword=keyword, path=path)
+        kwa.expunge()
 
     def search(self, kwName, links="all"):
         """Search Content for a given keyword with name 'kwName'.
