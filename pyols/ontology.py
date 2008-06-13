@@ -324,7 +324,7 @@ class Ontology(BaseBTreeFolder):
 
         # Set root keywords
         if not self.rootKeywords:
-                self.rootKeywords = self.getTopLevelTitlesOrNames()
+            self.rootKeywords = self.getTopLevelTitlesOrNames()
 
         return error_string
 

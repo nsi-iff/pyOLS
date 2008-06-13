@@ -1,3 +1,0 @@
-[actions]
-action.success = traverse_to:string:configure_tool_properties
-action.failure = traverse_to:string:configure_tool_properties

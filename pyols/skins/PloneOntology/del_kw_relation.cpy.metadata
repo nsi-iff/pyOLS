@@ -1,3 +1,0 @@
-[actions]
-action.failure = traverse_to:string:configure_tool_relations
-action.success = traverse_to:string:configure_tool_relations

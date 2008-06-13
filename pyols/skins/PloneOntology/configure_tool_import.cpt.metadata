@@ -1,4 +1,0 @@
-[actions]
-action.success..impOWL = traverse_to:string:impOWL
-action.success..expOWL = traverse_to:string:expOWL
-action.success         = traverse_to:string:configure_tool_import

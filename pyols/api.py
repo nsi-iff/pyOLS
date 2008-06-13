@@ -26,6 +26,19 @@ def _unifyRawResults(results):
 
     return result
 
+def publish(func):
+    """ Publish func to the OntologyTool so it will be expored to RPC.
+        Unless it is also wrapped in staticmethod, func will be passed
+        an instance of the OntologyTool as the first argument when it
+        is called by RPC.
+        It is very possible that this could result in some tight
+        coupling, so use with caution.
+        > @publish
+        . def checkNamespace(ot)
+        .     return ot.namespace == "spam"
+        > """
+    setattr(OntologyTool, func.__name__, func)
+    return func
 
 class OntologyTool(object):
     def __init__(self, namespace):
@@ -36,13 +49,10 @@ class OntologyTool(object):
         self._fontpath=''
         self._fonts=findFonts()
         self._cutoff = 0.1
-        self._use_gv_tool = 0
         self._gvfont = ''
         self._relfont = ''
         self._forth = '1'
         self._back = '0'
-        self._nodeshapes = ['box', 'polygon', 'ellipse', 'circle', 'point', 'egg', 'triangle', 'plaintext', 'diamond', 'trapezium', 'parallelogram', 'house', 'pentagon', 'hexagon', 'septagon', 'octagon', 'doublecircle', 'doubleoctagon', 'tripleoctagon', 'invtriangle', 'invtrapezium', 'invhouse', 'Mdiamond', 'Msquare', 'Mcircle', 'rect', 'rectangle', 'none']
-        self._edgeshapes = ['box', 'crow', 'diamond', 'dot', 'inv', 'none', 'normal', 'tee', 'vee']
         self._focus_nodeshape = 'ellipse'
         self._focus_nodecolor = '#dee7ec'
         self._focus_node_font_color = '#000000'
@@ -361,50 +371,10 @@ class OntologyTool(object):
             set = set[0:20]
         return set
 
-    def useGraphViz(self):
-        return self._use_gv_tool
-
-    def generateGraphvizMap(self):
-        """Generate graph source code for GraphViz.
-        """
-        storage = self.getStorage()
-        catalog = getToolByName(self, 'portal_catalog')
-
-        kws=[kw_res.getObject() for kw_res in catalog.searchResults(portal_type='Keyword')]
-
-        dot = KeywordGraph(self.getGVFont(), self.getRelFont(), self.getFocusNodeShape(), self.getFocusNodeColor(), self.getFocusNodeFontColor(), self.getFocusNodeFontSize(), self.getFirstNodeShape(), self.getFirstNodeColor(), self.getFirstNodeFontColor(), self.getFirstNodeFontSize(), self.getSecondNodeShape(), self.getSecondNodeColor(), self.getSecondNodeFontColor(), self.getSecondNodeFontSize(), self.getEdgeShape(), self.getEdgeColor(), self.getEdgeFontColor(), self.getEdgeFontSize())
-        
-        dot.graphHeader(kws[0])
-
-        for node in kws:
-            dot.firstLevelNode(node)
-            rels = node.getRelations() 
-            for rel in rels:
-                  obs = node.getReferences(rel)
-                  try:
-                    obs.remove(self)
-                  except ValueError: # self not in list
-                    pass
-                  for cnode in obs:
-                    dot.relation(node, cnode, rel)
-
-        dot.graphFooter()
-
-        return dot.getValue()
-
     ###
     # ug... Getters and setters
     ###
 
-    def getGVNodeShapesList(self):
-        """Return the gv node shape list.
-        """
-        return self._nodeshapes
-
-    def getGVEdgeShapesList(self):
-        """Return the gv edge shape list.
-        """
-        return self._edgeshapes
     def getFocusNodeShape(self):
         """Return the current gv focus_nodeshape.
         """

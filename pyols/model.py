@@ -299,7 +299,9 @@ class Keyword(Entity, StorageMethods):
     has_field('description', UnicodeText, default=u'')
 
     has_many('associations', of_kind='KeywordAssociation')
+    # Left relations are relationships which this keyword is the left side of
     has_many('left_relations', of_kind='KeywordRelationship', inverse='left')
+    # Similarly, these are relationships in which we reside on the right
     has_many('right_relations', of_kind='KeywordRelationship', inverse='right')
 
     using_options(tablename='keywords')
