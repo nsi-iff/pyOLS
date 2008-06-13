@@ -185,7 +185,7 @@ class OntologyTool(object):
         """ Return an iterator over all the %(class_name)ss in the current
             namespace matching kwargs.  kwargs may be empty. """
         query = self._generate_query(class_, [], kwargs)
-        return class_.query_by(namespace=self._namespace, **kwargs)
+        return class_.query_by(**query)
 
     def search(self, kwName, links="all"):
         """ Search Content for a given keyword with name 'kwName'.

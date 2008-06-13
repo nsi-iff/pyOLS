@@ -176,7 +176,7 @@ class DotTool:
         overlap="false";
         pack="false";
         node [color="#8cacbb", style="filled", shape="%(first_nodeshape)s", 
-              fontname="%(font)s", fillcolor="%(first_node_font_color)s",
+              fontname="%(font)s", fillcolor="%(first_nodecolor)s",
               fontcolor="%(first_node_font_color)s",
               fontsize="%(first_node_font_size)s"];
         edge [color="#8cacbb", shape="%(edgeshape)s", fontname="%(relfont)s",
@@ -206,7 +206,7 @@ class DotTool:
         if len(name) > 15:
             name = name[0:13] + '...'
 
-        self.write('"%s" [fontsize="%s", label="%s", tooltip="%s"];\n'
+        self.write('"%s" [fontsize="%s", tooltip="%s"];\n'
                    %(dotID(name), self._options['focus_node_font_size'],
                      dotID(description)))
 
@@ -229,8 +229,8 @@ class DotTool:
         self.write('"%s" -> "%s" [label="%s"];\n'
                    %(dotID(name), dotID(child), dotID(relation)))
 
-@publish
 @staticmethod
+@publish
 def getGraphvizNodeshapes():
     """ Returns a list of possible node shapes. """
     return ['box', 'polygon', 'ellipse', 'circle', 'point',
@@ -240,8 +240,8 @@ def getGraphvizNodeshapes():
             'invtriangle', 'invtrapezium', 'invhouse', 'Mdiamond',
             'Msquare', 'Mcircle', 'rect', 'rectangle', 'none']
 
-@publish
 @staticmethod
+@publish
 def getGraphvizEdgeShapesList():
     """ Returns a list of possible edge shapes. """
     return ['box', 'crow', 'diamond', 'dot', 'inv', 'none',
