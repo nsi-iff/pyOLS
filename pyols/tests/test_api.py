@@ -24,9 +24,10 @@ class TestOntologyTool:
     def addKeyword(self, name=u"testKW", disambiguation=u"dis",
                    description=u"desc"):
         """ Add a keyword using a call to the OT. """
-        self.ot.addKeyword(name, disambiguation=disambiguation,
-                           description=description)
+        kw = self.ot.addKeyword(name, disambiguation=disambiguation,
+                                description=description)
         db().flush() # Mimic the flush that hapens at the end of each request
+        return kw
 
     def keyword_new(self, name=u"testKW", disambiguation=u"dis",
                     description=u"desc"):
@@ -74,33 +75,9 @@ class TestOntologyTool:
         self.ot.namespace = u"testNS"
         assert_equal(self.ot.namespace, "testNS")
 
-    def testAddKeyword(self):
-        self.addKeyword()
-        k = self.keyword_getby()
-        self.checkKeyword(k)
-
-        self.ot.namespace = u"newNamespace"
-        # If the namespace hasn't changed,
-        # this will raise an exception
-        self.addKeyword()
-
-    @raises(PyolsValidationError)
-    def testAddDuplicateKeyword(self):
-        self.addKeyword()
-        self.addKeyword()
-
-    def testAddKeywordAssociation(self):
-        kw = self.keyword_new()
-        self.ot.addKeywordAssociation(kw.name, u'asdf')
-        db().flush()
-
-        ka = KeywordAssociation.get_by(path=u'asdf')
-        ok_(ka)
-        assert_equal(ka.keyword.name, kw.name)
-
-    def testAddKeywordRelationship(self):
-        kw0 = self.keyword_new(name=u"kw0")
-        kw1 = self.keyword_new(name=u"kw1")
+    def testAdd(self):
+        kw0 = self.addKeyword(u"kw0")
+        kw1 = self.addKeyword(u"kw1")
         rel = self.relation_new()
         self.ot.addKeywordRelationship(kw0.name, rel.name, kw1.name)
         db().flush()
@@ -110,6 +87,26 @@ class TestOntologyTool:
         assert_equal(kwr.left.name, kw0.name)
         assert_equal(kwr.right.name, kw1.name)
         assert_equal(kwr.relation.name, rel.name)
+
+        self.ot.namespace = u"new_ns"
+        ok_(not self.keyword_getby(u"kw0"))
+        self.addKeyword(name=u"kw0")
+        ok_(self.keyword_getby(name=u"kw0"))
+
+    def testAddDuplicateInstance(self):
+        kw = self.addKeyword()
+        kw = self.addKeyword()
+        # These should both succeed
+
+        self.ot.addKeywordAssociation(kw.name, u'0')
+        db().flush()
+        self.ot.addKeywordAssociation(kw.name, u'1')
+        db().flush()
+
+        # The original keyword association should have been updated.
+        ka = KeywordAssociation.get_by(path=u'1')
+        ok_(ka)
+        assert_equal(ka.keyword.name, kw.name)
 
     def testAddRelation(self):
         relA = self.addRelation(name=u"relA")

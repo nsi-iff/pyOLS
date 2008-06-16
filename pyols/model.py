@@ -61,8 +61,7 @@ class StorageMethods:
         return cls(**kwargs)
 
     def assert_valid(self):
-        """ Assert that the new instance is valid. """
-        self.assert_unique()
+        """ Assert that an instance is valid. """
         self.has_required_fields()
 
     def has_required_fields(self):
@@ -327,6 +326,7 @@ class KeywordAssociation(Entity, StorageMethods):
     def remove(self):
         """ Remove the association. """
         self.delete()
+
 
 class KeywordRelationship(Entity, StorageMethods):
     belongs_to('left', of_kind='Keyword', primary_key=True)

@@ -98,10 +98,12 @@ class OntologyTool(object):
         return (obj, "(" + required + ")")
 
     # XXX: ADD ERROR CHECKING HERE
-    def _generate_query(self, class_, args, kwargs):
+    def _generate_query(self, class_, args, kwargs, pk_only=False):
         args = list(args)
         query = {}
         for col in class_.list_columns():
+            if pk_only and not col.required: continue
+
             if col.name == 'namespace':
                 query['namespace'] = self._namespace
                 continue
@@ -121,10 +123,14 @@ class OntologyTool(object):
                               obj_with_args(KeywordAssociation),
                               obj_with_args(KeywordRelationship)))
     def _generic_add(self, class_, *args, **kwargs):
-        """ Add a %(class_name)s to the ontology.  It is an error
-            to add duplicate items.  The new instance is returned. """
-        query = self._generate_query(class_, args, kwargs)
-        new = class_.new(**query)
+        """ Add a %(class_name)s to the ontology.  If an instance already exist,
+            it will be updated.  The new instance is returned. """
+        query = self._generate_query(class_, args, kwargs, pk_only=True)
+        new = class_.get_or_create_by(**query)
+        # Call _generate_query again so foreign keys will be resolved
+        # to objects on the set.
+        for (k, v) in self._generate_query(class_, args, kwargs).items():
+            setattr(new, k, v)
         new.assert_valid()
         return new
 
