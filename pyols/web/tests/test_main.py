@@ -69,4 +69,4 @@ class TestRequestDispatcher:
         self.call_one('unsupported')
 
 
-run_tests(__name__)
+run_tests()

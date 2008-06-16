@@ -141,4 +141,4 @@ class TestStorageMethods:
                               %(col.name, name, col_val, val))
 
 
-run_tests(__name__)
+run_tests()

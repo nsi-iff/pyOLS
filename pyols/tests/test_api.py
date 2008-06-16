@@ -188,4 +188,4 @@ class TestOntologyTool:
             assert_equal(len(kws), x+1)
 
 
-run_tests(__name__)
+run_tests()

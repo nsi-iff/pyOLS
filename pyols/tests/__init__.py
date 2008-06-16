@@ -3,6 +3,7 @@ from pyols.exceptions import PyolsProgrammerError
 
 import nose
 from nose.tools import nottest
+import sys
 
 _db = None
 def setup_package():
@@ -18,8 +19,9 @@ def db():
     return _db
 
 @nottest
-def run_tests(name, pdb=False):
-    """ Where name is the caller's __name__. """
+def run_tests(pdb=False):
+    caller_locals = sys._getframe(1).f_locals
+    (name, file) = map(caller_locals.get, ("__name__", "__file__"))
     if name != "__main__": return
     pdb = pdb and "--pdb-failures" or ""
-    nose.main(argv=["", "-d", pdb])
+    nose.main(argv=filter(None, ["nosetests", "-d", pdb, file]))

@@ -38,4 +38,4 @@ class TestDotTool:
         1/0
 
 
-run_tests(__name__)
+run_tests()

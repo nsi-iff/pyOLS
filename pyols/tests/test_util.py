@@ -69,4 +69,4 @@ def test_container():
     assert_equal(repr(c), "<Container foo=1>")
 
 
-run_tests(__name__)
+run_tests()
