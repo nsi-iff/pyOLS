@@ -16,9 +16,7 @@ import difflib
 # The default skeleton graph, used by GraphChecker.
 default_graph = """
 digraph G {
-        root="What's This?";
-        #size="11,8";
-        #len="10";
+        root="";
         pack="1";
         packmode="node";
         normalize="1";
@@ -72,7 +70,7 @@ class GraphChecker:
         correct = self._graph.obj_dict
 
         r = self._check_dict(new['attributes'], correct['attributes'])
-        if r: raise AssertionError("In key %s: %s" %(key, r))
+        if r: raise AssertionError("In graph attributes: %s" %(r,))
 
         for key in ('nodes', 'edges'):
             for node in correct[key]:

@@ -121,7 +121,7 @@ class DotTool:
     """Dot code generator for keyword graphs.
     """
     default_options = {
-        'header_name': '',
+        'root_name': '',
         'font': '',
         'relfont': '',
         'focus_nodeshape': 'ellipse',
@@ -165,9 +165,9 @@ class DotTool:
 
     def graphHeader(self):
         self._text.write('''digraph G {
-        root="%(header_name)s";
-        #size="11,8";
-        #len="10";
+        root="%(root_name)s";
+        //size="11,8";
+        //len="10";
         pack="1";
         packmode="node";
         normalize="1";
@@ -253,9 +253,9 @@ def generateDotSource(ot, **options):
         current namespace and their relationships.
         Options are:\n""" + \
         "\n".join(["%s: %s"%i for i in DotTool.default_options.items()
-                   if i[0] != 'header_name'])
+                   if i[0] != 'root_name'])
 
-    dot = DotTool(header_name="What's This?", **options)
+    dot = DotTool(root_name="", **options)
 
     for kw in ot.queryKeywords():
         dot.firstLevelNode(kw.name, kw.description)
