@@ -3,10 +3,11 @@ from pyols.graphviz import DotTool #XXX: not used
 from pyols.tests import run_tests, db
 
 try:
-    from pydot import dot_parser
+    from pyols.tests.pydot import dot_parser
 except ImportError:
-    raise Exception("Graphviz tests can't be run without pyprocessing.  Run "
-                    "python setup.py from the root directory to install it.")
+    raise Exception("Graphviz tests can't be run without pyprocessing. If "
+                    "you install pyOLS using `python setup.py develop` it "
+                    "will be automatically installed for you.")
 
 class TestDotTool:
     def setup(self):

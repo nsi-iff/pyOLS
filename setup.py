@@ -10,6 +10,12 @@ if sys.version_info < (2, 5):
     # Python 2.5 and up comes with sqlite
     install_requires.append('pysqlite >= 2.2')
 
+if 'develop' in sys.argv:
+    # Only install testing tools if we're going to run in develop mode
+    install_requires.extend([
+        'nose >= 0.10.1',
+        'pyparsing >= 1.5.0',
+    ])
 
 setup(
     name = 'pyOLS',
@@ -30,11 +36,6 @@ setup(
     
     install_requires = install_requires,
     
-    tests_require = [
-        'nose >= 0.10.1',
-        'pyparsing >= 1.5.0',
-    ],
-
     extras_require = {
     },
     
