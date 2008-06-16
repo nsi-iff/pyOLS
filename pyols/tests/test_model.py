@@ -63,10 +63,14 @@ class TestRelation:
         # that it is not modified by _set_types
         to_check = (('transitive', 'symmetric'),
                     ('functional', ),
-                    ('inverse_functional', 'transitive'))
+                    ('inverse_functional', 'transitive'),
+                    [])
         for check in to_check:
             db().flush() # Pretend we're in a web request
             rel.types = check
+            # Make sure that we can flush the relation here
+            # (ie, that there are no broken references from types)
+            rel.flush()
             # It's imortant to wrap each one in set(...) because
             # their order is not guarenteed
             assert_equal(set(rel.types), set(check))

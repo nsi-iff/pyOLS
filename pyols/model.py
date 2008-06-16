@@ -181,7 +181,7 @@ class Relation(Entity, StorageMethods):
     has_field('name', Unicode(128), required=True)
 
     has_field('weight', Float, default=1)
-    has_many('_types', of_kind='RelationType')
+    has_many('_types', of_kind='RelationType', cascade='delete-orphan')
     # Note: the original documentation suggested that a relation could
     #       have more than one inverse.  After much though on the matter,
     #       we have decided that this does not make any sense, so we have
