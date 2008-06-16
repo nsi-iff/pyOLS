@@ -122,6 +122,13 @@ class TestOntologyTool:
         assert_equal(relD.types, ['transitive'])
         assert_equal(relD.weight, 0.5)
 
+        # Test that adding a duplicate relation will cause an update.
+        self.addRelation(name=u"relD", weight=0)
+        relD = self.ot.getRelation(u"relD")
+        assert_equal(relD.inverse, None)
+        assert_equal(relD.types, [])
+        assert_equal(relD.weight, 0)
+
         # Tests for removing and querying relations are also snuck in here
         self.ot.delRelation(u"relD")
         db().flush()

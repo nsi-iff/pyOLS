@@ -181,6 +181,9 @@ class Relation(Entity, StorageMethods):
     has_field('name', Unicode(128), required=True)
 
     has_field('weight', Float, default=1)
+    # The delete-orphan is needed for some SQLAlchemy sillyness, even
+    # though the _set_types function handles automatically deleting 
+    # orphaned types.
     has_many('_types', of_kind='RelationType', cascade='delete-orphan')
     # Note: the original documentation suggested that a relation could
     #       have more than one inverse.  After much though on the matter,

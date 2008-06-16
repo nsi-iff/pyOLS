@@ -135,8 +135,8 @@ class OntologyTool(object):
         return new
 
     def addRelation(self, name, weight=1.0, types=[], inverse=None):
-        """ Create a keyword relation 'name' in the Plone Relations
-            library, raising an exception if it already exists.
+        """ Create a keyword relation 'name'.  If a relation with name 'name'
+            already exists, it will be updated with the new values.
 
             weight is in the range [0,1].
             types is a list of relationship types, each of which is one of:
@@ -156,8 +156,9 @@ class OntologyTool(object):
                 # problems when it's set as the inverse of the other relation
                 inverse.flush()
 
-        newrel = Relation.new(namespace=self._namespace,
-                              name=name, weight=weight, types=types)
+        newrel = Relation.get_or_create_by(namespace=self._namespace, name=name)
+        newrel.weight=weight
+        newrel.types=types
         newrel.assert_valid()
         newrel.flush()
         newrel.inverse = inverse
