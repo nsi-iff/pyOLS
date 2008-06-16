@@ -32,6 +32,7 @@ setup(
     
     tests_require = [
         'nose >= 0.10.1',
+        'pyparsing >= 1.5.0',
     ],
 
     extras_require = {

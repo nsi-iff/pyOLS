@@ -2,6 +2,12 @@ from pyols.api import OntologyTool
 from pyols.graphviz import DotTool #XXX: not used
 from pyols.tests import run_tests, db
 
+try:
+    from pydot import dot_parser
+except ImportError:
+    raise Exception("Graphviz tests can't be run without pyprocessing.  Run "
+                    "python setup.py from the root directory to install it.")
+
 class TestDotTool:
     def setup(self):
         db().begin_txn()
