@@ -307,7 +307,6 @@ class Ontology(BaseBTreeFolder):
 
         ### OWL import.
         importer = OWLImporter(self, file)
-        owl_dom = importer.getDOM()
         importer.importProperties()
         error_string = importer.importClasses()
 
