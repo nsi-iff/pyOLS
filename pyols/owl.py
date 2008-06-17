@@ -103,7 +103,6 @@ class OWLBase:
 
 
 class OWLExporter(OWLBase):
-
     def serialize(self, encoding='utf-8'):
         return self.getDOM().toprettyxml(encoding=encoding)
 
@@ -215,11 +214,8 @@ class OWLExporter(OWLBase):
 
 
 class OWLImporter(OWLBase):
-    def __init__(self, ot, file=None):
+    def __init__(self, file=None):
         # 'file' seems to be None only in tests
-        # 'ot' ==> OntologyTool
-        self.ot = ot
-
         OWLBase.__init__(self)
 
         if file is not None:
@@ -230,8 +226,44 @@ class OWLImporter(OWLBase):
 
             self.ensureEntities()
 
+        self._keywords = {}
+        self._relations = {}
+        self._keyword_relationships = set()
         self._props = []
         self.ensureBuiltinProperties()
+
+    def addKeyword(self, name, **kwargs):
+        self._keywords.setdefault(name, {}).update(kwargs)
+
+    def getKeywords(self):
+        """ Yields dictionaries describing each keyword.
+            Possible keys in the dictionary are: name, disambiguation
+            and description.  The 'name' key is guarenteed to exist. """
+        valid_keys = ['name', 'disambiguation', 'description']
+        for (name, fields) in self._keywords.items():
+            fields['name'] = name
+            yield dict([p for p in fields.items() if p[0] in valid_keys])
+
+    def getRelations(self):
+        """ Yields dictionaries describing each relation.
+            Possible keys in the dictionary are: name, description,
+            types, inverse, weight. The 'name' key is guarenteed to exist. """
+        valid_keys = ['name', 'description', 'types', 'inverse', 'weight']
+        for (name, fields) in self._relations.items():
+            fields['name'] = name
+            yield dict([p for p in fields.items() if p[0] in valid_keys])
+
+    def getKeywordRelationshps(self):
+        """ Yields lists describing each keyword relationship.
+            Each list will contain exactly (left, relation, right). """
+        for triple in self._keyword_relationships:
+            yield triple
+
+    def addRelation(self, name, **kwargs):
+        self._relations.setdefault(name, {}).update(kwargs)
+
+    def addKeywordRelationship(self, left, name, right):
+        self._keyword_relationships.add((left, name, right))
 
     def objectProperties(self):
         """Return known non builtin relations"""
@@ -247,11 +279,11 @@ class OWLImporter(OWLBase):
         owl:equivalentClass -- synonymOf
         """
 
-        self.ot.addRelation(u'childOf'  , 1.0, types=[u'transitive'],
-                            inverse=u'parentOf').flush()
+        self.addRelation(u'childOf', weight=1.0, types=[u'transitive'],
+                         inverse=u'parentOf')
 
-        self.ot.addRelation(u'synonymOf', 1.0,
-                            types=[u'transitive', u'symmetric']).flush()
+        self.addRelation(u'synonymOf', weight=1.0,
+                            types=[u'transitive', u'symmetric'])
 
     def importProperties(self):
         for owlObjectProperty in self._dom.getElementsByTagName('owl:ObjectProperty'):
@@ -269,9 +301,6 @@ class OWLImporter(OWLBase):
         rid = prop.getAttribute('rdf:ID')
 
         if  self.domainAndRangeAreClasses(prop):
-            rel = self.ot.addRelation(rid)
-            rel.flush()
-
             if not rid in self.getBuiltinProperties():
                 self._props.append(rid)
 
@@ -282,8 +311,6 @@ class OWLImporter(OWLBase):
                 if match:
                     types.append(match.group(1).lower())
 
-            rel.tyes = types
-
             inverses = []
             for inverse in prop.getElementsByTagName('owl:inverseOf'):
                 inverses.append(parseURIRef(inverse.getAttribute('rdf:resource'))\
@@ -293,15 +320,13 @@ class OWLImporter(OWLBase):
                 log.warning("Many inverses (%r) were found for relationship %s. "
                             "Only the first will be used."
                             %(inverses, rel.name))
-            rel.inverse = inverses[0]
+            inverse = inverses[:1] or None
 
             weights = prop.getElementsByTagName('nip:weight')
             if weights and weights[0].firstChild:
                 weight = float(weights[0].firstChild.data)
             else:
                 weight = 1.0
-
-            rel.weight = weight
 
             # Disabled: titles are used as names (FIXME)
             # labels = prop.getElementsByTagName("rdfs:label")
@@ -315,7 +340,9 @@ class OWLImporter(OWLBase):
                 description = descriptions[0].firstChild.data
             except:
                 description = u''
-            rel.description = description
+
+            self.addRelation(rid, types=types, inverse=inverse,
+                             weight=weight, description=description)
 
             return rid
 
@@ -326,37 +353,34 @@ class OWLImporter(OWLBase):
     def importClass(self, cl):
         kid = cl.getAttribute('rdf:ID') or parseURIRef(cl.getAttribute('rdf:about'))['fragment']
 
-        kw = self.ot.addKeyword(kid)
+        #XXX: This is incorrect.  See #14.
+        #for label in cl.getElementsByTagName('rdfs:label'):
+        #    # ignore language and use value of first text or cdata node.
+        #    if label.firstChild:
+        #        title = label.firstChild.data.strip()
+        #        if title: break
 
-        for label in cl.getElementsByTagName('rdfs:label'):
-            # ignore language and use value of first text or cdata node.
-            if label.firstChild:
-                new_title = label.firstChild.data.strip()
-                if new_title:
-                    kw.title = new_title
-                    break
-
+        description = u''
         for comment in cl.getElementsByTagName('rdfs:comment'):
             # ignore language and use value of first text or cdata node.
             if comment.firstChild:
-                new_comment = comment.firstChild.data.strip()
-                if new_comment:
-                    kw.disambiguation = new_comment
-                    break
+                description = comment.firstChild.data.strip()
+                if description: break
 
-        for description in cl.getElementsByTagName('dc:description'):
-            # ignore language and use value of first text or cdata node.
-            if description.firstChild:
-                new_desc = description.firstChild.data.strip()
-                if new_desc:
-                    kw.description = new_desc
+        #XXX: This is incorrect.  See #15.
+        #for description in cl.getElementsByTagName('dc:description'):
+        #    # ignore language and use value of first text or cdata node.
+        #    if description.firstChild:
+        #        description = description.firstChild.data.strip()
+        #        if description: break
 
-        kw.flush()
-        src = kw.name
+        self.addKeyword(kid, description=description)
+
+        src = kid
         for equivalentClass in cl.getElementsByTagName('owl:equivalentClass'):
             dst = parseURIRef(equivalentClass.getAttribute('rdf:resource'))['fragment']
-            self.ot.addKeyword(dst).flush()
-            self.ot.addKeywordRelationship(src, u'synonymOf', dst)
+            self.addKeyword(dst)
+            self.addKeywordRelationship(src, u'synonymOf', dst)
 
         for superclass in cl.getElementsByTagName('rdfs:subClassOf'):
             dsts = []
@@ -370,27 +394,38 @@ class OWLImporter(OWLBase):
                         dsts.append(cls.getAttribute('rdf:ID'))
 
             for dst in dsts:
-                self.ot.addKeyword(dst).flush()
-                self.ot.addKeywordRelationship(src, u'childOf', dst)
+                self.addKeyword(dst)
+                self.addKeywordRelationship(src, u'childOf', dst)
 
         for classObjectProperty in self.objectProperties():
             for prop in cl.getElementsByTagName(classObjectProperty):
                 dst = parseURIRef(prop.getAttribute('rdf:resource'))['fragment']
-                self.ot.addKeyword(dst).flush()
+                self.addKeyword(dst)
 
                 propName = prop.tagName
-                self.ot.addKeywordRelationship(src, propName, dst)
+                self.addKeywordRelationship(src, propName, dst)
 
 
 if __name__ == "__main__":
     from pyols.tests import setup_package, db
     from pyols.api import OntologyTool
     from pyols import graphviz
+    from pyols.model import *
 
     setup_package()
     ot = OntologyTool(u"foo")
-    oi = OWLImporter(ot, "./doc/beer.owl")
+    oi = OWLImporter("./doc/beer.owl")
     oi.importProperties()
     oi.importClasses()
+
+    for rel in oi.getRelations():
+        ot.addRelation(**rel)
+
+    for kw in oi.getKeywords():
+        Keyword.new(namespace=ot._namespace, **kw).assert_valid()
+
     db().flush()
+    for kwr in oi.getKeywordRelationshps():
+        ot.addKeywordRelationship(*kwr)
+
     open("/tmp/x.dot", "w").write(ot.generateDotSource())
