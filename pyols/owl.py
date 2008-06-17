@@ -247,10 +247,11 @@ class OWLImporter(OWLBase):
         owl:equivalentClass -- synonymOf
         """
 
-        self.ot.addRelation('childOf'  , 1.0, types=['transitive'],
-                            inverse=['parentOf'])
+        self.ot.addRelation(u'childOf'  , 1.0, types=[u'transitive'],
+                            inverse=u'parentOf').flush()
 
-        self.ot.addRelation('synonymOf', 1.0, types=['transitive', 'symmetric'])
+        self.ot.addRelation(u'synonymOf', 1.0,
+                            types=[u'transitive', u'symmetric']).flush()
 
     def importProperties(self):
         for owlObjectProperty in self._dom.getElementsByTagName('owl:ObjectProperty'):
@@ -265,11 +266,11 @@ class OWLImporter(OWLBase):
         return domainIsClass and rangeIsClass
 
     def importObjectProperty(self, prop):
-        # XXX: UNICODE
-        rid = prop.getAttribute('rdf:ID').encode('utf-8')
+        rid = prop.getAttribute('rdf:ID')
 
         if  self.domainAndRangeAreClasses(prop):
             rel = self.ot.addRelation(rid)
+            rel.flush()
 
             if not rid in self.getBuiltinProperties():
                 self._props.append(rid)
@@ -285,9 +286,8 @@ class OWLImporter(OWLBase):
 
             inverses = []
             for inverse in prop.getElementsByTagName('owl:inverseOf'):
-                # XXX: UNICODE
                 inverses.append(parseURIRef(inverse.getAttribute('rdf:resource'))\
-                                ['fragment'].encode('utf-8'))
+                                ['fragment'])
 
             if len(inverses) > 1:
                 log.warning("Many inverses (%r) were found for relationship %s. "
@@ -306,15 +306,13 @@ class OWLImporter(OWLBase):
             # Disabled: titles are used as names (FIXME)
             # labels = prop.getElementsByTagName("rdfs:label")
             # try:
-            #     XXX: UNICODE
-            #     rel.setTitle(labels[0].firstChild.data.encode('utf-8'))
+            #     rel.setTitle(labels[0].firstChild.data)
             # except:
             #     rel.setTitle(rel.getId())
 
             descriptions = prop.getElementsByTagName("dc:description")
             try:
-                # XXX: UNICODE
-                description = descriptions[0].firstChild.data.encode('utf-8')
+                description = descriptions[0].firstChild.data
             except:
                 description = u''
             rel.description = description
@@ -326,15 +324,14 @@ class OWLImporter(OWLBase):
             self.importClass(owlClass)
 
     def importClass(self, cl):
-        # XXX: UNICODE
-        kid = cl.getAttribute('rdf:ID').encode('utf-8') or parseURIRef(cl.getAttribute('rdf:about'))['fragment'].encode('utf-8')
+        kid = cl.getAttribute('rdf:ID') or parseURIRef(cl.getAttribute('rdf:about'))['fragment']
 
         kw = self.ot.addKeyword(kid)
 
         for label in cl.getElementsByTagName('rdfs:label'):
             # ignore language and use value of first text or cdata node.
             if label.firstChild:
-                new_title = label.firstChild.data.encode('utf-8').strip()
+                new_title = label.firstChild.data.strip()
                 if new_title:
                     kw.title = new_title
                     break
@@ -342,8 +339,7 @@ class OWLImporter(OWLBase):
         for comment in cl.getElementsByTagName('rdfs:comment'):
             # ignore language and use value of first text or cdata node.
             if comment.firstChild:
-                # XXX: UNICODE
-                new_comment = comment.firstChild.data.encode('utf-8').strip()
+                new_comment = comment.firstChild.data.strip()
                 if new_comment:
                     kw.disambiguation = new_comment
                     break
@@ -351,43 +347,50 @@ class OWLImporter(OWLBase):
         for description in cl.getElementsByTagName('dc:description'):
             # ignore language and use value of first text or cdata node.
             if description.firstChild:
-                # XXX: UNICODE
-                new_desc = description.firstChild.data.encode('utf-8').strip()
+                new_desc = description.firstChild.data.strip()
                 if new_desc:
                     kw.description = new_desc
 
+        kw.flush()
         src = kw.name
         for equivalentClass in cl.getElementsByTagName('owl:equivalentClass'):
-            # XXX: UNICODE
-            dst = parseURIRef(equivalentClass.getAttribute('rdf:resource'))['fragment'].encode('utf-8')
-            self.ot.addKeyword(dst)
-            self.ot.addKeywordRelationship(src, 'synonymOf', dst)
+            dst = parseURIRef(equivalentClass.getAttribute('rdf:resource'))['fragment']
+            self.ot.addKeyword(dst).flush()
+            self.ot.addKeywordRelationship(src, u'synonymOf', dst)
 
         for superclass in cl.getElementsByTagName('rdfs:subClassOf'):
             dsts = []
             if superclass.hasAttribute('rdf:resource'):
-                # XXX: UNICODE
-                dsts.append(parseURIRef(superclass.getAttribute('rdf:resource'))['fragment'].encode('utf-8'))
+                dsts.append(parseURIRef(superclass.getAttribute('rdf:resource'))['fragment'])
             else:
                 for cls in superclass.getElementsByTagName('owl:Class'):
                     if cls.hasAttribute('rdf:about'):
-                        # XXX: UNICODE
-                        dsts.append(parseURIRef(cls.getAttribute('rdf:about'))['fragment'].encode('utf-8'))
+                        dsts.append(parseURIRef(cls.getAttribute('rdf:about'))['fragment'])
                     elif cls.hasAttribute('rdf:ID'):
-                        # XXX: UNICODE
-                        dsts.append(cls.getAttribute('rdf:ID').encode('utf-8'))
+                        dsts.append(cls.getAttribute('rdf:ID'))
 
             for dst in dsts:
-                self.ot.addKeywordRelationship(src, 'childOf', dst)
+                self.ot.addKeyword(dst).flush()
+                self.ot.addKeywordRelationship(src, u'childOf', dst)
 
         for classObjectProperty in self.objectProperties():
-            # XXX: UNICODE
-            for prop in cl.getElementsByTagName(classObjectProperty.decode('utf-8')):
-                # XXX: UNICODE
-                dst = parseURIRef(prop.getAttribute('rdf:resource'))['fragment'].encode('utf-8')
-                self.ot.addKeyword(dst)
+            for prop in cl.getElementsByTagName(classObjectProperty):
+                dst = parseURIRef(prop.getAttribute('rdf:resource'))['fragment']
+                self.ot.addKeyword(dst).flush()
 
-                # XXX: UNICODE
-                propName = prop.tagName.encode('utf-8')
+                propName = prop.tagName
                 self.ot.addKeywordRelationship(src, propName, dst)
-        return None
+
+
+if __name__ == "__main__":
+    from pyols.tests import setup_package, db
+    from pyols.api import OntologyTool
+    from pyols import graphviz
+
+    setup_package()
+    ot = OntologyTool(u"foo")
+    oi = OWLImporter(ot, "./doc/beer.owl")
+    oi.importProperties()
+    oi.importClasses()
+    db().flush()
+    open("/tmp/x.dot", "w").write(ot.generateDotSource())
