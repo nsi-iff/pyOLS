@@ -95,11 +95,15 @@ def dotID(string):
         escaped quotes (\")".
         >>> print dotID('ab"c"')
         ab\\"c\\"
-        >>> dotID('spam')
-        'spam'
+        >>> print dotID('sp\\\\am')
+        sp\\\\am
+        >>> print dotID('ab\\ncd')
+        ab\\ncd
         >>>
         See <http://www.graphviz.org/doc/info/lang.html>.  """
-    return string.replace('"', r'\"')
+        # Ug, doctests aren't great for showing how the escaping is
+        # dealt with.  Basically, newlines and "\" are escaped.
+    return string.replace("\\", r"\\").replace('"', r'\"').replace("\n", r"\n")
 
 class DotOptionsDict(dict):
     """ A dict which will escape each item with dotID before returning it.

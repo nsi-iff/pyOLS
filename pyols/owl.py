@@ -289,62 +289,71 @@ class OWLImporter(OWLBase):
         for owlObjectProperty in self._dom.getElementsByTagName('owl:ObjectProperty'):
             self.importObjectProperty(owlObjectProperty)
 
-    def domainAndRangeAreClasses(self, prop):
-        nsClass = self._entities['owl'] + 'Class'
-
-        domainIsClass = nsClass in [ domain.getAttribute('rdf:resource') for domain in prop.getElementsByTagName('rdfs:domain') ]
-        rangeIsClass = nsClass in [ range.getAttribute('rdf:resource') for range in prop.getElementsByTagName('rdfs:range') ]
-
-        return domainIsClass and rangeIsClass
-
     def importObjectProperty(self, prop):
         rid = prop.getAttribute('rdf:ID')
 
-        if  self.domainAndRangeAreClasses(prop):
-            if not rid in self.getBuiltinProperties():
-                self._props.append(rid)
+        if not rid: return
 
-            owl_type = re.compile('^' + self._entities['owl'] + '(.*)Property$')
-            types = []
-            for type in prop.getElementsByTagName('rdf:type'):
-                match = owl_type.search(type.getAttribute('rdf:resource'))
-                if match:
-                    types.append(match.group(1).lower())
+        if not rid in self.getBuiltinProperties():
+            self._props.append(rid)
 
-            inverses = []
-            for inverse in prop.getElementsByTagName('owl:inverseOf'):
-                inverses.append(parseURIRef(inverse.getAttribute('rdf:resource'))\
-                                ['fragment'])
+        owl_type = re.compile('^' + self._entities['owl'] + '(.*)Property$')
+        types = []
+        for type in prop.getElementsByTagName('rdf:type'):
+            match = owl_type.search(type.getAttribute('rdf:resource'))
+            if match:
+                types.append(match.group(1).lower())
 
-            if len(inverses) > 1:
-                log.warning("Many inverses (%r) were found for relationship %s. "
-                            "Only the first will be used."
-                            %(inverses, rel.name))
-            inverse = inverses[:1] or None
+        inverses = []
+        for inverse in prop.getElementsByTagName('owl:inverseOf'):
+            inverses.append(parseURIRef(inverse.getAttribute('rdf:resource'))\
+                            ['fragment'])
 
-            weights = prop.getElementsByTagName('nip:weight')
-            if weights and weights[0].firstChild:
-                weight = float(weights[0].firstChild.data)
-            else:
-                weight = 1.0
+        if len(inverses) > 1:
+            log.warning("Many inverses (%r) were found for relationship %s. "
+                        "Only the first will be used."
+                        %(inverses, rel.name))
+        inverse = None
+        if inverses and inverses[0]: inverse = inverses[0]
 
-            # Disabled: titles are used as names (FIXME)
-            # labels = prop.getElementsByTagName("rdfs:label")
-            # try:
-            #     rel.setTitle(labels[0].firstChild.data)
-            # except:
-            #     rel.setTitle(rel.getId())
+        weights = prop.getElementsByTagName('nip:weight')
+        if weights and weights[0].firstChild:
+            weight = float(weights[0].firstChild.data)
+        else:
+            weight = 1.0
 
-            descriptions = prop.getElementsByTagName("dc:description")
-            try:
-                description = descriptions[0].firstChild.data
-            except:
-                description = u''
+        # Disabled: titles are used as names (FIXME)
+        # labels = prop.getElementsByTagName("rdfs:label")
+        # try:
+        #     rel.setTitle(labels[0].firstChild.data)
+        # except:
+        #     rel.setTitle(rel.getId())
 
-            self.addRelation(rid, types=types, inverse=inverse,
-                             weight=weight, description=description)
+        descriptions = prop.getElementsByTagName("dc:description")
+        try:
+            description = descriptions[0].firstChild.data
+        except:
+            description = u''
 
-            return rid
+        self.addRelation(rid, types=types, inverse=inverse,
+                         weight=weight, description=description)
+
+        # This is assuming that the domain and range are specified
+        # in this sort of format:
+        # <owl:ObjectProperty rdf:ID="awardedAt">
+        #   <rdfs:range rdf:resource="#Festival"/>
+        #   <rdfs:domain rdf:resource="#Award"/>
+        # </owl:ObjectProperty>
+        dr = map(prop.getElementsByTagName,
+                 ('rdfs:domain', 'rdfs:range'))
+        dr = [d and d[0].getAttribute('rdf:resource') for d in dr]
+        if dr[0] and dr[1]:
+            dr = [dr[0][1:], dr[1][1:]]
+            print dr, rid
+            map(self.addKeyword, dr)
+            self.addKeywordRelationship(dr[0], rid, dr[1])
+
+        return rid
 
     def importClasses(self):
         for owlClass in self._dom.getElementsByTagName('owl:Class'):
@@ -352,6 +361,10 @@ class OWLImporter(OWLBase):
 
     def importClass(self, cl):
         kid = cl.getAttribute('rdf:ID') or parseURIRef(cl.getAttribute('rdf:about'))['fragment']
+
+        # After testing a few different ontologies found on the web,
+        # it seems that this is required to make things work.
+        if not kid: return
 
         #XXX: This is incorrect.  See #14.
         #for label in cl.getElementsByTagName('rdfs:label'):
@@ -414,9 +427,9 @@ if __name__ == "__main__":
 
     setup_package()
     ot = OntologyTool(u"foo")
-    oi = OWLImporter("./doc/beer.owl")
-    oi.importProperties()
+    oi = OWLImporter("./doc/camera.owl")
     oi.importClasses()
+    oi.importProperties()
 
     for rel in oi.getRelations():
         ot.addRelation(**rel)
@@ -427,5 +440,6 @@ if __name__ == "__main__":
     db().flush()
     for kwr in oi.getKeywordRelationshps():
         ot.addKeywordRelationship(*kwr)
+    db().flush()
 
-    open("/tmp/x.dot", "w").write(ot.generateDotSource())
+    open("/home/wolever/x.dot", "w").write(ot.generateDotSource())
