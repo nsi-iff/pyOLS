@@ -134,7 +134,8 @@ class OntologyTool(object):
         new.assert_valid()
         return new
 
-    def addRelation(self, name, weight=1.0, types=[], inverse=None):
+    def addRelation(self, name, weight=1.0, types=[],
+                    inverse=None, description=u''):
         """ Create a keyword relation 'name'.  If a relation with name 'name'
             already exists, it will be updated with the new values.
 
@@ -159,6 +160,7 @@ class OntologyTool(object):
         newrel = Relation.get_or_create_by(namespace=self._namespace, name=name)
         newrel.weight=weight
         newrel.types=types
+        newrel.description=description
         newrel.assert_valid()
         newrel.flush()
         newrel.inverse = inverse

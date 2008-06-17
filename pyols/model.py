@@ -179,6 +179,7 @@ class Relation(Entity, StorageMethods):
     has_field('id', Integer, primary_key=True)
     belongs_to('namespace', of_kind='Namespace', required=True)
     has_field('name', Unicode(128), required=True)
+    has_field('description', UnicodeText, default=u'')
 
     has_field('weight', Float, default=1)
     # The delete-orphan is needed for some SQLAlchemy sillyness, even
