@@ -73,6 +73,12 @@ class OWLBase:
     </rdf:RDF>
     '''
 
+    ### OWL type strings. External for unit tests.
+    owl_types = {'transitive'        : 'TransitiveProperty',
+                 'symmetric'         : 'SymmetricProperty' ,
+                 'functional'        : 'FunctionalProperty',
+                 'inversefunctional' : 'InverseFunctionalProperty'}
+
     def __init__(self):
         self._dom = parseString(self.owlTemplate)
 
@@ -107,8 +113,7 @@ class OWLExporter(OWLBase):
         return self.getDOM().toprettyxml(encoding=encoding)
 
     def generateClass(self, name, superclasses=[], labels=[], comments=[],
-                      descriptions=[], classproperties=[]
-                     ):
+                      descriptions=[], classproperties=[]):
         """Return an OWL class element for class 'name' which is a subclass of every class in 'superclasses'.
         The class is RDFS labelled, commented on and DublinCore described for each pair of an ISO639 language code to a label in 'labels', a comment in 'comments' or a description in 'descriptions' respectively. The class gets a property for each pair of property name and class name in 'classproperties'.
         """
@@ -158,8 +163,7 @@ class OWLExporter(OWLBase):
 
     def generateObjectProperty(self, name, types=[], inverses=[], domains=[], ranges=[],
                                labels=[], comments=[], descriptions=[],
-                               propertyproperties=[]
-                               ):
+                               propertyproperties=[]):
         """Return an OWL object property element for property 'name' with 'types', 'iverses', 'domains' and 'ranges'.
 
         'types' is a list of OWL type strings, e.g. ['&owl;TransitiveProperty', '&owl;SymmetricProperty']. 'inverses' is a list of inverse properties, e.g. name='parentOf', inverses=['childOf']. The property is RDFS labelled, commented on and DublinCore described for each pair of an ISO639 language code to a label in 'labels', a comment in 'comments' or a description in 'descriptions' respectively. The property gets a datatype property for each pair of property name and string in 'propertyproperties'.
@@ -210,7 +214,6 @@ class OWLExporter(OWLBase):
             op.appendChild(p)
 
         self._dom.documentElement.appendChild(op)
-
 
 
 class OWLImporter(OWLBase):
@@ -349,7 +352,6 @@ class OWLImporter(OWLBase):
         dr = [d and d[0].getAttribute('rdf:resource') for d in dr]
         if dr[0] and dr[1]:
             dr = [dr[0][1:], dr[1][1:]]
-            print dr, rid
             map(self.addKeyword, dr)
             self.addKeywordRelationship(dr[0], rid, dr[1])
 
@@ -418,8 +420,63 @@ class OWLImporter(OWLBase):
                 propName = prop.tagName
                 self.addKeywordRelationship(src, propName, dst)
 
+def exportOWL(ot):
+    """ Export keyword structure to OWL. """
+    exporter = OWLExporter()
+    entities = exporter.getEntities()
+
+    # Export OWL object properties.
+    for rel in ot.queryRelations():
+        exporter.generateObjectProperty(
+                name = rel.name,
+                types = [entities['owl'] + exporter.owl_types[t]
+                         for t in rel.types],
+                inverses = rel.inverse and [rel.inverse.name] or [],
+                domains = [entities['owl'] + 'Class'],
+                ranges = [entities['owl'] + 'Class'],
+                labels = [],
+                comments = [],
+                descriptions = rel.description and [rel.description] or [],
+                propertyproperties = [('nip:weight', str(rel.weight))]
+        )
+
+    # Export OWL classes.
+    for kw in ot.queryKeywords():
+        # XXX: Not 100% (or even really 50%) sure that this
+        #      does the right thing...
+        scs = [ kwr.left.name for kwr in kw.right_relations 
+                                      if kwr.relation.name == 'childOf' ]
+        # XXX: Not sure exactly what this does...
+        ops = []
+        # for r in keyword.getRelations():
+        #     if p not in [ 'childOf', 'parentOf', 'synonymOf' ]:
+        #         for c in keyword.getReferences(p):
+        #             ops.append((p,c.getName()))
+        ops = [("leftOPS", "rightOPS")]
+        lang = 'en'
+        label = kw.name
+        comment = kw.disambiguation
+        description = kw.description
+        exporter.generateClass(
+               name = kw.name,
+               superclasses = scs,
+               labels = [(lang, label)],
+               comments = [(lang, comment)],
+               descriptions = [(lang, description)],
+               classproperties = ops
+        )
+
+        ecs = [ kwr.left.name for kwr in kw.right_relations
+                                      if kwr.relation.name == 'synonymOf']
+        ecs += [ kwr.right.name for kwr in kw.left_relations
+                                        if kwr.relation.name == 'synonymOf']
+        for c in ecs:
+            exporter.generateEquivalentClass(kw.name, c)
+
+        return exporter.serialize()
 
 if __name__ == "__main__":
+    # Code to import an ontology.
     from pyols.tests import setup_package, db
     from pyols.api import OntologyTool
     from pyols import graphviz
@@ -427,7 +484,7 @@ if __name__ == "__main__":
 
     setup_package()
     ot = OntologyTool(u"foo")
-    oi = OWLImporter("./doc/camera.owl")
+    oi = OWLImporter("./doc/beer.owl")
     oi.importClasses()
     oi.importProperties()
 
@@ -443,3 +500,5 @@ if __name__ == "__main__":
     db().flush()
 
     open("/home/wolever/x.dot", "w").write(ot.generateDotSource())
+
+    print exportOWL(ot)

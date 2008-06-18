@@ -253,15 +253,16 @@ class Ontology(BaseBTreeFolder):
 
         # Export OWL object properties.
         for prop in ct.relations(rl):
-            exporter.generateObjectProperty(name               = prop.decode(ct.getEncoding()),
-                                            types              = [entities['owl'] + self.owl_types[t] for t in ct.getTypes(prop)],
-                                            inverses           = [i.decode(ct.getEncoding()) for i in ct.getInverses(prop)],
-                                            domains            = [entities['owl'] + 'Class'],
-                                            ranges             = [entities['owl'] + 'Class'],
-                                            labels             = [],
-                                            comments           = [],
-                                            descriptions       = [],
-                                            propertyproperties = [('nip:weight', str(ct.getWeight(prop)))]
+            exporter.generateObjectProperty(
+                    name = prop.decode(ct.getEncoding()),
+                    types = [entities['owl'] + self.owl_types[t] for t in ct.getTypes(prop)],
+                    inverses = [i.decode(ct.getEncoding()) for i in ct.getInverses(prop)],
+                    domains = [entities['owl'] + 'Class'],
+                    ranges = [entities['owl'] + 'Class'],
+                    labels = [],
+                    comments = [],
+                    descriptions = [],
+                    propertyproperties = [('nip:weight', str(ct.getWeight(prop)))]
             )
 
         # Export OWL classes.
@@ -274,12 +275,12 @@ class Ontology(BaseBTreeFolder):
                 if p not in [ 'childOf', 'parentOf', 'synonymOf' ]:
                     for c in keyword.getReferences(p):
                         ops.append((p,c.getName()))
-            lang         = 'en'
-            labels       = []
-            comments     = []
+            lang = 'en'
+            labels = []
+            comments = []
             descriptions = []
-            label       = keyword.Title()
-            comment     = keyword.getShortAdditionalDescription()
+            label = keyword.Title()
+            comment = keyword.getShortAdditionalDescription()
             description = keyword.getKwDescription()
             if label:
                 labels.append((lang, label))
@@ -287,12 +288,13 @@ class Ontology(BaseBTreeFolder):
                 comments.append((lang, comment))
             if description:
                 descriptions.append((lang, description))
-            exporter.generateClass(name            = kw.decode(ct.getEncoding()),
-                                   superclasses    = [sc.decode(ct.getEncoding()) for sc in scs],
-                                   labels          = [(lang, lb.decode(ct.getEncoding())) for (lang, lb) in labels],
-                                   comments        = [(lang, co.decode(ct.getEncoding())) for (lang, co) in comments],
-                                   descriptions    = [(lang, dc.decode(ct.getEncoding())) for (lang, dc) in descriptions],
-                                   classproperties = [(p.decode(ct.getEncoding()), c.decode(ct.getEncoding())) for (p, c) in ops]
+            exporter.generateClass(
+                   name = kw.decode(ct.getEncoding()),
+                   superclasses = [sc.decode(ct.getEncoding()) for sc in scs],
+                   labels = [(lang, lb.decode(ct.getEncoding())) for (lang, lb) in labels],
+                   comments = [(lang, co.decode(ct.getEncoding())) for (lang, co) in comments],
+                   descriptions = [(lang, dc.decode(ct.getEncoding())) for (lang, dc) in descriptions],
+                   classproperties = [(p.decode(ct.getEncoding()), c.decode(ct.getEncoding())) for (p, c) in ops]
             )
 
             for c in ecs:
