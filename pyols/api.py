@@ -196,189 +196,42 @@ class OntologyTool(object):
         query = self._generate_query(class_, [], kwargs)
         return class_.query_by(**query)
 
-    def search(self, kwName, links="all"):
-        """ Search Content for a given keyword with name 'kwName'.
-            By default follow all link types.  """
+    def getRelatedKeywords(self, keyword, links=None, cutoff=0.1):
+        """ Return all keywords which are related to 'keyword' by
+            a weight greater than 'cutoff'.
+            'links' is a list of relationship names which should be
+                followed, or None for all relationships.
+            'cutoff' is the reverence factor below which links will
+                no longer be followed.
+            > getRelatedKeywords("cat", cutoff=0.25)
+            {'animal': 0.5, 'cat': 1.0, 'dog': 0.25} """
+        # Because I don't know exactly how pyOLS is going to be used,
+        # I am only providing this function for searching.
+        # There is no reason not to extend this function or add more.
 
-        keywords = self.getRelatedKeywords(kwName, links=links,
-                                           cutoff = self.getSearchCutoff())
+        kw = self.getKeyword(keyword)
+        return self._getRelatedKeywords(kw, links, cutoff, 1, {})
 
-        results = []
+    def _getRelatedKeywords(self, kw, links, cutoff, factor, results):
+        """ Helper function to getRelatedKeywords.
+            'kw' is an instance of Keyword.
+            'links' is a list of Relations, or None for all relations.
+            'factor' is the current relevance factor.
+            'results' is a dictionary of {kw name:relevence} pairs.
+            Return is the same as getRelatedKeywords.  """
 
-        for kw in keywords.keys():
-            obj = self.getKeyword(kw)
-            rels = obj.getBRefs(self.getClassifyRelationship()) or []
+        if kw.name in results: return results
 
-            res = [(keywords[kw], x) for x in rels if self.isAllowed(x)]
-            results.extend(res)
-
-        results =  _unifyRawResults(results)
-
-        results.sort()
-        results.reverse() #descending scores
-        return results
-
-    def searchFor(self, obj, links="all"):
-        """ Search for content related to obj. """
-
-        # search not possible for non AT types
-        if not getattr(obj, 'isReferenceable', 0): return []
-
-        keywords = obj.getRefs(self.getClassifyRelationship()) or []
-
-        results = []
-
-        for kw in keywords:
-            if kw is not None:
-                results.extend(self.search(kw.getName(), links=links))
-
-        results =  _unifyRawResults(results)
-
-        # remove object
-        results = [x for x in results if x[1]!=obj]
-        results.sort()
-        results.reverse()
+        results[kw.name] = factor
+        for (child, relation) in kw.relations:
+            if not (links is None or relation.name in links):
+                continue
+            new_factor = relation.weight * factor
+            if new_factor < cutoff:
+                continue
+            self._getRelatedKeywords(child, links, cutoff, new_factor, results)
 
         return results
-
-    def getRelatedKeywords(self, keyword, fac=1, result={},
-                           links="all", cutoff=0.1):
-        """ Return list of keywords, that are related to 'keyword'.
-            getRelatedKeywords('dog', 0.5, {'cat': 1}, "all", 0.2) =>
-                {'dog': 0.5', 'cat': 1, 'golden retriever': 0.25} """
-
-        try:
-            kwObj = self.getKeyword(keyword)
-        except NotFound: # nonexistant keyword
-            return {}
-
-        # work with private copy w/t reference linking
-        result = result.copy()
-
-        # if necessary initialize keyword in result list
-        if not result.has_key(kwObj.getName()):
-            result[kwObj.getName()] = fac
-
-        # proper link types initialization
-        if type(links) == StringType:
-            if links == "all":
-                # Query for all the possible relationships
-                rl = getToolByName(self, 'relations_library')
-                links = self.relations(rl)
-            else:
-                # Only use the relationship from links
-                links = [links]
-        # Otherwise links is a list of relationship types
-
-        children = self._getDirectLinkTargets(kwObj, fac, links, cutoff)
-        result = self._getRecursiveContent(kwObj, children, result, links, cutoff)
-
-        return result
-
-    def _getDirectLinkTargets(self, kwObj, fac, links, cutoff):
-        """ kwObj: The keyword we're dealing with
-            fac: It's relevence factor
-            links: Relationships to follow
-            cutoff: Stop searching below this relevence  """
-
-
-        children=[]
-
-        for rel in links:
-            # The relevence of keywords related by this relationship
-            # will be the relevence of this keyword * weight of the relationship
-            relfac = self.getWeight(rel) * fac
-            if relfac <= cutoff: continue
-            children.extend([(relfac, x)
-                              for x in (kwObj.getReferences(rel) or [])
-                              if x is not None])
-
-        # At this point, children will be a list of (relevence, Keyword) tuples,
-        # where each Keyword relates back to the kwObj
-        return _unifyRawResults(children)
-
-    def _getRecursiveContent(self, kwObj, children, result, links, cutoff):
-        """ kwObj: The keyword we're dealing with
-            children: A list of (score, Keyword) tuples. See _unifyRawResults.
-            result: A dictionary of {kwname: relevence} which the result will
-                    be stored in.
-            links: A list of relationship names to follow
-            cutoff: The search cutoff.  See getRelatedKeywords. """
-
-        for (score, kw) in children:
-            cname = kw.getName()
-            if result.has_key(cname): continue
-
-            result[cname] = score
-
-            recursive = self.getRelatedKeywords(cname, score,
-                                                result, links, cutoff)
-
-            if recursive.has_key(kwObj.getName()): #suppress direct backlinks
-                del recursive[kwObj.getName()]
-
-            for kw in recursive.keys():
-                if not result.has_key(kw):
-                    result[kw] = recursive[kw]
-
-        return result
-
-    def setSearchCutoff(self, cutoff):
-        if type(cutoff) != FloatType: cutoff = float(cutoff)
-        if cutoff < 0: cutoff = 0
-
-        self._cutoff = cutoff
-
-    def getSearchCutoff(self):
-        return self._cutoff
-
-    def searchMatchingKeywordsFor(self, obj, search, exclude=[], search_kw_proposals='false', search_linked_keywords='true'):
-        """Return keywords matching a search string.
-        """
-        #XXX obj in method signature is obsolete
-        storage = self.getStorage()
-        catalog = getToolByName(self, 'portal_catalog')
-
-        kws = dict(storage.objectItems('Keyword'))
-
-        for item in storage.objectValues('Keyword'):
-            if item.title:
-                kws.update({item.title: item})
-
-        result = difflib.get_close_matches(search.decode(self.getEncoding()), kws.keys(), n=5, cutoff=0.5)
-        result = [kws[x] for x in result]
-
-        extresult=[]
-        if search_linked_keywords == 'true':
-            [extresult.extend(x.getLinkedKeywords()) for x in result]
-
-
-        if search_kw_proposals=='true':
-            kwps = catalog.searchResults(portal_type='KeywordProposal')
-            kwpsdict={}
-            for el in kwps:
-                if el.getObject().getParentNode().getId() != 'accepted_kws':
-                    kwpsdict.update({el.getObject().getId():el.getObject()})
-            result2 = difflib.get_close_matches(search, kwpsdict.keys(), n=5, cutoff=0.5)
-            result2 = [kwpsdict[x] for x in result2]
-            for el in result:
-                for el2 in result2:
-                    if el2.getId()==el.getId() or el2.title_or_id() == el.title_or_id():
-                        result2.remove(el2)
-            result.extend(result2)
-            result.extend(extresult)
-
-        #remove duplicates & excludes
-
-        if type(exclude) != ListType:
-            exclude = [exclude]
-
-        set = []
-        [set.append(i) for i in result if (not i in set) and (i not in exclude)]
-
-        if len(set) > 20:
-            set = set[0:20]
-        return set
 
     ###
     # ug... Getters and setters

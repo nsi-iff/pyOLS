@@ -44,8 +44,9 @@ class TestOntologyTool:
         db().flush() # Simulate a web request -- flush
         return newRel
 
-    def relation_new(self, name=u"testRel"):
-        newRel = Relation.new(name=name, namespace=self.ot._namespace)
+    def relation_new(self, name=u"testRel", **kwargs):
+        newRel = Relation.new(name=name, namespace=self.ot._namespace,
+                              **kwargs)
         db().flush()
         return newRel
 
@@ -191,5 +192,47 @@ class TestOntologyTool:
             kws = list(self.ot.queryKeywords())
             assert_equal(len(kws), x+1)
 
+    def testGetRelatedKeywords(self):
+        rs = {}
+        rs['k'] = self.relation_new(u"kind of", weight=0.5, types=['symmetric'])
+        rs['s'] = self.relation_new(u"synonym of", weight=1, types=['symmetric'])
+        rs['b'] = self.relation_new(u"breed of", weight=0.75)
+        kwrs = (("animal", "kind of", "living thing"),
+                ("dog", "kind of", "animal"),
+                ("cat", "kind of", "animal"),
+                ("cachorro", "synonym of", "dog"),
+                ("egyptian", "breed of", "cat"),
+                ("collie", "breed of", "dog"))
+        ks = {}
+        for kwr in kwrs:
+            for kw in (kwr[0], kwr[2]):
+                if kw in ks: continue
+                ks[kw] = self.keyword_new(unicode(kw))
+            KeywordRelationship.new(left=ks[kwr[0]],
+                                    relation=rs[kwr[1][0]],
+                                    right=ks[kwr[2]])
+        db().flush()
+
+        queries = ((("animal", 0.5, None),
+                       {'cat': 0.5, 'living thing': 0.5, 'dog': 0.5,
+                        'animal': 1, 'cachorro': 0.5}),
+                   (("collie", 0.75, None),
+                       {'collie': 1, 'dog': 0.75, 'cachorro': 0.75}),
+                   (("collie", 0, None),
+                       {'collie': 1, 'living thing': 0.1875,
+                        'egyptian': 0.140625, 'dog': 0.75, 'cat': 0.1875,
+                        'animal': 0.375, 'cachorro': 0.75}),
+                   (("living thing", 0, [u"kind of"]),
+                       {'living thing': 1, 'dog': 0.25, 'animal': 0.5,
+                        'cat': 0.25}),
+                   (("dog", 0, [u"synonym of", u"breed of"]),
+                       {'collie': 0.75, 'dog': 1, 'cachorro': 1}),
+                  )
+
+        for (query, expected) in queries:
+            actual = self.ot.getRelatedKeywords(unicode(query[0]),
+                                                cutoff=query[1],
+                                                links=query[2])
+            assert_equal(actual, expected)
 
 run_tests()

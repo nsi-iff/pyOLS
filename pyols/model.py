@@ -310,6 +310,15 @@ class Keyword(Entity, StorageMethods):
     using_options(tablename='keywords')
     using_table_options(UniqueConstraint('namespace_id', 'name', 'disambiguation'))
 
+    @property
+    def relations(self):
+        """ Yield (keyword, relation) pairs for each keyword
+            that is related to this one. """
+        for kwr in self.left_relations:
+            yield (kwr.right, kwr.relation)
+        for kwr in self.right_relations:
+            yield (kwr.left, kwr.relation)
+
     def remove(self):
         """ Remove the keyword, along with all KeywordRelationships and
             KeywordAssociations to which it belongs. """
