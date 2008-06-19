@@ -92,6 +92,7 @@ class StorageMethods:
     def list_columns(self):
         """ List all the columns in an entity, including their
             names, default values, types and if they are required.
+            Returns a list of container objects with attributes.
             > x = list_columns()[0]
             > x.required
             True
@@ -143,6 +144,13 @@ class StorageMethods:
                                   "subclasses so they can clean up any "
                                   "dangling relations. Offending class: "
                                   "%s" %(self.__class__.__name__))
+
+    def __rpc__(self):
+        """ Return a dictionary containing each field of the instance. """
+        # Note that calling __rpc__ on the values of the dictionary
+        # is up to the caller -- we just return a dictionary.
+        return dict([(n.name, getattr(self, n.name))
+                     for n in self.list_columns()])
 
 """
 Namespaces are primarly used to separate ontologies.  For example,

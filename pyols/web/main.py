@@ -5,6 +5,38 @@ import sys
 from SimpleXMLRPCServer import SimpleXMLRPCDispatcher, resolve_dotted_attribute
 from xmlrpclib import Fault
 
+def rpcify(instance):
+    """ Try to convert 'instance' to a format which can be sent over RPC.
+        This is acomplished by iterating over itterables and calling the
+        __rpc__ method of the instances they contain, if it exists.
+        There is no guarentee that the returned value can be marsheled by
+        xmlrpclib, but xmlrpclib will handle those errors.
+        >>> rpcify(xrange(5))
+        [0, 1, 2, 3, 4]
+        >>> class Spam:
+        ...     def __rpc__(self):
+        ...         return "Eggs!"
+        ...
+        >>> rpcify(Spam())
+        'Eggs!'
+        >>> rpcify(iter([Spam(), Spam()]))
+        ['Eggs!', 'Eggs!']
+        >>> rpcify('Ham?')
+        'Ham?'
+        >>> """
+
+    # Note that this is implemented here instead of in the xmlrpclib layer
+    # because xmlrpclib does not make it easy to add this sort of thing.
+    if hasattr(instance, '__iter__'):
+        if isinstance(instance, dict):
+            return dict([(key, rpcify(val))
+                         for key, val in instance.items()])
+        return [rpcify(item) for item in instance]
+
+    f = getattr(instance, '__rpc__', None)
+    return f and rpcify(f()) or instance
+
+
 class RequestDispatcher(SimpleXMLRPCDispatcher):
     """ A wrapper around the SimpleXMLRPCDispatcher, called by the current
         wrapper to handle a function call (or, in the case of multicall, many
@@ -69,10 +101,10 @@ class RequestDispatcher(SimpleXMLRPCDispatcher):
             except AttributeError:
                 pass
 
-        if func is not None:
-            return func(*params)
-        else:
+        if func is None:
             raise Fault(2, 'method "%s" is not supported' % method)
+
+        return rpcify(func(*params))
 
     def _dispatch(self, method, params):
         """ Override SimpleXMLRPCDispatcher's _dispatch method so it will
@@ -96,3 +128,6 @@ class RPCFunctions(object):
 
 def get_dispatcher():
     return RequestDispatcher(RPCFunctions())
+
+from pyols.tests import run_doctests
+run_doctests()

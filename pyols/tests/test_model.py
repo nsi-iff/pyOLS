@@ -144,5 +144,14 @@ class TestStorageMethods:
                              "Error on col %s: %s: %s != %s."
                               %(col.name, name, col_val, val))
 
+    def test__rpc__(self):
+        ns = Namespace(name="ns")
+        kw = Keyword.new(namespace=ns, name="kw0")
+        ka = KeywordAssociation(path="path")
+        kw.associations.append(ka)
+        expected = {'associations': [ka], 'name': 'kw0', 'left_relations': [],
+                    'disambiguation': None, 'right_relations': [],
+                    'namespace': ns, 'description': None} 
+        assert_equal(expected, kw.__rpc__())
 
 run_tests()

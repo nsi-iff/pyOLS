@@ -20,6 +20,12 @@ class RPCFunctions:
     def exception(self):
         assert True == False, "Darn, True != False"
 
+    def get_self(self):
+        return self
+
+    def __rpc__(self):
+        return iter(['one', [{'two': iter([3])}, 'four']])
+
 
 class TestRequestDispatcher:
     def setup(self):
@@ -63,6 +69,11 @@ class TestRequestDispatcher:
 
         assert self.f.called == 1, "Only one RPC function should have been "\
                                    "called before the exception was raised."
+
+    def testRPCification(self):
+        # Ensure that returned instances are rpcified
+        r = self.call_one('get_self')
+        assert r == ['one', [{'two': [3]}, 'four']]
 
     @raises(Fault)
     def testUnsupportedMethod(self):
