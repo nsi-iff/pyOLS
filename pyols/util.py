@@ -86,6 +86,5 @@ class Container:
         vals = " ".join(["%s=%r" %(a, getattr(self, a)) for a in self._set])
         return "<Container %s>" %(vals)
 
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
+from pyols.tests import run_doctests
+run_doctests()

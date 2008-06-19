@@ -546,7 +546,5 @@ class OntologyTool(object):
         """
         self._encoding = encoding
 
-
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
+from pyols.tests import run_doctests
+run_doctests()

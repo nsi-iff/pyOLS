@@ -269,6 +269,5 @@ def generateDotSource(ot, **options):
 
     return dot.getSource()
 
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
+from pyols.tests import run_doctests
+run_doctests()
