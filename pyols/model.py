@@ -321,7 +321,10 @@ class Keyword(Entity, StorageMethods):
     @property
     def relations(self):
         """ Yield (keyword, relation) pairs for each keyword
-            that is related to this one. """
+            that is related to this one. 
+            Note that they are not nessicarly unique (that is,
+            if A relates to B through R, and B relates to A
+            through R, two (B, R) tuples will be yielded. """
         for kwr in self.left_relations:
             yield (kwr.right, kwr.relation)
         for kwr in self.right_relations:
