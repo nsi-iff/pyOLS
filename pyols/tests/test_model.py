@@ -125,6 +125,20 @@ class TestRelation:
                      set(["kw0", "kw1"]))
 
 
+class TestRelationType:
+    def testValid(self):
+        r = Relation.new(namespace=Namespace.new(name="foo"), name="foo")
+        for invalid in ('asdf', '', 'symetric'):
+            # Note the misspelling   ^^^^^^^^
+            # That is intentional :)
+            assert_raises(PyolsValidationError,
+                          RelationType.new(name=invalid, relation=r)\
+                          .assert_valid)
+
+        for valid in RelationType.valid_types:
+            RelationType.new(name=valid, relation=r).assert_valid()
+
+
 class TestStorageMethods:
     def test_list_columns(self):
         kw_cols = Keyword.list_columns()
