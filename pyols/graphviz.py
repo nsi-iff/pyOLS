@@ -246,7 +246,7 @@ def getGraphvizNodeshapes():
 
 @staticmethod
 @publish
-def getGraphvizEdgeShapesList():
+def getGraphvizEdgeShapes():
     """ Returns a list of possible edge shapes. """
     return ['box', 'crow', 'diamond', 'dot', 'inv', 'none',
             'normal', 'tee', 'vee']

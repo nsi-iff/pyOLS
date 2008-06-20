@@ -1,5 +1,4 @@
 from pyols.api import OntologyTool
-from pyols.graphviz import DotTool #XXX: not used
 from pyols.tests import run_tests, db
 
 try:

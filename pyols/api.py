@@ -27,15 +27,19 @@ def _unifyRawResults(results):
     return result
 
 def publish(func):
-    """ Publish func to the OntologyTool so it will be expored to RPC.
+    """ Publish 'func' to the OntologyTool so it will be expored to RPC.
         Unless it is also wrapped in staticmethod, func will be passed
         an instance of the OntologyTool as the first argument when it
         is called by RPC.
+        When this function is used in a module, it should be imported in
+        pyols.__init__ to ensure there are no dependency loops.
         It is very possible that this could result in some tight
         coupling, so use with caution.
         > @publish
         . def checkNamespace(ot)
         .     return ot.namespace == "spam"
+        > OntologyTool("spam").checkNamespace()
+        True
         > """
     setattr(OntologyTool, func.__name__, func)
     return func
