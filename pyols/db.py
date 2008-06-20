@@ -4,15 +4,13 @@ from pyols import config
 from elixir import metadata, session, setup_all, drop_all, objectstore
 
 class DatabaseManager:
-    """ A psudo-singleton class which manages the database connection.
-        Unless there is a good reason not to, a db connection should
-        be created with DatabaseManager.get_instance(...). """
-    _instance = None
+    def __init__(self):
+        self.connected = False
 
-    def __init__(self, dbString, debug):
-        """ Create a DatabaseManager connected to dbString,
-            where dbString is in the format:
-                database://path """
+    def connect(self, dbString, debug=False):
+        """ Connect to the database described by 'dbString'.
+            Debug enables verbose SQL debugging.
+            It is (probably) an error to `connect()` twice. """
         # In practice, dbString will probably be sqlite:///path/to/db
         self._dbString = dbString
         self._debug = debug
@@ -20,27 +18,7 @@ class DatabaseManager:
         metadata.bind = dbString
         metadata.bind.echo = debug
         setup_all()
-
-    @classmethod
-    def get_instance(cls, dbString=None, debug=False):
-        """ Create a DBManager if one does not exist, or return the
-            existing instance.
-            If a dbString is not provided, the config setting db.uri
-            is used.
-            An exception is raised if a dbString is provided and it
-            differs from the dbString used in the existing instance. """
-        # If you are supplying this method with a dbString, and you're
-        # not calling it from test code, you'd better have a good reason...
-        if not cls._instance:
-            if dbString is None:
-                dbString = cls.get('db', 'uri')
-            cls._instance = cls(dbString, debug)
-
-        if dbString and cls._instance._dbString != dbString:
-            raise PyolsProgrammerError("A DBManager was requested, but there "
-                                       "already exists a cached manager "
-                                       "connected to a different DB.")
-        return cls._instance
+        self.connected = True
 
     def create_tables(self):
         """ Create all the database tables. """
@@ -81,3 +59,5 @@ class DatabaseManager:
         """ Flush all changes made to persistant objects to disk.
             This includes both new, modified and removed objects. """
         objectstore.flush()
+
+db = DatabaseManager()

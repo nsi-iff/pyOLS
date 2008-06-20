@@ -7,12 +7,12 @@ from nose.tools import raises, assert_raises, assert_equal, ok_
 
 class TestRelation:
     def setup(self):
-        db().begin_txn()
+        db.begin_txn()
         self.ns = Namespace.new(name=u"testNS")
         self.ns.flush()
 
     def teardown(self):
-        db().abort_txn()
+        db.abort_txn()
 
     def relation_new(self, name=u"testRel", weight=1.0, types=[], inverse=None):
         r = Relation.new(namespace=self.ns, name=name, weight=weight,
@@ -25,7 +25,7 @@ class TestRelation:
         relB = self.relation_new(name=u"relB")
         relC = self.relation_new(name=u"relC")
         relD = self.relation_new(name=u"relD")
-        db().flush()
+        db.flush()
 
         relA.inverse = None # Nothing should happen
 
@@ -66,7 +66,7 @@ class TestRelation:
                     ('inverse_functional', 'transitive'),
                     [])
         for check in to_check:
-            db().flush() # Pretend we're in a web request
+            db.flush() # Pretend we're in a web request
             rel.types = check
             # Make sure that we can flush the relation here
             # (ie, that there are no broken references from types)
@@ -104,16 +104,16 @@ class TestRelation:
         for types in ([], ['transitive', 'symmetric']):
             rel = self.relation_new(types=types)
             rel.remove()
-            db().flush()
+            db.flush()
 
         rel = self.relation_new(types=['transitive', 'symmetric'])
         kw0 = Keyword.new(namespace=self.ns, name=u"kw0")
         kw1 = Keyword.new(namespace=self.ns, name=u"kw1")
         kwr = KeywordRelationship.new(left=kw0, relation=rel, right=kw1)
-        db().flush()
+        db.flush()
 
         rel.remove()
-        db().flush()
+        db.flush()
 
         # No instances of these types should exist...
         empty_types = (KeywordRelationship, Relation, RelationType)
@@ -141,7 +141,7 @@ class TestRelationType:
 
 class TestKeyword:
     def setup(self):
-        db().begin_txn()
+        db.begin_txn()
         ns = Namespace(name=u"testns")
         for kw in (u"kw0", u"kw1", u"kw2"):
             setattr(self, kw, Keyword.new(name=kw, namespace=ns))
@@ -157,10 +157,10 @@ class TestKeyword:
 
         self.kwa0 = KeywordAssociation.new(keyword=self.kw0, path=u"kwa0")
         self.kwa1 = KeywordAssociation.new(keyword=self.kw2, path=u"kwa1")
-        db().flush()
+        db.flush()
 
     def teardown(self):
-        db().abort_txn()
+        db.abort_txn()
 
     def testRelations(self):
         assert_equal(sorted(self.kw0.relations),
@@ -170,7 +170,7 @@ class TestKeyword:
 
     def testRemove(self):
         self.kw0.remove()
-        db().flush()
+        db.flush()
         
         # No KeywordRelationships should be left
         assert_equal(len(list(KeywordRelationship.query_by())), 0)
@@ -178,7 +178,7 @@ class TestKeyword:
         assert_equal(len(list(KeywordAssociation.query_by())), 1)
 
         self.kw2.remove()
-        db().flush()
+        db.flush()
         assert_equal(len(list(KeywordAssociation.query_by())), 0)
         
         # And only one keyword

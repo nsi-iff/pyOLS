@@ -1,22 +1,17 @@
-from pyols.db import DatabaseManager
+from pyols.db import db
 from pyols.exceptions import PyolsProgrammerError
 
 import nose
 from nose.tools import nottest
 import sys
 
-_db = None
 def setup_package():
     """ Return a connection to a temporary database, which will be
         destroyed when the script exists.
         The get_db function in pyols.db will also be replaced with a
         function which returns a reference to this db."""
-    global _db
-    _db = DatabaseManager.get_instance("sqlite:///:memory:")
-    _db.create_tables()
-
-def db():
-    return _db
+    if not db.connected:
+        db.connect("sqlite:///:memory:")
 
 @nottest
 def run_tests(pdb=False):

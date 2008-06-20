@@ -8,7 +8,7 @@ from nose.tools import raises, assert_raises, assert_equal, ok_
 
 class TestOntologyTool:
     def setup(self):
-        db().begin_txn()
+        db.begin_txn()
         # ot => OntologyTool
         self.ot = OntologyTool(u"_sanity_check_ns")
         # Add a couple keywords to this other namespace in the
@@ -19,14 +19,14 @@ class TestOntologyTool:
         self.ot.namespace = u"testNS"
 
     def teardown(self):
-        db().abort_txn()
+        db.abort_txn()
 
     def addKeyword(self, name=u"testKW", disambiguation=u"dis",
                    description=u"desc"):
         """ Add a keyword using a call to the OT. """
         kw = self.ot.addKeyword(name, disambiguation=disambiguation,
                                 description=description)
-        db().flush() # Mimic the flush that hapens at the end of each request
+        db.flush() # Mimic the flush that hapens at the end of each request
         return kw
 
     def keyword_new(self, name=u"testKW", disambiguation=u"dis",
@@ -41,13 +41,13 @@ class TestOntologyTool:
     def addRelation(self, name=u"testRel", weight=1.0, types=[], inverse=None):
         newRel = self.ot.addRelation(name=name, weight=weight, types=types,
                                      inverse=inverse)
-        db().flush() # Simulate a web request -- flush
+        db.flush() # Simulate a web request -- flush
         return newRel
 
     def relation_new(self, name=u"testRel", **kwargs):
         newRel = Relation.new(name=name, namespace=self.ot._namespace,
                               **kwargs)
-        db().flush()
+        db.flush()
         return newRel
 
     def checkKeyword(self, kw, name=u"testKW", disambiguation=u"dis",
@@ -81,7 +81,7 @@ class TestOntologyTool:
         kw1 = self.addKeyword(u"kw1")
         rel = self.relation_new()
         self.ot.addKeywordRelationship(kw0.name, rel.name, kw1.name)
-        db().flush()
+        db.flush()
 
         kwr = list(KeywordRelationship.query_by())[0]
         ok_(kwr)
@@ -100,9 +100,9 @@ class TestOntologyTool:
         # These should both succeed
 
         self.ot.addKeywordAssociation(kw.name, u'0')
-        db().flush()
+        db.flush()
         self.ot.addKeywordAssociation(kw.name, u'1')
-        db().flush()
+        db.flush()
 
         # The original keyword association should have been updated.
         ka = KeywordAssociation.get_by(path=u'1')
@@ -132,7 +132,7 @@ class TestOntologyTool:
 
         # Tests for removing and querying relations are also snuck in here
         self.ot.delRelation(u"relD")
-        db().flush()
+        db.flush()
         assert_raises(PyolsNotFound, self.ot.getRelation, name=u"relD")
 
         assert_equal(set(["relA", "relB", "relC"]),
@@ -153,7 +153,7 @@ class TestOntologyTool:
     def testDelKeyword(self):
         self.keyword_new()
         self.ot.delKeyword(u"testKW")
-        db().flush()
+        db.flush()
         # The keyword should not exist
         assert_equal(self.keyword_getby(), None)
 
@@ -169,17 +169,17 @@ class TestOntologyTool:
         rel = self.relation_new()
         kwr = KeywordRelationship.new(left=kw0, relation=rel, right=kw1)
         kwa = KeywordAssociation.new(keyword=kw2, path=u"/asdf/123")
-        db().flush()
+        db.flush()
 
         # Removing the keyword should kill the KWA
         self.ot.delKeyword(kw2.name)
-        db().flush()
+        db.flush()
         assert_equal(KeywordAssociation.get_by(keyword=kw2), None)
 
         # Deleting the relationship should cause the KWR to be deleted
         # but the keywords should stick around
         self.ot.delRelation(rel.name)
-        db().flush()
+        db.flush()
         ok_(self.keyword_getby(name=kw0.name))
         ok_(self.keyword_getby(name=kw1.name))
         assert_equal(KeywordRelationship.get_by(left=kw0), None)
@@ -211,7 +211,7 @@ class TestOntologyTool:
             KeywordRelationship.new(left=ks[kwr[0]],
                                     relation=rs[kwr[1][0]],
                                     right=ks[kwr[2]])
-        db().flush()
+        db.flush()
 
         queries = ((("animal", 0.5, None),
                        {'cat': 0.5, 'living thing': 0.5, 'dog': 0.5,

@@ -1,4 +1,4 @@
-from pyols.db import DatabaseManager
+from pyols.db import db
 from pyols import log
 
 import sys
@@ -61,11 +61,9 @@ class RequestDispatcher(SimpleXMLRPCDispatcher):
     def start_request(self, call_list):
         """ Setup the database, then pass the call list on to dispatch_many
             to handle them. """
-        db = DatabaseManager.get_instance()
         db.begin_txn()
         try:
             results = self.dispatch_many(call_list)
-            db.commit_txn()
         except Fault, fault:
             db.abort_txn()
             log.warning("Fault %d: %s" %(fault.faultCode, fault.faultString))
@@ -74,6 +72,7 @@ class RequestDispatcher(SimpleXMLRPCDispatcher):
             db.abort_txn()
             log.exception(e)
             raise
+        db.commit_txn()
         return results
 
     def dispatch_many(self, call_list):

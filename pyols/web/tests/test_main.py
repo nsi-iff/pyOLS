@@ -35,7 +35,7 @@ class TestRequestDispatcher:
         self.d = RequestDispatcher(self.f)
 
     def teardown(self):
-        db().reset()
+        db.reset()
 
     def call(self, *calls):
         """ Make a call to the dispatch_many function, called when a

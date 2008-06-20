@@ -139,12 +139,12 @@ class TestGraphChecker:
 
 class TestDotTool:
     def setup(self):
-        db().begin_txn()
+        db.begin_txn()
         self.ot = OntologyTool(u'gv_test_ns')
         self.gc = GraphChecker()
 
     def teardown(self):
-        db().abort_txn()
+        db.abort_txn()
 
     def testSimpleGraph(self):
         for kw in (u"kw0", u"kw1", u"kw2"):
@@ -154,7 +154,7 @@ class TestDotTool:
         for rel in (u"rel0", u"rel1"):
             self.ot.addRelation(rel)
 
-        db().flush()
+        db.flush()
 
         for kwr in ((u"kw0", u"rel0", u"kw1"),
                     (u"kw0", u"rel1", u"kw2"),
@@ -162,7 +162,7 @@ class TestDotTool:
             self.ot.addKeywordRelationship(*kwr)
             self.gc.addKeywordRelationship(*kwr)
 
-        db().flush()
+        db.flush()
 
         dot = self.ot.generateDotSource()
         self.gc.checkDot(dot)

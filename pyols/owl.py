@@ -486,10 +486,10 @@ if __name__ == "__main__":
     for kw in oi.getKeywords():
         Keyword.new(namespace=ot._namespace, **kw).assert_valid()
 
-    db().flush()
+    db.flush()
     for kwr in oi.getKeywordRelationshps():
         ot.addKeywordRelationship(*kwr)
-    db().flush()
+    db.flush()
 
     open("/home/wolever/x.dot", "w").write(ot.generateDotSource())
 
