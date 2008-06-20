@@ -14,5 +14,10 @@ class PyolsProgrammerError(AssertionError, PyolsException):
          to cause one of these). """
     pass
 
+class PyolsConfigError(KeyError, PyolsException):
+    """ Used when something goes wrong with the config. """
+    pass
+
 class PyolsNotFound(PyolsException):
-    """ A wrapper around the NotFound exception. """
+    """ Gets raised when something isn't found :) """
+    pass

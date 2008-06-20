@@ -25,7 +25,12 @@ class DatabaseManager:
         setup_all(create_tables=True)
 
     def reset(self):
-        """ Clean out and reset the database. """
+        """ Clean out and reset the database.
+        > db.connect(...)
+        > db.create()
+        ... add things ...
+        > db.reset()
+        The db is now at the state it was when create() was called. """
         # Probably only useful during testing...
         objectstore.clear()
         drop_all()
