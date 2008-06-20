@@ -8,7 +8,7 @@ class Spam(object):
     def __init__(self, thing):
         self.thing = thing
 
-    @create_methods('to_%s', (str, int))
+    @create_methods('to_%s', (str, (int, "(str) --> int")))
     def _to_something(self, class_):
         """Convert the thing to %(class_name)s."""
         return class_(self.thing)
@@ -22,7 +22,9 @@ def test_create_methods():
     s = Spam(u'123')
     assert_equal(s.to_str(), '123')
     assert_equal(s.to_int(), 123)
-    assert_equal(s.to_int.__doc__, "Convert the thing to int.")
+    assert_equal(s.to_int.__doc__, "Convert the thing to int.\n"
+                                   "to_int(str) --> int")
+    assert_equal(s.to_str.__doc__, "Convert the thing to str.")
 
     # It should still be possible to call the function directly
     assert_equal(s._to_something(int), 123)

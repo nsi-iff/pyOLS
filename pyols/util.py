@@ -36,9 +36,12 @@ class curried(object):
 
 def create_methods(name, classes):
     """ Create methods named 'name%(class.__name__)s' for each class in classes.
+        The arguemnt 'classes' can be a list of classes or (class, string)
+        tuples.  If string is specified, it will be appended to the docstring,
+        along with the function's name.
         >>> class Spam(object):
         ...     def __init__(self, thing): self.thing = thing
-        ...     @create_methods('to_%s', (str, int))
+        ...     @create_methods('to_%s', (str, (int, "(str) --> int")))
         ...     def _to_something(self, class_):
         ...         "Convert thing to %(class_name)s."
         ...         return class_(self.thing)
@@ -48,8 +51,9 @@ def create_methods(name, classes):
         '123'
         >>> s.to_int()
         123
-        >>> s.to_int.__doc__
-        'Convert thing to int.'
+        >>> print s.to_int.__doc__
+        Convert thing to int.
+        to_int(str) --> int
         >>> """
     # Because of the way decorators which accept arguments work,
     # this function needs to return a function which will be called
