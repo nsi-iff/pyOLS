@@ -1,5 +1,5 @@
 from pyols.env import EnvironmentManager
-from pyols.tests import run_tests, db
+from pyols.tests import run_tests
 
 import atexit
 import os
@@ -26,19 +26,16 @@ def tempdir():
     tempdirs.append(dir)
     return dir
 
-def teardown():
-    db.reset()
+def setup():
+    global env
+    env = EnvironmentManager()
+    env.create(tempdir())
 
-def test_create_env():
-    dir = tempdir()
 
-    # Not _entirely_ sure what to test for here... So, for now, I'll just
-    # assume that, the setup and teardown works, everything is happy.
-    # If I remember what I was going to write about, I'll add it.
-    env0 = EnvironmentManager()
-    env0.create(dir)
+def testCreateEnv():
+    1/0
 
-    env1 = EnvironmentManager()
-    env1.load(dir)
+def testLoadEnv():
+    1/0
 
 run_tests()
