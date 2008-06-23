@@ -25,8 +25,11 @@ class EnvironmentManager:
         self._path = path
 
         config.load(self.path('config.ini'))
-        db.connect(config['db']['uri'])
-        log.info("Environment loaded from %s" %(path))
+        # Note: The DB path is hard-coded here for two reasons:
+        #       0) I cannot think of any good reason to change it
+        #       1) It would involve more code to get the environment
+        #          path into the config parser.
+        db.connect('sqlite:///'+self.path('pyOLS.sqlite3'))
     
     def create(self, path):
         """ Create an environment at 'path'.
@@ -44,10 +47,10 @@ class EnvironmentManager:
         mkfile('version', self.version)
         mkfile('README', 'A PyOLS environment.\n'
                          'See http://nsi.cefetcampos.br!')
+        mkfile('config.ini', config.default_config())
 
         self.load(path)
         db.create_tables()
-        config.write_default()
         log.info("Environment created at %s" %(path))
 
 env = EnvironmentManager()

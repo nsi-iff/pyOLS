@@ -1,5 +1,4 @@
 from pyols.exceptions import PyolsProgrammerError
-from pyols import config
 
 from elixir import metadata, session, setup_all, drop_all, objectstore
 
