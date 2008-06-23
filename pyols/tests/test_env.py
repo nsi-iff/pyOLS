@@ -1,5 +1,7 @@
+from pyols.config import config
 from pyols.env import EnvironmentManager
 from pyols.tests import run_tests, db
+from pyols.log import log
 
 import atexit
 import os
@@ -32,13 +34,15 @@ def teardown():
 def test_create_env():
     dir = tempdir()
 
-    # Not _entirely_ sure what to test for here... So, for now, I'll just
-    # assume that, the setup and teardown works, everything is happy.
-    # If I remember what I was going to write about, I'll add it.
     env0 = EnvironmentManager()
-    env0.create(dir)
+    env0.create(dir, {'web_wrapper': 'cgi', 'log_type': 'file'})
 
     env1 = EnvironmentManager()
-    env1.load(dir)
+    env1.load(dir, {})
+    assert_equal(config['web_wrapper'], 'cgi')
+    
+    log.info('testing log')
+    log_data = open(env1.path('pyols.log')).read()
+    assert 'testing log' in log_data
 
 run_tests()

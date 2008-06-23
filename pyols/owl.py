@@ -1,4 +1,4 @@
-from pyols import log
+from pyols.log import log
 
 from xml.dom.minidom import parse, parseString, getDOMImplementation
 import re

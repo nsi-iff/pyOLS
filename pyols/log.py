@@ -1,3 +1,5 @@
+from pyols.exceptions import PyolsConfigError, PyolsProgrammerError
+
 import logging
 import sys
 import threading
@@ -5,16 +7,14 @@ import traceback
 
 class LogObject(object):
 
-    levels = ('info', 'warning', 'error', 'critical', 'exception')
+    levels = ('info', 'warning', 'error', 'exception')
 
     def __init__(self):
         self.logger = logging.getLogger('pyOLS')
-        handler = logging.StreamHandler(sys.stderr)
-        formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s',
-                                          '%Y/%m/%d %H:%M:%S')
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler) 
-        self.logger.setLevel(logging.DEBUG)
+
+        # We need to fake the config here so that the logger
+        # can be setup before the environment is setup
+        self.reconfigure({'log_type': 'stdout'})
 
         def mkFunc(f):
             logfunc = getattr(self.logger, f)
@@ -31,6 +31,41 @@ class LogObject(object):
             if l == 'exception': continue
             setattr(self, l, mkFunc(l))
 
+    def reconfigure(self, config, file_path=None):
+        """ Reconfigure the logger. """
+        formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s',
+                                          '%Y/%m/%d %H:%M:%S')
+        # Re-set the list of formatters
+        self.logger.handlers = []
+        
+
+        ### Setup the type
+        type = config.get('log_type', 'stdout')
+        # The .get is nessicary here as the logger may be called before
+        # the environment is loaded.
+        if type in ('stderr', 'stdout'):
+            handler = logging.StreamHandler(getattr(sys, type))
+        elif type == 'file':
+            if not file_path:
+                raise PyolsProgrammerError("The logger was reconfigured and "
+                                           "asked to log to a file, but no "
+                                           "file_path was given!")
+            handler = logging.FileHandler(file_path)
+        else:
+            raise PyolsConfigError('Invalid log type: %r.  Must be one of '
+                                   'stdout, stderr, file.' %(type, ))
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler) 
+
+        ### Setup the level
+        level = config.get('log_level', 'info')
+        # Debug logging is _only_ for SQL
+        if level == 'debug': level = 'info'
+        if level not in self.levels:
+            raise PyolsConfigError('Invalid log level: %r.  Must be one of: '
+                                   '%s' %(level, ", ".join(self.levels)))
+        self.logger.setLevel(getattr(logging, level.upper()))
+
     def exception(self, e, tb=None):
         if tb is None: tb = sys.exc_info()[2]
         msg = "Exception:\n"
@@ -40,15 +75,11 @@ class LogObject(object):
 
 log = LogObject()
 
-g = globals()
-for level in log.levels:
-    g[level] = getattr(log, level)
-
 if __name__=='__main__':
-    info('NSI NSI NSI')
-    warning('gfgfdgfgdg')
-    error('dfdfdfdf')
+    log.info('NSI NSI NSI')
+    log.warning('gfgfdgfgdg')
+    log.error('dfdfdfdf')
     try:
         1/0
     except Exception, e:
-        exception(e)
+        log.exception(e)

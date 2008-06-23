@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from pyols.web import autoreload
-from pyols import log
+from pyols.log import log
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer, CGIXMLRPCRequestHandler, \
                                SimpleXMLRPCDispatcher

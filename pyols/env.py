@@ -1,7 +1,7 @@
 from pyols.exceptions import PyolsNotFound, PyolsValidationError
 from pyols.db import db
 from pyols.config import config
-from pyols import log
+from pyols.log import log
 
 from os import path, mkdir
 
@@ -19,8 +19,8 @@ class EnvironmentManager:
             >>> """
         return path.join(self._path, *p)
     
-    def load(self, p):
-        """ Load the environment in 'path'.
+    def load(self, p, c):
+        """ Load the environment from path 'p' with config options 'c'.
             An exception will be raised if there is something wrong with it
             (version is too old, it doesn't exist, etc). """
         if not path.exists(p):
@@ -29,14 +29,19 @@ class EnvironmentManager:
         self._path = p
         
         config.load(self.path('config.ini'))
+        config.update(c)
+
+        log.reconfigure(config, self.path('pyols.log'))
+
         # Note: The DB path is hard-coded here for two reasons:
         #       0) I cannot think of any good reason to change it
         #       1) It would involve more code to get the environment
         #          path into the config parser.
-        db.connect('sqlite:///'+self.path('pyOLS.sqlite3'))
+        db.connect('sqlite:///'+self.path('pyOLS.sqlite3'),
+                   debug=config['log_level'] == 'debug')
     
-    def create(self, path):
-        """ Create an environment at 'path'.
+    def create(self, path, c):
+        """ Create an environment at 'path' with config options 'c'.
             The 'path' will be created, and an error will be raised
             if it already exists.
             `load(path)` is implied by calling `create(path)`. """
@@ -57,8 +62,11 @@ class EnvironmentManager:
                          'See http://nsi.cefetcampos.br!')
         mkfile('config.ini', config.default_config())
 
-        self.load(path)
+        self.load(path, c)
+
+        config.write()
         db.create_tables()
+
         log.info("Environment created at %r" %(path))
 
 env = EnvironmentManager()

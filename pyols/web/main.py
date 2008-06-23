@@ -1,5 +1,5 @@
 from pyols.db import db
-from pyols import log
+from pyols.log import log
 
 import sys
 from SimpleXMLRPCServer import SimpleXMLRPCDispatcher, resolve_dotted_attribute

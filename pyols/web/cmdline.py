@@ -19,6 +19,7 @@ class OptionsMemory(Option):
         Option.process(self, *args)
 
 def run():
+    # Note that these options mirror options in default.ini
     parser = OptionParser("Usage: %prog [options] environment",
                           option_class=OptionsMemory)
     parser.add_option('-w', '--web-wrapper', action='store', type='string',
@@ -37,14 +38,13 @@ def run():
 
     ### Create a new environment?
     if options.create:
-        env.create(env_path)
+        env.create(env_path, OptionsMemory.changed_options)
         print "Environment created at '%s'." %(env_path)
         print "The pyOLS server can now be started with `%s %s`"\
               %(sys.argv[0], env_path)
         sys.exit(0)
 
-    env.load(env_path)
-    config.update(OptionsMemory.changed_options)
+    env.load(env_path, OptionsMemory.changed_options)
 
     ### Handle the wrapper
     if config['web_wrapper'] not in wrappers:
