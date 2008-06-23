@@ -1,5 +1,6 @@
 from pyols.db import db
 from pyols.config import config
+from pyols import log
 
 from os import path, mkdir
 
@@ -24,7 +25,8 @@ class EnvironmentManager:
         self._path = path
 
         config.load(self.path('config.ini'))
-        db.connect(config.get('db', 'uri'))
+        db.connect(config['db']['uri'])
+        log.info("Environment loaded from %s" %(path))
     
     def create(self, path):
         """ Create an environment at 'path'.
@@ -46,6 +48,7 @@ class EnvironmentManager:
 
         self.load(path)
         db.create_tables()
+        log.info("Environment created at %s" %(path))
 
 env = EnvironmentManager()
 
