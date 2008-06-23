@@ -1,3 +1,4 @@
+from pyols.exceptions import PyolsNotFound, PyolsValidationError
 from pyols.db import db
 from pyols.config import config
 from pyols import log
@@ -18,12 +19,15 @@ class EnvironmentManager:
             >>> """
         return path.join(self._path, *p)
     
-    def load(self, path):
+    def load(self, p):
         """ Load the environment in 'path'.
             An exception will be raised if there is something wrong with it
             (version is too old, it doesn't exist, etc). """
-        self._path = path
-
+        if not path.exists(p):
+            raise PyolsNotFound("The environment path '%r' does not exist. "
+                                "Create it with '-c'?")
+        self._path = p
+        
         config.load(self.path('config.ini'))
         # Note: The DB path is hard-coded here for two reasons:
         #       0) I cannot think of any good reason to change it
@@ -43,7 +47,11 @@ class EnvironmentManager:
             f.write(data)
             f.close()
 
-        mkdir(self.path())
+        try:
+            mkdir(self.path())
+        except OSError:
+            raise PyolsValidationError("Cannot create a new environment: path "
+                                       "'%s' already exists." %(self.path()))
         mkfile('version', self.version)
         mkfile('README', 'A PyOLS environment.\n'
                          'See http://nsi.cefetcampos.br!')
@@ -51,7 +59,7 @@ class EnvironmentManager:
 
         self.load(path)
         db.create_tables()
-        log.info("Environment created at %s" %(path))
+        log.info("Environment created at %r" %(path))
 
 env = EnvironmentManager()
 

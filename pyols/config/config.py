@@ -18,6 +18,7 @@ class ConfigManager(ConfigObj):
         """ Load config from 'file'. """
         self.filename = file
         self.write_empty_values = True
+        self.file_error = True
         self.reload()
 
 config = ConfigManager()
