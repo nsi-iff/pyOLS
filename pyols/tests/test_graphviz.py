@@ -1,5 +1,5 @@
 from pyols.api import OntologyTool
-from pyols.tests import run_tests, db
+from pyols.tests import run_tests, db, PyolsDBTest
 
 try:
     from pyols.tests.pydot import dot_parser, pydot
@@ -137,14 +137,11 @@ class TestGraphChecker:
         self.gc0.checkDot(self.gc1.toString())
 
 
-class TestDotTool:
+class TestDotTool(PyolsDBTest):
     def setup(self):
-        db.begin_txn()
+        super(TestDotTool, self).setup()
         self.ot = OntologyTool(u'gv_test_ns')
         self.gc = GraphChecker()
-
-    def teardown(self):
-        db.abort_txn()
 
     def testSimpleGraph(self):
         for kw in (u"kw0", u"kw1", u"kw2"):

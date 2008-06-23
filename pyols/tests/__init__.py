@@ -5,13 +5,21 @@ import nose
 from nose.tools import nottest
 import sys
 
-def setup_package():
-    """ Return a connection to a temporary database, which will be
-        destroyed when the script exists.
-        The get_db function in pyols.db will also be replaced with a
-        function which returns a reference to this db."""
+def setup_test_db():
+    """ Setup a database which can be used with any tests involving the DB. """
     if not db.connected:
-        db.connect("sqlite:///:memory:")
+        db.connect("sqlite:///:memory:", debug=True)
+        db.create_tables()
+
+class PyolsDBTest(object):
+    """ A class which can be used as a base for all tests involving 
+        operations on persistant objects. """
+    def setup(self):
+        setup_test_db()
+        db.begin_txn()
+
+    def teardown(self):
+        db.abort_txn()
 
 @nottest
 def run_tests(pdb=False):

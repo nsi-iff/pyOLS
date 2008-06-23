@@ -1,18 +1,15 @@
 from pyols.model import *
-from pyols.tests import run_tests, db
+from pyols.tests import run_tests, db, PyolsDBTest
 from pyols.exceptions import PyolsValidationError
 
 from nose.plugins.skip import SkipTest
 from nose.tools import raises, assert_raises, assert_equal, ok_
 
-class TestRelation:
+class TestRelation(PyolsDBTest):
     def setup(self):
-        db.begin_txn()
+        super(TestRelation, self).setup()
         self.ns = Namespace.new(name=u"testNS")
         self.ns.flush()
-
-    def teardown(self):
-        db.abort_txn()
 
     def relation_new(self, name=u"testRel", weight=1.0, types=[], inverse=None):
         r = Relation.new(namespace=self.ns, name=name, weight=weight,
@@ -139,9 +136,9 @@ class TestRelationType:
             RelationType.new(name=valid, relation=r).assert_valid()
 
 
-class TestKeyword:
+class TestKeyword(PyolsDBTest):
     def setup(self):
-        db.begin_txn()
+        super(TestKeyword, self).setup()
         ns = Namespace(name=u"testns")
         for kw in (u"kw0", u"kw1", u"kw2"):
             setattr(self, kw, Keyword.new(name=kw, namespace=ns))
@@ -158,9 +155,6 @@ class TestKeyword:
         self.kwa0 = KeywordAssociation.new(keyword=self.kw0, path=u"kwa0")
         self.kwa1 = KeywordAssociation.new(keyword=self.kw2, path=u"kwa1")
         db.flush()
-
-    def teardown(self):
-        db.abort_txn()
 
     def testRelations(self):
         assert_equal(sorted(self.kw0.relations),

@@ -1,14 +1,14 @@
 from pyols.api import OntologyTool
 from pyols.model import *
-from pyols.tests import run_tests, db
+from pyols.tests import run_tests, db, PyolsDBTest
 from pyols.exceptions import PyolsNotFound, PyolsValidationError
 
 from nose.plugins.skip import SkipTest
 from nose.tools import raises, assert_raises, assert_equal, ok_
 
-class TestOntologyTool:
+class TestOntologyTool(PyolsDBTest):
     def setup(self):
-        db.begin_txn()
+        super(TestOntologyTool, self).setup()
         # ot => OntologyTool
         self.ot = OntologyTool(u"_sanity_check_ns")
         # Add a couple keywords to this other namespace in the
@@ -17,9 +17,6 @@ class TestOntologyTool:
         self.keyword_new(description=u"In the sanity check NS.")
         self.keyword_new(name=u"testKW2", description=u"In the sanity check NS.")
         self.ot.namespace = u"testNS"
-
-    def teardown(self):
-        db.abort_txn()
 
     def addKeyword(self, name=u"testKW", disambiguation=u"dis",
                    description=u"desc"):
