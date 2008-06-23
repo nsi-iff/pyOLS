@@ -4,15 +4,16 @@ from pyols.config.configobj import ConfigObj
 from pkg_resources import resource_filename
 from os import path
 
-def default_config():
-    """ Return a string containing the default configuration. """
-    location = resource_filename('pyols', path.join('config', 'default.ini'))
-    f = open(location)
-    data = f.read()
-    f.close()
-    return data
-
 class ConfigManager(ConfigObj):
+    @staticmethod
+    def default_config():
+        """ Return a string containing the default configuration. """
+        location = resource_filename('pyols', path.join('config', 'default.ini'))
+        f = open(location)
+        data = f.read()
+        f.close()
+        return data
+
     def load(self, file):
         """ Load config from 'file'. """
         self.filename = file
