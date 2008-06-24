@@ -79,6 +79,16 @@ def _create_methods(name, classes, func):
     return func
 
 class Container:
+    """ A simple container for stuff which doesn't quite feel
+        "right" to put in a dictionary.
+        >>> c = Container()
+        >>> c.a = "a"; c.a
+        'a'
+        >>> c.b = 3; c.b
+        3
+        >>> c
+        <Container a='a' b=3>
+        >>> """
     def __init__(self):
         self._set = []
 
