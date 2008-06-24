@@ -343,6 +343,7 @@ class Keyword(Entity, StorageMethods):
 class KeywordAssociation(Entity, StorageMethods):
     belongs_to('keyword', of_kind='Keyword', primary_key=True)
     has_field('path', Unicode(512), primary_key=True)
+    has_field('description', UnicodeText, default=u'')
     
     using_options(tablename='keyword_associations')
 
