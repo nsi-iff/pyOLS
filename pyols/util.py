@@ -100,5 +100,27 @@ class Container:
         vals = " ".join(["%s=%r" %(a, getattr(self, a)) for a in self._set])
         return "<Container %s>" %(vals)
 
+def to_unicode(s):
+    """ Try really hard to convert 's' to a unicode object.
+        First decoding as UTF8 is tried, then Latin1 if that fails.
+        Note that decoding Latin1 will never fail, just do the wrong thing.
+        >>> to_unicode('ohai')
+        u'ohai'
+        >>> to_unicode(u'123')
+        u'123'
+        >>> to_unicode('\xc3\xb1') == u'\xf1' # A UTF-8 ~n
+        True
+        >>> to_unicode('\xf1') == u'\xf1' # A latin1 ~n
+        True
+        >>> """
+    if isinstance(s, unicode):
+        return s
+    if not isinstance(s, str):
+        raise PyolsProgrammerError("A non-str, %r, was passed to to_unicode."%s)
+    try:
+        return s.decode('utf-8')
+    except UnicodeError:
+        return s.decode('latin1')
+
 from pyols.tests import run_doctests
 run_doctests()

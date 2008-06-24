@@ -1,4 +1,5 @@
 from pyols.log import log
+from pyols.util import to_unicode
 
 from xml.dom.minidom import parse, parseString, getDOMImplementation
 import re
@@ -16,17 +17,15 @@ NCName = '[' + NCNameStartChar + ']' + '[' + NCNameChar + ']*'
 
 def isXMLNCName(name):
     """'name' is a (non-empty) XML NCName."""
-    # XXX: UNICODE
-    if isinstance(name, str): name = unicode(name, 'utf-8')
+    name = to_unicode(name)
     return re.match('^' + NCName + '$', name, re.UNICODE)
 
 def toXMLNCName(name):
     """Convert 'name' into an XML NCName."""
-    # XXX: UNICODE
-    name = [c for c in unicode(name, 'utf-8') if re.match('[' + NCNameChar + ']', c, re.UNICODE)]
+    name = [c for c in to_unicode(c) if re.match('[' + NCNameChar + ']', c, re.UNICODE)]
     if name and not re.match('[' + NCNameStartChar + ']', name[0], re.UNICODE):
         name = ['_'] + name
-    return ''.join(name).encode('utf-8')
+    return ''.join(name)
 
 def parseURIRef(uriRef):
     (fragmentContext, fragment) = re.match('([^#]*)#?(.*)', uriRef).groups()

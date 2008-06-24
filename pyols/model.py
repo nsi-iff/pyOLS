@@ -1,7 +1,6 @@
 """ Model for pyOLS. """
 
 from pyols.exceptions import *
-from pyols.owl import isXMLNCName
 from pyols.util import Container
 
 from elixir import *
