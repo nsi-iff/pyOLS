@@ -21,3 +21,7 @@ class PyolsConfigError(KeyError, PyolsException):
 class PyolsNotFound(PyolsException):
     """ Gets raised when something isn't found :) """
     pass
+
+class PyolsEnvironmentError(PyolsException):
+    """ An error which is raised on errors related to the environment. """
+    pass

@@ -1,4 +1,5 @@
-from pyols.exceptions import PyolsNotFound, PyolsValidationError
+from pyols.exceptions import PyolsNotFound, PyolsValidationError,\
+                             PyolsEnvironmentError
 from pyols.db import db
 from pyols.config import config
 from pyols.log import log
@@ -6,7 +7,9 @@ from pyols.log import log
 from os import path, mkdir
 
 class EnvironmentManager:
-    version = '0'
+    # Increase this version each time something that will break backwards
+    # compatibility changes to cause a warning at startup.
+    version = 0
 
     def path(self, *p):
         """ Return a path reletive to the environment path.
@@ -18,6 +21,18 @@ class EnvironmentManager:
             '/tmp/version'
             >>> """
         return path.join(self._path, *p)
+
+    def assert_env_version(self):
+        """ Assert that the environment is the correct version. """
+        ver = file(self.path('version')).read().split()[-1]
+        ver = int(ver)
+        if ver > self.version:
+            raise PyolsEnvironmentError("The environment was created with a "
+                                        "newer version of PyOLS.")
+        elif ver < self.version:
+            # XXX: Right now there is no code to actually upgrade an
+            #      environment which is out of date.  Please write it :)
+            raise PyolsEnvironmentError("The environment needs upgrading.")
     
     def load(self, p, c):
         """ Load the environment from path 'p' with config options 'c'.
@@ -27,6 +42,8 @@ class EnvironmentManager:
             raise PyolsNotFound("The environment path '%r' does not exist. "
                                 "Create it with '-c'?")
         self._path = p
+
+        self.assert_env_version()
         
         config.load(self.path('config.ini'))
         config.update(c)
@@ -57,7 +74,7 @@ class EnvironmentManager:
         except OSError:
             raise PyolsValidationError("Cannot create a new environment: path "
                                        "'%s' already exists." %(self.path()))
-        mkfile('version', self.version)
+        mkfile('version', 'PyOLS environment version: %s' %self.version)
         mkfile('README', 'A PyOLS environment.\n'
                          'See http://nsi.cefetcampos.br!')
         mkfile('config.ini', config.default_config())
