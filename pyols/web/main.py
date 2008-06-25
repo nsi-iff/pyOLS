@@ -87,6 +87,9 @@ class RequestDispatcher(SimpleXMLRPCDispatcher):
             #       This is by design: If one thing fails, the DB may be
             #       in an inconsistant state, so everything should fail.
             results.append([self.dispatch_one(method_name, params)])
+            # The DB must be flushed after each call so that data from
+            # one call is available to the subsequent calls.
+            db.flush()
         return results
 
     def dispatch_one(self, method, params):
