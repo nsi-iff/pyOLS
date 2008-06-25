@@ -39,8 +39,8 @@ class EnvironmentManager:
             An exception will be raised if there is something wrong with it
             (version is too old, it doesn't exist, etc). """
         if not path.exists(p):
-            raise PyolsNotFound("The environment path '%r' does not exist. "
-                                "Create it with '-c'?")
+            raise PyolsNotFound("The environment path '%s' does not exist. "
+                                "Create it with '-c'?" %(p))
         self._path = p
 
         self.assert_env_version()
