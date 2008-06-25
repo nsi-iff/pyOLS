@@ -468,12 +468,13 @@ def exportOWL(ot):
 
 if __name__ == "__main__":
     # Code to import an ontology.
-    from pyols.tests import setup_package, db
+    from pyols.tests import setup_test_db
     from pyols.api import OntologyTool
+    from pyols.db import db
     from pyols import graphviz
     from pyols.model import *
 
-    setup_package()
+    setup_test_db()
     ot = OntologyTool(u"foo")
     oi = OWLImporter("./doc/beer.owl")
     oi.importClasses()
@@ -484,8 +485,8 @@ if __name__ == "__main__":
 
     for kw in oi.getKeywords():
         Keyword.new(namespace=ot._namespace, **kw).assert_valid()
-
     db.flush()
+
     for kwr in oi.getKeywordRelationshps():
         ot.addKeywordRelationship(*kwr)
     db.flush()
