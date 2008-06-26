@@ -1,12 +1,13 @@
 from pyols.db import db
 from pyols.log import log
 from pyols.api import OntologyTool
+from pyols.model import StorageMethods
 
 import sys
 from SimpleXMLRPCServer import SimpleXMLRPCDispatcher, resolve_dotted_attribute
 from xmlrpclib import Fault
 
-def rpcify(instance):
+def rpcify(instance, _seen={}):
     """ Try to convert 'instance' to a format which can be sent over RPC.
         This is acomplished by iterating over itterables and calling the
         __rpc__ method of the instances they contain, if it exists.
@@ -24,18 +25,48 @@ def rpcify(instance):
         ['Eggs!', 'Eggs!']
         >>> rpcify('Ham?')
         'Ham?'
+        >>> a = ['a', 'a']
+        >>> a.append(a)
+        >>> rpcify(a)
+        ['a', 'a', ['a', 'a', 'recursion limit']]
         >>> """
+
+    # This controls the amount of recursion we will allow.
+    # Two seems like a good default, but it would be nice
+    # to eliminate the need for this in the future -- possibly
+    # by using a client-side library and sending mutually recursive
+    # objects as just the primary keys, which can then be turned
+    # into real objects later.
+    # For example:
+    # class Foo(Entity):
+    #    has_field(id, Integer, primary_key=True)
+    #    has_many('bar', of_kind='Bar')
+    # class Bar(Entity):
+    #    has_field(id, Integer, primary_key=True)
+    #    has_many('foo', of_kind='Foo')
+    # f = Foo(); b = Bar()
+    # f.bar[b]; b.foo[f]
+    # rpcify(f) ==> {'id': 1,
+    #                'bar': [{'id': 2,
+    #                         'foo': [{'id': 1}]}]}
+    seen = _seen.get(id(instance), 0)
+    if seen >= 2:
+        return 'recursion limit'
+    if isinstance(instance, (list, tuple, dict, StorageMethods)):
+        # It is only possible for some kinds of objects to
+        # recurse -- so only keep track of those ones.
+        _seen[id(instance)] = seen + 1
 
     # Note that this is implemented here instead of in the xmlrpclib layer
     # because xmlrpclib does not make it easy to add this sort of thing.
     if hasattr(instance, '__iter__'):
         if isinstance(instance, dict):
-            return dict([(key, rpcify(val))
+            return dict([(key, rpcify(val, _seen.copy()))
                          for key, val in instance.items()])
-        return [rpcify(item) for item in instance]
+        return [rpcify(item, _seen.copy()) for item in instance]
 
     f = getattr(instance, '__rpc__', None)
-    return f and rpcify(f()) or instance
+    return f and rpcify(f(), _seen.copy()) or instance
 
 
 class RequestDispatcher(SimpleXMLRPCDispatcher):
@@ -101,10 +132,9 @@ class RequestDispatcher(SimpleXMLRPCDispatcher):
             # one call is available to the subsequent calls.
             db.flush()
         return results
-
-    def dispatch_one(self, method, params):
-        """ Dispatches a single method call. """
-        func = self.funcs.get(method, None)
+    
+    def _getFunc(self, method):
+        func = self.funcs.get(method)
         if not func:
             try:
                 func = resolve_dotted_attribute(
@@ -112,10 +142,15 @@ class RequestDispatcher(SimpleXMLRPCDispatcher):
             except AttributeError:
                 pass
 
-        if func is None:
+        if not func:
             raise Fault(2, 'method "%s" is not supported' % method)
 
-        return rpcify(func(*params))
+        return func
+
+    def dispatch_one(self, method, params):
+        """ Dispatches a single method call. """
+        method = self._getFunc(method)
+        return rpcify(method(*params))
 
     def _dispatch(self, method, params):
         """ Override SimpleXMLRPCDispatcher's _dispatch method so it will
@@ -128,6 +163,10 @@ class RequestDispatcher(SimpleXMLRPCDispatcher):
     def register_multicall_functions(self):
         self.funcs.update({'system.multicall' : self.start_request})
 
+    def system_methodHelp(self, method):
+        method = self._getFunc(method)
+        import pydoc
+        return pydoc.getdoc(method)
 
 class ExampleRPCFunctions(object):
     """ A little class, used for testing. """
