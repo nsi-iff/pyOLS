@@ -125,7 +125,10 @@ class OntologyTool(object):
             exist, it will be created with the same weight and types.
             
             If the inverse, B, already has an inverse, C, the inverse of C
-            will be set to None and the inverse of B set to the new relation. """
+            will be set to None and the inverse of B set to the new relation.
+
+            addRelation(name, weight=1.0, types=[], inverse=None, description=u''
+            """
 
         if inverse is not None:
             try:
