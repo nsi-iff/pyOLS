@@ -491,6 +491,6 @@ if __name__ == "__main__":
         ot.addKeywordRelationship(*kwr)
     db.flush()
 
-    open("/home/wolever/x.dot", "w").write(ot.generateDotSource())
+    open("/home/wolever/x.dot", "w").write(ot.getDotSource())
 
     print exportOWL(ot)

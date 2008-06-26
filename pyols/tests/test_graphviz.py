@@ -161,7 +161,7 @@ class TestDotTool(PyolsDBTest):
 
         db.flush()
 
-        dot = self.ot.generateDotSource()
+        dot = self.ot.getDotSource()
         self.gc.checkDot(dot)
 
 

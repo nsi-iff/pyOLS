@@ -252,7 +252,7 @@ def getGraphvizEdgeShapes():
             'normal', 'tee', 'vee']
 
 @publish
-def generateDotSource(ot, **options):
+def getDotSource(ot, **options):
     """ Generate dot source code for a graph of all the keywords in the
         current namespace and their relationships.
         Options are:\n""" + \
