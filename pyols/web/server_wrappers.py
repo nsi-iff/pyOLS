@@ -4,28 +4,39 @@ from pyols.web import autoreload
 from pyols.log import log
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer, CGIXMLRPCRequestHandler, \
-                               SimpleXMLRPCDispatcher
+                               SimpleXMLRPCDispatcher, SimpleXMLRPCRequestHandler
 from scgi import scgi_server
 import BaseHTTPServer
 from os import environ
 
 class ServerInterface(object):
-    def __init__(self, obj, *args, **kwargs):
-        """ Initialize the server with obj being an instance of an object
-            who's methods will be available over RPC. """
-        pass
+    def __init__(self, dispatcher, *args, **kwargs):
+        """ Initialize the server with a dispatcher class which
+            will be instanciated on each request and the _dispatch
+            method will be called.  See doctest on RequestDispatcher. """
 
     def serve(self):
         """ Start serving.
             In the case of SCGI and Standalone, listen for connections.
             In the case of CGI, handle the current request. """
 
+class _StandaloneHandler(SimpleXMLRPCRequestHandler):
+    # This class is nessicary because I can't find any other way
+    # of getting the path functions are being called against
+    dispatcher = None
+    def _dispatch(self, method, params):
+        dispatcher = self.dispatcher(self.path)
+        return dispatcher._dispatch(method, params)
+
+    def is_rpc_path_valid(self):
+        # For us, all paths are valid.
+        return True
 
 class _StandaloneServer(SimpleXMLRPCServer):
     """ This is the "real" standalone server. """
-    def __init__(self, obj, port=8000):
-        SimpleXMLRPCServer.__init__(self, ("0.0.0.0", port))
-        self.register_instance(obj)
+    def __init__(self, port=8000):
+        SimpleXMLRPCServer.__init__(self, ("0.0.0.0", port),
+                                    requestHandler=_StandaloneHandler)
 
     def serve(self):
         self.serve_forever()
@@ -35,8 +46,8 @@ class StandaloneServer(object):
         real one to make life with autoreload easier.
         All of the methods here that are prefixed with _ will be called
         by autoreload. """
-    def __init__(self, obj, port=8000):
-        self._obj = obj
+    def __init__(self, dispatcher, port=8000):
+        _StandaloneHandler.dispatcher = dispatcher
         self._port = port
 
     def serve(self):
@@ -50,16 +61,17 @@ class StandaloneServer(object):
 
     def _serve(self):
         """ The "actual" serve function. """
-        _StandaloneServer(self._obj, self._port).serve()
+        _StandaloneServer(self._port).serve()
 
     def _modification_callback(self, file):
         log.info("%s was modified.  Restarting." %(file, ))
 
 
 class CGIServer(CGIXMLRPCRequestHandler):
-    def __init__(self, obj):
+    def __init__(self, dispatcher):
         CGIXMLRPCRequestHandler.__init__(self)
-        self.register_instance(obj)
+        self.register_instance(dispatcher("/tmp/"))
+        raise Exception("This needs to be written!")
 
     def serve(self):
         self.handle_request() 
@@ -67,15 +79,15 @@ class CGIServer(CGIXMLRPCRequestHandler):
 
 class SCGIHandler(scgi_server.SCGIHandler, SimpleXMLRPCDispatcher):
     # XXX: This rpc_obj isn't great, may change after testing
-    rpc_obj = None
+    rpc_dispatcher = None
 
     def __init__(self, parent_fd, allow_none=False, encoding=None):
+        raise Exception("This needs to be tested!")
         self.env = self._input = self._output = None
 
         scgi_server.SCGIHandler.__init__(self, parent_fd)
 
         SimpleXMLRPCDispatcher.__init__(self, allow_none, encoding)
-        self.register_instance(self.rpc_obj)
 
     def write(self, text, nl='\r\n'):
         """ Write text + nl to the output stream. """

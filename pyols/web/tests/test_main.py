@@ -6,8 +6,9 @@ from nose.tools import raises
 from xmlrpclib import Fault
 
 class RPCFunctions:
-    def __init__(self):
+    def __init__(self, path):
         self.called = 0
+        self._path = path
 
     def add(self, a, b):
         self.called += 1
@@ -16,6 +17,9 @@ class RPCFunctions:
     def hello(self, who='World'):
         self.called += 1
         return 'Hello, %s!' %(who,)
+
+    def path(self):
+        return self._path
     
     def exception(self):
         assert True == False, "Darn, True != False"
@@ -26,13 +30,13 @@ class RPCFunctions:
     def __rpc__(self):
         return iter(['one', [{'two': iter([3])}, 'four']])
 
+class TestDispatcher(RequestDispatcher):
+    instance_class = RPCFunctions
 
 class TestRequestDispatcher:
     def setup(self):
-        # f => functions
-        self.f = RPCFunctions()
         # d => dispatcher
-        self.d = RequestDispatcher(self.f)
+        self.d = TestDispatcher("/test")
 
     def teardown(self):
         db.reset()
@@ -67,8 +71,12 @@ class TestRequestDispatcher:
         except AssertionError: pass # This is expected
         else: raise Exception("An exception was expected but none was raised.")
 
-        assert self.f.called == 1, "Only one RPC function should have been "\
-                                   "called before the exception was raised."
+        assert self.d.instance.called == 1, "Only one RPC function should have "\
+                                            "been called."
+
+    def testPath(self):
+        r = self.call_one('path')
+        assert r == '/test'
 
     def testRPCification(self):
         # Ensure that returned instances are rpcified

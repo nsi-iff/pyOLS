@@ -6,7 +6,6 @@ import threading
 import traceback
 
 class LogObject(object):
-
     levels = ('info', 'warning', 'error', 'exception')
 
     def __init__(self):

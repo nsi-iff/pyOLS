@@ -5,6 +5,7 @@ from elixir import metadata, session, setup_all, drop_all, objectstore
 class DatabaseManager:
     def __init__(self):
         self.connected = False
+        self._txn = None
 
     def connect(self, dbString, debug=False):
         """ Connect to the database described by 'dbString'.

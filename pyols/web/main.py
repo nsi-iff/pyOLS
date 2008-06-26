@@ -1,5 +1,6 @@
 from pyols.db import db
 from pyols.log import log
+from pyols.api import OntologyTool
 
 import sys
 from SimpleXMLRPCServer import SimpleXMLRPCDispatcher, resolve_dotted_attribute
@@ -38,18 +39,27 @@ def rpcify(instance):
 
 
 class RequestDispatcher(SimpleXMLRPCDispatcher):
-    """ A wrapper around the SimpleXMLRPCDispatcher, called by the current
-        wrapper to handle a function call (or, in the case of multicall, many
-        function calls). """
+    """ This is the class will be instantiated on each request.
+        The first argument will be the path being requested.
+        The _dispatch method will then be called with the function name
+        and arguments list.
+        >>> class TestDispatcher(RequestDispatcher):
+        ...     instance_class = ExampleRPCFunctions
+        ...
+        >>> d = TestDispatcher("/foo/")
+        >>> d._dispatch('add', (40, 2))
+        42
+        >>> d._dispatch('path', [])
+        '/foo/'
+        >>> """
+    instance_class = OntologyTool
 
-    def __init__(self, instance):
-        # instance is the instance to be "published"
-        # Init the SimpleXMLRPCDispatcher, disallowing None (False) and setting
-        # the encoding to UTF-8
-        SimpleXMLRPCDispatcher.__init__(self, False, 'utf-8')
+    def __init__(self, path):
+        SimpleXMLRPCDispatcher.__init__(self, True, 'utf-8')
         self.register_introspection_functions()
         self.register_multicall_functions()
-        self.register_instance(instance)
+        self.instance = self.instance_class(path)
+        self.path = path
 
     # Ideally, the control loop will look like this:
     # start_database_transaction()
@@ -98,8 +108,7 @@ class RequestDispatcher(SimpleXMLRPCDispatcher):
         if not func:
             try:
                 func = resolve_dotted_attribute(
-                    self.instance, method,
-                    self.allow_dotted_names)
+                    self.instance, method, False)
             except AttributeError:
                 pass
 
@@ -120,16 +129,25 @@ class RequestDispatcher(SimpleXMLRPCDispatcher):
         self.funcs.update({'system.multicall' : self.start_request})
 
 
-class RPCFunctions(object):
+class ExampleRPCFunctions(object):
     """ A little class, used for testing. """
+    def __init__(self, path):
+        self._path = path
+
     def add(self, a, b):
         return a + b
+
+    def path(self):
+        return self._path
 
     def hello(self, who='World'):
         return 'Hello, %s!' %(who,)
 
+class TestDispatcher(RequestDispatcher):
+    instance_class = ExampleRPCFunctions
+
 def get_dispatcher():
-    return RequestDispatcher(RPCFunctions())
+    return RequestDispatcher
 
 from pyols.tests import run_doctests
 run_doctests()
