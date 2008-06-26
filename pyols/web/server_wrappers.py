@@ -35,7 +35,7 @@ class _StandaloneHandler(SimpleXMLRPCRequestHandler):
 class _StandaloneServer(SimpleXMLRPCServer):
     """ This is the "real" standalone server. """
     def __init__(self, port=8000):
-        SimpleXMLRPCServer.__init__(self, ("0.0.0.0", port),
+        SimpleXMLRPCServer.__init__(self, ("0.0.0.0", port), allow_none=True,
                                     requestHandler=_StandaloneHandler)
 
     def serve(self):
@@ -81,7 +81,7 @@ class SCGIHandler(scgi_server.SCGIHandler, SimpleXMLRPCDispatcher):
     # XXX: This rpc_obj isn't great, may change after testing
     rpc_dispatcher = None
 
-    def __init__(self, parent_fd, allow_none=False, encoding=None):
+    def __init__(self, parent_fd, allow_none=True, encoding=None):
         raise Exception("This needs to be tested!")
         self.env = self._input = self._output = None
 
