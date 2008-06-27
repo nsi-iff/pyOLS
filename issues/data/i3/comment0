@@ -1,0 +1,21 @@
+Added-by: wolever
+Added-on: 1214591667 2008-06-27 15:34:27 Fri -0200
+DT-New-Category: now
+DT-New-Due-in: testing
+DT-New-Opened-by: wolever
+DT-New-Opened-on: 1214591667 2008-06-27 15:34:27 Fri -0200
+DT-New-Owned-by: wolever
+DT-New-Reported-for: trunk
+DT-New-Status: open
+DT-New-Title: Write tests for StorageMethods
+DT-Old-Category: 
+DT-Old-Due-in: 
+DT-Old-Opened-by: 
+DT-Old-Opened-on: 
+DT-Old-Owned-by: 
+DT-Old-Reported-for: 
+DT-Old-Status: 
+DT-Old-Title: 
+
+At the moment there are only a handful of tests for the StorageMethods class.
+It probably wouldn't be a bad idea to re-name it at the same time...
