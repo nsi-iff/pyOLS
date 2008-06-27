@@ -159,6 +159,26 @@ class DotTool:
                             %(", ".join(map(str, invalid_options))))
         self.graphHeader()
 
+    def _truncate(self, s):
+        """ Truncate string 's' to 30 characters.
+            >>> d = DotTool()
+            >>> d._truncate("short")
+            'short'
+            >>> d._truncate("123"*10)
+            '123123123123123123123123123123'
+            >>> d._truncate("123"*11)
+            '123123123123123123123123123...'
+            >>> """
+        # Note: The 'n' is hard-coded because bad things happen when truncation
+        #       is done to different lengths (for example, there may be a
+        #       node defined by firstLevelNode having a lenght of 30, but
+        #       it may be referenced later having a different length, creating
+        #       two nodes in the graph.
+        n = 30
+        if len(s) > n:
+            s = s[0:n-3] + '...'
+        return s
+
     def write(self, text):
         self._text.write(text)
 
@@ -206,9 +226,7 @@ class DotTool:
         self._text.write('"%s" [shape="%s", fillcolor="%s", fontcolor="%s", fontsize="%s", label="%s", tooltip="%s"];\n' % (dotID(node.getName()), dotID(self._focus_nodeshape), dotID(self._focus_nodecolor), dotID(self._focus_node_font_color), dotID(str(self._focus_node_font_size)), dotID(nodelabel), dotID(tooltip)))
 
     def firstLevelNode(self, name, description):
-        # Truncate long names
-        if len(name) > 15:
-            name = name[0:13] + '...'
+        name = self._truncate(name)
 
         self.write('"%s" [fontsize="%s", tooltip="%s"];\n'
                    %(dotID(name), self._options['focus_node_font_size'],
@@ -230,6 +248,7 @@ class DotTool:
 
     def relation(self, name, relation, child):
         """ Add a relation from name, through relation, to child. """
+        (name, relation, child) = map(self._truncate, (name, relation, child))
         self.write('"%s" -> "%s" [label="%s"];\n'
                    %(dotID(name), dotID(child), dotID(relation)))
 

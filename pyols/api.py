@@ -178,7 +178,7 @@ class OntologyTool(object):
         query = self._generate_query(class_, [], kwargs)
         return class_.query_by(**query)
 
-    def getRelatedKeywords(self, keyword, links=None, cutoff=0.1):
+    def getRelatedKeywords(self, keyword, cutoff=0.1, links=None):
         """ Return all keywords which are related to 'keyword' by
             a weight greater than 'cutoff'.
             'links' is a list of relationship names which should be
@@ -192,9 +192,9 @@ class OntologyTool(object):
         # There is no reason not to extend this function or add more.
 
         kw = self.getKeyword(keyword)
-        return self._getRelatedKeywords(kw, links, cutoff, 1, {})
+        return self._getRelatedKeywords(kw, cutoff, links, 1, {})
 
-    def _getRelatedKeywords(self, kw, links, cutoff, factor, results):
+    def _getRelatedKeywords(self, kw, cutoff, links, factor, results):
         """ Helper function to getRelatedKeywords.
             'kw' is an instance of Keyword.
             'links' is a list of Relations, or None for all relations.
@@ -211,7 +211,7 @@ class OntologyTool(object):
             new_factor = relation.weight * factor
             if new_factor < cutoff:
                 continue
-            self._getRelatedKeywords(child, links, cutoff, new_factor, results)
+            self._getRelatedKeywords(child, cutoff, links, new_factor, results)
 
         return results
 

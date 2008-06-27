@@ -65,9 +65,15 @@ class GraphChecker:
 
     def checkDot(self, dot):
         """ Verify that 'dot' contains the correct data. """
-        new = dot_parser.parse_dot_data(dot).obj_dict
+        new = dot_parser.parse_dot_data(dot)
         correct = self._graph.obj_dict
 
+        print "--- CORRECT ---"
+        print self.toString()
+        print "--- ACTUAL ---"
+        print new.to_string()
+
+        new = new.obj_dict
         r = self._check_dict(new['attributes'], correct['attributes'])
         if r: raise AssertionError("In graph attributes: %s" %(r,))
 
@@ -164,5 +170,35 @@ class TestDotTool(PyolsDBTest):
         dot = self.ot.getDotSource()
         self.gc.checkDot(dot)
 
+    def testLongNames(self):
+        long = u'this string has more than 30 characters'
+        long_trunc = long[:27] + '...'
+        short = u'this string has exactly 26'
+
+        self.ot.addKeyword(long)
+        self.gc.addKeyword(long_trunc)
+        self.ot.addKeyword(short)
+        self.gc.addKeyword(short)
+
+        self.ot.addRelation(long)
+        self.ot.addRelation(short)
+
+        db.flush()
+
+        self.ot.addKeywordRelationship(long, long, long)
+        self.gc.addKeywordRelationship(long_trunc, long_trunc, long_trunc)
+
+        self.ot.addKeywordRelationship(short, short, short)
+        self.gc.addKeywordRelationship(short, short, short)
+
+        self.ot.addKeywordRelationship(long, short, short)
+        self.gc.addKeywordRelationship(long_trunc, short, short)
+
+        self.ot.addKeywordRelationship(short, long, short)
+        self.gc.addKeywordRelationship(short, long_trunc, short)
+
+        db.flush()
+        dot = self.ot.getDotSource()
+        self.gc.checkDot(dot)
 
 run_tests()

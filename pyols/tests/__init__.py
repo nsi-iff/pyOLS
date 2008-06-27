@@ -8,7 +8,7 @@ import sys
 def setup_test_db():
     """ Setup a database which can be used with any tests involving the DB. """
     if not db.connected:
-        db.connect("sqlite:///:memory:", debug=True)
+        db.connect("sqlite:///:memory:", debug=False)
         db.create_tables()
 
 class PyolsDBTest(object):
