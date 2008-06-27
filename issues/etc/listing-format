@@ -1,0 +1,2 @@
+[listing-formats]
+default: %(id)-4s %(Owned-by)-8s %(Due-in)-8s %(Status)-6s %(Title)s
