@@ -1,0 +1,20 @@
+Added-by: wolever
+Added-on: 1214592746 2008-06-27 15:52:26 Fri -0200
+DT-New-Category: now
+DT-New-Due-in: someday
+DT-New-Opened-by: wolever
+DT-New-Opened-on: 1214592746 2008-06-27 15:52:26 Fri -0200
+DT-New-Owned-by: wolever
+DT-New-Reported-for: trunk
+DT-New-Status: open
+DT-New-Title: Make the handling of recursive relationships cleaner.
+DT-Old-Category: 
+DT-Old-Due-in: 
+DT-Old-Opened-by: 
+DT-Old-Opened-on: 
+DT-Old-Owned-by: 
+DT-Old-Reported-for: 
+DT-Old-Status: 
+DT-Old-Title: 
+
+Right now a 'recursion limit' message is inserted -- see the comments in the code for a better idea.
