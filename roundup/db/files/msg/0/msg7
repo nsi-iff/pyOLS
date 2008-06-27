@@ -1,3 +1,0 @@
-It's doing what it's supposed to right now, but things could be sped up a bit if 
-the DB is only reset if code actually modified it... I'm not sure off hand how to 
-check for that, though.

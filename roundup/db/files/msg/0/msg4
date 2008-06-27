@@ -1,1 +1,0 @@
-Change reset_db so it only does a full reset of the DB if it really needs to.

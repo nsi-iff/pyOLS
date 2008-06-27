@@ -1,3 +1,0 @@
-rdfs:label provides a human-readable version of the node name 
-(http://www.w3.org/TR/rdf-schema/#ch_label), but at the moment it's ignored.  See 
-comment in OWLImpter.importClass.

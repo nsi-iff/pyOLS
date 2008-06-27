@@ -1,4 +1,0 @@
-There needs to be one function which will accept str-strings and return unicode-
-strings (applying the necessary conversions).
-
-One question, though, is when this will actually be needed...
