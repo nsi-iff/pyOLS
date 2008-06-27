@@ -1,0 +1,22 @@
+Added-by: wolever
+Added-on: 1214591950 2008-06-27 15:39:10 Fri -0200
+DT-New-Category: now
+DT-New-Due-in: someday
+DT-New-Opened-by: wolever
+DT-New-Opened-on: 1214591950 2008-06-27 15:39:10 Fri -0200
+DT-New-Owned-by: wolever
+DT-New-Reported-for: trunk
+DT-New-Status: open
+DT-New-Title: OWL importing/exporting is probably incorrect
+DT-Old-Category: 
+DT-Old-Due-in: 
+DT-Old-Opened-by: 
+DT-Old-Opened-on: 
+DT-Old-Owned-by: 
+DT-Old-Reported-for: 
+DT-Old-Status: 
+DT-Old-Title: 
+
+At the moment there is no formal definition of what pyOLS fields are mapped to what OWL tags, so there is a very good chance things will work inconsitently.
+
+For example, the dc:description and rdfs:label tags are ignored.
