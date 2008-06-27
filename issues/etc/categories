@@ -1,4 +1,4 @@
-Category: sample
+Category: now
 Default: True
-Default-owner: sample-user
-Version-set: sample-versions-set
+Default-owner: wolever
+Version-set: default-versions

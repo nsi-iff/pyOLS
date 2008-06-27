@@ -1,1 +1,1 @@
-sample-filter: Status=open,Owned-by=sample-user
+open: Status=open
