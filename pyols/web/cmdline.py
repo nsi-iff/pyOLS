@@ -15,7 +15,9 @@ class OptionsMemory(Option):
 
     def process(self, *args):
         # uuhh... See optparse.py if this doesn't make sense
-        OptionsMemory.changed_options[self.get_opt_string()] = args[1]
+        ini_option = self.get_opt_string().replace('--','').replace('-', '_')
+        if ini_option != 'create':
+            OptionsMemory.changed_options[ini_option] = args[1]
         Option.process(self, *args)
 
 def run():

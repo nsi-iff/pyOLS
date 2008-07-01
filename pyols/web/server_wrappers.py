@@ -78,10 +78,13 @@ class CGIServer(CGIXMLRPCRequestHandler):
 
 
 try:
-    from scgi.scgi_server import SCGIHandler as _SCGIHandler
+    from scgi.scgi_server import SCGIHandler as _SCGIHandler, \
+                                 SCGIServer as _SCGIServer
 except ImportError:
     class _SCGIHandler:
-        def __init__(*args):
+        pass
+    class _SCGIServer:
+        def __init__(*args, **kwargs):
             print "Error: The SCGI module, which is needed to run "
             print "       the SCGI server, was not found."
             print "Try installing it with `easy_install scgi` or "
@@ -187,8 +190,8 @@ class SCGIHandler(_SCGIHandler, SimpleXMLRPCDispatcher):
 class SCGIServer(object):
     def __init__(self, obj, port=4000):
         SCGIHandler.rpc_obj = obj
-        self._server = scgi_server.SCGIServer(SCGIHandler, host="localhost",
-                                              port=port, max_children=5)
+        self._server = _SCGIServer(SCGIHandler, host="localhost",
+                                   port=port, max_children=5)
 
     def serve(self):
         self._server.serve()
