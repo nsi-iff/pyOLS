@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
 import sys
+from os import path
 
 install_requires = [
     'SQLAlchemy >= 0.3.9',
@@ -19,6 +20,12 @@ if 'develop' in sys.argv:
         'pyparsing >= 1.5.0',
     ])
 
+setup_requires = []
+if path.exists(path.join(path.dirname(__file__), '.bzr')):
+    # If we're inside a bzr repository,
+    # make sure setuptools_bzr is installed
+    setup_requires = ['setuptools_bzr']
+
 setup(
     name = 'pyOLS',
     version = "0.1a",
@@ -27,8 +34,10 @@ setup(
     author = 'David Wolever',
     author_email = 'david@wolever.net',
     url = '',
+    setup_requires=setup_requires,
     install_requires = install_requires,
     packages=find_packages(),
+    include_package_data=True,
     entry_points= {
         'console_scripts':
             ['pyols = pyols.web.cmdline:run']
