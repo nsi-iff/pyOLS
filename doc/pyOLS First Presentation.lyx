@@ -1,0 +1,913 @@
+#LyX 1.5.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 276
+\begin_document
+\begin_header
+\textclass slides
+\language english
+\inputencoding auto
+\font_roman charter
+\font_sans helvet
+\font_typewriter beramono
+\font_default_family default
+\font_sc true
+\font_osf true
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\paperfontsize default
+\spacing single
+\papersize default
+\use_geometry true
+\use_amsmath 1
+\use_esint 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation landscape
+\leftmargin 2.5cm
+\rightmargin 2.5cm
+\secnumdepth 1
+\tocdepth 1
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\author "" 
+\author "" 
+\end_header
+
+\begin_body
+
+\begin_layout Slide
+Title
+\end_layout
+
+\begin_layout Standard
+\align center
+
+\size huge
+pyOLS
+\newline
+Python Ontology Lookup Service
+\end_layout
+
+\begin_layout Slide
+Introduction
+\end_layout
+
+\begin_layout Standard
+PyOLS is a simple XML-RPC based ontology storage and lookup service.
+\end_layout
+
+\begin_layout Standard
+What does that mean?
+\end_layout
+
+\begin_layout Itemize
+XML-RPC is a protocol for making remote procedure calls -- it uses HTTP
+ and XML to call functions on remote computers.
+\end_layout
+
+\begin_layout Itemize
+An ontology is a set related terms and the relationships which bind them.
+\end_layout
+
+\begin_layout Slide
+Introduction, pt.
+ 2
+\end_layout
+
+\begin_layout Standard
+And what can PyOLS do with these ontologies (relationships, keywords and
+ associations between keywords and 
+\begin_inset Quotes eld
+\end_inset
+
+real things
+\begin_inset Quotes erd
+\end_inset
+
+)?
+\end_layout
+
+\begin_layout Itemize
+Store them
+\end_layout
+
+\begin_layout Itemize
+Graph them
+\end_layout
+
+\begin_layout Itemize
+Search them
+\end_layout
+
+\begin_layout Slide
+Installing
+\end_layout
+
+\begin_layout Standard
+Installing pyOLS is simple:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Standard
+
+$ tar -zxvf pyols.tar.gz
+\end_layout
+
+\begin_layout Standard
+
+$ cd pyols/
+\end_layout
+
+\begin_layout Standard
+
+$ python setup.py install
+\end_layout
+
+\begin_layout Standard
+
+$ pyols -c env
+\end_layout
+
+\begin_layout Standard
+
+$ pyols env
+\end_layout
+
+\begin_layout Standard
+
+18:19:42 INFO Starting standalone server on port 8000 
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Slide
+Using: A simple ontology
+\end_layout
+
+\begin_layout Standard
+Using pyOLS is just as simple:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Standard
+
+>>> from xmlrpclib import ServerProxy
+\end_layout
+
+\begin_layout Standard
+
+>>> s = ServerProxy("http://localhost:8000/example")
+\end_layout
+
+\begin_layout Standard
+
+>>> s.addKeyword('INTERCAL')
+\end_layout
+
+\begin_layout Standard
+
+{'associations': [], 'description': '',
+\end_layout
+
+\begin_layout Standard
+
+ 'disambiguation': '', 'name': 'INTERCAL', ...
+ } 
+\end_layout
+
+\begin_layout Standard
+
+>>> s.addKeyword('Befunge')
+\end_layout
+
+\begin_layout Standard
+
+>>> s.addKeyword('programming language')
+\end_layout
+
+\begin_layout Standard
+
+>>> s.addRelation('an esoteric', 0.75)
+\end_layout
+
+\begin_layout Standard
+
+>>> s.addKeywordRelationship('INTERCAL',
+\end_layout
+
+\begin_layout Standard
+
+...
+             'an esoteric', 'programming language')
+\end_layout
+
+\begin_layout Standard
+
+>>> s.addKeywordRelationship('Befunge',
+\end_layout
+
+\begin_layout Standard
+
+...
+             'an esoteric', 'programming language')
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Slide
+Using: A simple ontology (cont.)
+\end_layout
+
+\begin_layout Standard
+Now that there is a bit of data, it can be searched:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Standard
+
+>>> s.getRelatedKeywords('Befunge')
+\end_layout
+
+\begin_layout Standard
+
+{'Befunge': 1, 'INTERCAL': 0.5625,
+\end_layout
+
+\begin_layout Standard
+
+ 'programming language': 0.75}
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+And Dot source can also be generated:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Standard
+
+>>> s.getDotSource()
+\end_layout
+
+\begin_layout Standard
+
+digraph G {
+\end_layout
+
+\begin_layout Standard
+
+...
+\end_layout
+
+\begin_layout Standard
+
+"INTERCAL" [fontsize="9", tooltip=""];
+\end_layout
+
+\begin_layout Standard
+
+"Befunge" [fontsize="9", tooltip=""];
+\end_layout
+
+\begin_layout Standard
+
+"Befunge" -> "programming language" [label="an esoteric"];
+\end_layout
+
+\begin_layout Standard
+
+"INTERCAL" -> "programming language" [label="an esoteric"];
+\end_layout
+
+\begin_layout Standard
+
+}
+\end_layout
+
+\begin_layout Standard
+
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Slide
+Graph
+\end_layout
+
+\begin_layout Standard
+Which, when graphed with Graphviz, yields a graph of keywords and their
+ relationships within the ontology:
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename languages.ps
+	scale 150
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Slide
+Making associations...
+\end_layout
+
+\begin_layout Standard
+Ok, great.
+ But how can you do anything useful with this ontology?
+\end_layout
+
+\begin_layout Standard
+In the same way a class must be instantiated, 
+\series bold
+keywords 
+\series default
+must be 
+\series bold
+associated 
+\series default
+with 
+\series bold
+instances.
+\end_layout
+
+\begin_layout Standard
+There are two ways this can be accomplished in pyOLS:
+\end_layout
+
+\begin_layout Itemize
+Using the built in 
+\noun on
+KeywordAssociation
+\noun default
+ type
+\end_layout
+
+\begin_layout Itemize
+Using a custom relationship type
+\end_layout
+
+\begin_layout Standard
+First, using the 
+\noun on
+KeywordAssociation
+\noun default
+ class:
+\end_layout
+
+\begin_layout Slide
+...
+ with KeywordAssocations
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Standard
+
+>>> s.methodHelp('addKeywordAssociation')
+\end_layout
+
+\begin_layout Standard
+
+Add a KeywordAssociation to the ontology.
+  If an instance
+\end_layout
+
+\begin_layout Standard
+
+already exist, it will be updated.
+  The new instance is
+\end_layout
+
+\begin_layout Standard
+
+returned.
+\end_layout
+
+\begin_layout Standard
+
+addKeywordAssociation(keyword, path, description=u'')
+\end_layout
+
+\begin_layout Standard
+
+>>> s.addKeywordAssociation('INTERCAL',
+\end_layout
+
+\begin_layout Standard
+
+...
+     '/user/Wolever', 'DO :1 <- #0$#256')
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\size small
+(Where the
+\noun on
+ path
+\noun default
+ can be any Unicode string up to 512 characters long)
+\end_layout
+
+\begin_layout Standard
+
+\noun on
+KeywordAssociations
+\noun default
+ can, like the other data storage types can also be queried:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Standard
+
+>>> s.queryKeywordAssociations(None, '/user/Wolever')
+\end_layout
+
+\begin_layout Standard
+
+[{'path':'/user/Wolever', 'description':'DO :1 <- #0$#256',
+\end_layout
+
+\begin_layout Standard
+
+  'keyword': {'name': 'INTERCAL' ...
+ }}]
+\end_layout
+
+\begin_layout Standard
+
+>>>
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\size small
+(Note that 
+\noun on
+None
+\noun default
+ is used as the first argument of 
+\noun on
+queryKeywordAssociations
+\noun default
+ because we do not care about the value of 
+\noun on
+keyword
+\noun default
+)
+\end_layout
+
+\begin_layout Slide
+...
+ with a custom relation type
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Standard
+
+>>> s.addRelation('likes')
+\end_layout
+
+\begin_layout Standard
+
+>>> s.addKeyword('/user/Wolever')
+\end_layout
+
+\begin_layout Standard
+
+>>> s.addRelation('/user/Wolever', 'likes', 'INTERCAL')
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+As above, relations of this type can also be queried:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Standard
+
+>>> s.queryKeywords('/user/Wolever')
+\end_layout
+
+\begin_layout Standard
+
+[{'name': '/user/Wolever', left_relations = [{
+\end_layout
+
+\begin_layout Standard
+
+    'relation': 'likes', 'right': 'INTERCAL'...
+\end_layout
+
+\begin_layout Standard
+
+>>>
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Slide
+Advantages/Disadvantages
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="3">
+<features islongtable="true">
+<column alignment="center" valignment="top" rightline="true" width="0">
+<column alignment="left" valignment="top" leftline="true" width="35text%">
+<column alignment="left" valignment="top" leftline="true" width="30text%">
+<row bottomline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+
+\noun on
+KeywordAssociation
+\end_layout
+
+\end_inset
+</cell>
+<cell multicolumn="1" alignment="left" valignment="top" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+Custom relation type
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+Advantages
+\end_layout
+
+\end_inset
+</cell>
+<cell multicolumn="1" alignment="left" valignment="top" topline="true" leftline="true" usebox="none" width="30text%">
+\begin_inset Text
+
+\begin_layout Standard
+Simple, easy to query
+\end_layout
+
+\end_inset
+</cell>
+<cell multicolumn="1" alignment="left" valignment="top" topline="true" leftline="true" usebox="none" width="40text%">
+\begin_inset Text
+
+\begin_layout Standard
+More expressive, possible to relate instances to each other
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row topline="true">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+Disadvantages
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+Hard to create complex relationships
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Standard
+Slightly more difficult to create, currently there is no way to distinguish
+ between keywords and instances pretending to be keywords
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Slide
+Big Disclaimer
+\end_layout
+
+\begin_layout Standard
+\align center
+!! BIG DISCLAIMER !!
+\end_layout
+
+\begin_layout Standard
+\align center
+PyOLS is in it's very first version, and is not complete.
+ There is useful functionality that has been left out, and probably useless
+ functionality that has been built in.
+\end_layout
+
+\begin_layout Standard
+\align center
+If there is something useful that is missing, or something useless which
+ has been included, don't hesitate to report it.
+\end_layout
+
+\begin_layout Slide
+Using: helper functions
+\end_layout
+
+\begin_layout Standard
+Finally, there are also a few 'standard' XML-RPC functions that pyOLS supports
+ which may be worth knowing:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\begin_layout Standard
+
+>>> s = ServerProxy("http://localhost:8000/example")
+\end_layout
+
+\begin_layout Standard
+
+>>> s.system.listMethods()
+\end_layout
+
+\begin_layout Standard
+
+['addKeyword', 'addKeywordAssociation',
+\end_layout
+
+\begin_layout Standard
+
+...
+\end_layout
+
+\begin_layout Standard
+
+'queryRelations', 'system.listMethods',
+\end_layout
+
+\begin_layout Standard
+
+'system.methodHelp', 'system.methodSignature',
+\end_layout
+
+\begin_layout Standard
+
+'system.multicall'] 
+\end_layout
+
+\begin_layout Standard
+
+>>> print s.system.methodHelp('addKeyword')
+\end_layout
+
+\begin_layout Standard
+
+Add a Keyword to the ontology.
+  If an instance already
+\end_layout
+
+\begin_layout Standard
+
+exist, it will be updated.
+  The new instance is returned.
+\end_layout
+
+\begin_layout Standard
+
+addKeyword(name, disambiguation=u'', description=u'',
+\end_layout
+
+\begin_layout Standard
+
+associations=None, left_relations=None,
+\end_layout
+
+\begin_layout Standard
+
+right_relations=None) 
+\end_layout
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

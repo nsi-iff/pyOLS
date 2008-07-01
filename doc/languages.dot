@@ -1,0 +1,23 @@
+digraph G {
+        root="";
+        //size="11,8";
+        //len="10";
+        pack="1";
+        packmode="node";
+        normalize="1";
+        splines="polyline";
+        concentrate="false";
+        overlap="false";
+        pack="false";
+        node [color="#8cacbb", style="filled", shape="box", 
+              fontname="", fillcolor="#dee7ec",
+              fontcolor="#000000",
+              fontsize="8"];
+        edge [color="#8cacbb", shape="normal", fontname="",
+              fillcolor="#cde2a7", fontcolor="#000000",
+              fontsize="8"];
+        "INTERCAL" [fontsize="9", tooltip=""];
+"Befunge" [fontsize="9", tooltip=""];
+"Befunge" -> "programming language" [label="an esoteric"];
+"INTERCAL" -> "programming language" [label="an esoteric"];
+}
