@@ -2,6 +2,7 @@ from pyols.db import db
 from pyols.log import log
 from pyols.api import OntologyTool
 from pyols.model import StorageMethods
+from pyols.util import to_unicode
 
 import sys
 from SimpleXMLRPCServer import SimpleXMLRPCDispatcher, resolve_dotted_attribute
@@ -86,6 +87,7 @@ class RequestDispatcher(SimpleXMLRPCDispatcher):
     instance_class = OntologyTool
 
     def __init__(self, path):
+        path = to_unicode(path)
         SimpleXMLRPCDispatcher.__init__(self, True, 'utf-8')
         self.register_introspection_functions()
         self.register_multicall_functions()
@@ -149,6 +151,7 @@ class RequestDispatcher(SimpleXMLRPCDispatcher):
 
     def dispatch_one(self, method, params):
         """ Dispatches a single method call. """
+        params = map(to_unicode, params)
         method = self._getFunc(method)
         return rpcify(method(*params))
 

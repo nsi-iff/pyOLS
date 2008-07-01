@@ -107,10 +107,13 @@ def to_unicode(s):
     """ Try really hard to convert 's' to a unicode object.
         First decoding as UTF8 is tried, then Latin1 if that fails.
         Note that decoding Latin1 will never fail, just do the wrong thing.
+        If 's' is not a string-like object, it will be returned unchanged.
         >>> to_unicode('ohai')
         u'ohai'
         >>> to_unicode(u'123')
         u'123'
+        >>> to_unicode(42.5)
+        42.5
         >>> to_unicode('\xc3\xb1') == u'\xf1' # A UTF-8 ~n
         True
         >>> to_unicode('\xf1') == u'\xf1' # A latin1 ~n
@@ -119,7 +122,7 @@ def to_unicode(s):
     if isinstance(s, unicode):
         return s
     if not isinstance(s, str):
-        raise PyolsProgrammerError("A non-str, %r, was passed to to_unicode."%s)
+        return s
     try:
         return s.decode('utf-8')
     except UnicodeError:

@@ -2,7 +2,7 @@ from pyols.tests import run_tests, db
 from pyols.web.main import RequestDispatcher
 
 import elixir
-from nose.tools import raises
+from nose.tools import raises, assert_equal
 from xmlrpclib import Fault
 
 class RPCFunctions:
@@ -12,11 +12,11 @@ class RPCFunctions:
 
     def add(self, a, b):
         self.called += 1
-        return a + b
+        return a+b
 
-    def hello(self, who='World'):
+    def echo(self, what='world'):
         self.called += 1
-        return 'Hello, %s!' %(who,)
+        return what
 
     def path(self):
         return self._path
@@ -57,35 +57,43 @@ class TestRequestDispatcher:
 
     def testSimpleRequest(self):
         r = self.call_one('add', 1, 2) 
-        assert r == 3
+        assert_equal(r, 3)
 
-        r = self.call(('add', 1, 2), ('hello', 'NSI'), ('hello', )) 
-        assert r == [[3], ['Hello, NSI!'], ['Hello, World!']]
+        r = self.call(('add', 1, 2), ('echo', 'NSI'), ('echo', )) 
+        assert_equal(r, [[3], ['NSI'], ['world']])
 
     def testExceptionHandling(self):
         # If an exception is raised, an error should be returned and
         # no subsequent functions should be called.
         # Additionally, the DB should be rolled back.
 
-        try: r = self.call(('add', 1, 2), ('exception', ), ('hello', ))
+        try: r = self.call(('add', 1, 2), ('exception', ), ('echo', ))
         except AssertionError: pass # This is expected
         else: raise Exception("An exception was expected but none was raised.")
 
-        assert self.d.instance.called == 1, "Only one RPC function should have "\
-                                            "been called."
+        assert_equal(self.d.instance.called, 1)
+                     
 
     def testPath(self):
         r = self.call_one('path')
-        assert r == '/test'
+        assert_equal(r, '/test')
 
     def testRPCification(self):
         # Ensure that returned instances are rpcified
         r = self.call_one('get_self')
-        assert r == ['one', [{'two': [3]}, 'four']]
+        assert_equal(r, ['one', [{'two': [3]}, 'four']])
 
     @raises(Fault)
     def testUnsupportedMethod(self):
         self.call_one('unsupported')
+
+    def testUnicodeArguments(self):
+        # Arguments should be converted to unicode
+        for test in ([1,2], 12.34):
+            assert_equal(test, self.call_one('echo', test))
+
+        r = self.call_one('echo', 'non-unicode')
+        assert isinstance(r, unicode)
 
 
 run_tests()
