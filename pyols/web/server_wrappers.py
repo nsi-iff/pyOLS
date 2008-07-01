@@ -5,9 +5,9 @@ from pyols.log import log
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer, CGIXMLRPCRequestHandler, \
                                SimpleXMLRPCDispatcher, SimpleXMLRPCRequestHandler
-from scgi import scgi_server
 import BaseHTTPServer
 from os import environ
+import sys
 
 class ServerInterface(object):
     def __init__(self, dispatcher, *args, **kwargs):
@@ -76,6 +76,17 @@ class CGIServer(CGIXMLRPCRequestHandler):
     def serve(self):
         self.handle_request() 
 
+
+try:
+    from scgi.scgi_server import SCGIHandler as _SCGIHandler
+except ImportError:
+    class _SCGIHandler:
+        def __init__(*args):
+            print "Error: The SCGI module, which is needed to run "
+            print "       the SCGI server, was not found."
+            print "Try installing it with `easy_install scgi` or "
+            print "grab the source from http://quixote.python.ca/releases/"
+            sys.exit(1)
 
 class SCGIHandler(scgi_server.SCGIHandler, SimpleXMLRPCDispatcher):
     # XXX: This rpc_obj isn't great, may change after testing

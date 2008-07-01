@@ -260,6 +260,16 @@ end{verbatim}
 
 \end_layout
 
+\begin_layout Standard
+
+\size small
+(where the path (in this case, 
+\noun on
+/example
+\noun default
+) is the namespace that will be used)
+\end_layout
+
 \begin_layout Slide
 Using: A simple ontology (cont.)
 \end_layout

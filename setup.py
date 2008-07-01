@@ -3,8 +3,9 @@ import sys
 from os import path
 
 install_requires = [
-    'SQLAlchemy >= 0.3.9',
+    'SQLAlchemy == 0.4.6', # The 0.5 beta breaks Elixir :(
     'Elixir >= 0.5.2',
+    'scgi'
     ]
 
 if sys.version_info < (2, 5):
