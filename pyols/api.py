@@ -64,12 +64,12 @@ class OntologyTool(object):
     namespace = property(_get_namespace, _set_namespace)
 
     # XXX: REFACTOR THIS BIT
-    def obj_with_args(obj):
+    def obj_with_args(obj, show_defaults=True):
         required = []
         optional = []
         for col in obj.list_columns():
             if col.name == "namespace": continue
-            if col.required:
+            if col.required or not show_defaults:
                 required.append(col.name)
             else:
                 optional.append(str(col.name) + "=" + repr(col.default))
@@ -77,7 +77,8 @@ class OntologyTool(object):
         return (obj, "(" + required + ")")
 
     # XXX: ADD ERROR CHECKING HERE
-    def _generate_query(self, class_, args, kwargs, pk_only=False):
+    def _generate_query(self, class_, args, kwargs, \
+                        pk_only=False, include_none=True):
         args = list(args)
         query = {}
         for col in class_.list_columns():
@@ -90,11 +91,19 @@ class OntologyTool(object):
             if col.required and args:
                 to_add = args.pop(0)
             else:
-                if col.name not in kwargs: continue
-                to_add = kwargs[col.name]
+                if col.name in kwargs:
+                    to_add = kwargs[col.name]
+                elif args:
+                    to_add = args.pop(0)
+                else:
+                    continue
+
+            if to_add is None and not include_none:
+                continue
 
             if col.type.__module__ == 'pyols.model':
                 to_add = self._generic_get(col.type, to_add)
+
             query[col.name] = to_add
         return query
 
@@ -168,14 +177,16 @@ class OntologyTool(object):
         i = self._generic_get(class_, *args, **kwargs)
         i.remove()
 
-    @create_methods("query%ss", (obj_with_args(Keyword),
-                                 obj_with_args(Relation),
-                                 obj_with_args(KeywordAssociation),
-                                 obj_with_args(KeywordRelationship)))
-    def _generic_query(self, class_, **kwargs):
+    @create_methods("query%ss", (obj_with_args(Keyword, False),
+                                 obj_with_args(Relation, False),
+                                 obj_with_args(KeywordAssociation, False),
+                                 obj_with_args(KeywordRelationship, False)))
+    def _generic_query(self, class_, *args, **kwargs):
         """ Return an iterator over all the %(class_name)ss in the current
-            namespace matching kwargs.  kwargs may be empty. """
-        query = self._generate_query(class_, [], kwargs)
+            namespace which the given query.  The default of all the arguments
+            is None, and None can be used in place of a value which should be
+            ignored. """
+        query = self._generate_query(class_, args, kwargs, include_none=False)
         return class_.query_by(**query)
 
     def getRelatedKeywords(self, keyword, cutoff=0.1, links=None):

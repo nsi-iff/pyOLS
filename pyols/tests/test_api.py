@@ -107,6 +107,11 @@ class TestOntologyTool(PyolsDBTest):
         assert_equal(ka.keyword.name, kw.name)
 
     def testAddRelation(self):
+        for rel in self.ot.queryRelations():
+            rel.remove()
+        # Remove the default relations
+        db.flush()
+
         relA = self.addRelation(name=u"relA")
         relB = self.addRelation(name=u"relB", inverse=relA.name)
         assert_equal(relA, relB.inverse)
@@ -181,13 +186,20 @@ class TestOntologyTool(PyolsDBTest):
         ok_(self.keyword_getby(name=kw1.name))
         assert_equal(KeywordRelationship.get_by(left=kw0), None)
 
-    def testKeywords(self):
+    def testGenericQuery(self):
+        # A simple little test
         assert_equal(list(self.ot.queryKeywords()), [])
-
         for x in range(3):
-            self.keyword_new(name=u"testKW%d"%(x))
+            self.keyword_new(name=u"testKW%d"%x, description=u"kwd%d"%x)
             kws = list(self.ot.queryKeywords())
             assert_equal(len(kws), x+1)
+
+        # Before we get any further, check that the definition
+        # of Keyword has not chnaged
+        assert_equal(Keyword.list_columns()[3].name, 'description')
+
+        assert_equal(len(list(self.ot.queryKeywords(None, None, u'kwd0'))), 1)
+        assert_equal(len(list(self.ot.queryKeywords(u'testKW0'))), 1)
 
     def testGetRelatedKeywords(self):
         rs = {}

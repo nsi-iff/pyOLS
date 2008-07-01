@@ -113,9 +113,12 @@ class TestRelation(PyolsDBTest):
         db.flush()
 
         # No instances of these types should exist...
-        empty_types = (KeywordRelationship, Relation, RelationType)
+        empty_types = (KeywordRelationship, RelationType)
         for type in empty_types:
             assert_equal(list(type.query_by()), [])
+
+        assert_equal(len(list(Relation.query_by())),
+                     len(Relation.default_relations))
 
         # ... but the two keywords should remain.
         assert_equal(set([kw.name for kw in Keyword.query_by()]),
@@ -124,7 +127,7 @@ class TestRelation(PyolsDBTest):
 
 class TestRelationType:
     def testValid(self):
-        r = Relation.new(namespace=Namespace.new(name="foo"), name="foo")
+        r = Relation.new(namespace=Namespace.new(name=u"foo"), name=u"foo")
         for invalid in ('asdf', '', 'symetric'):
             # Note the misspelling   ^^^^^^^^
             # That is intentional :)
@@ -178,6 +181,14 @@ class TestKeyword(PyolsDBTest):
         # And only one keyword
         assert_equal(len(list(Keyword.query_by())), 1)
 
+
+class TestNamespace(PyolsDBTest):
+    def testNewNamespace(self):
+        # New namespaces should come pre-loaded with all
+        # the default realtions
+        ns = Namespace.new(name=u'asdf')
+        for rel in Relation.default_relations:
+            assert Relation.get_by(namespace=ns, name=rel)
 
 
 class TestStorageMethods:

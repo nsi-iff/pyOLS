@@ -73,7 +73,10 @@ def _create_methods(name, classes, func):
         new_func = curried(func, class_)
         new_name = name % (class_.__name__, )
         new_doc = (func.__doc__ or '') %{'class_name': class_.__name__}
-        if doc: new_doc += "\n" + new_name + doc
+        if doc:
+            indent = new_doc.splitlines()[-1]
+            indent = len(indent) - len(indent.lstrip())
+            new_doc += "\n" + " "*indent + new_name + doc
         new_func.__doc__ = new_doc
         class_locals[new_name] = new_func
     return func

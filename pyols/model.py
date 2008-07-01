@@ -174,11 +174,18 @@ class Namespace(Entity, StorageMethods):
 
     using_options(tablename='namespaces')
 
+    @classmethod
+    def new(cls, **kwargs):
+        n = super(Namespace, cls).new(**kwargs)
+        # Note that everything here must be flushed because it
+        # may be used in the rest of the query.
+        n.flush()
+        for relation in Relation.default_relations:
+            Relation.new(namespace=n, name=relation).flush()
+        return n
 
 """
 Relations are the different possible ways keywords can be connected.
-  For example, relations "synonymOf", "childOf" and "parentOf" will
-  probably exist.
 
 Relations bind keywords together through "KeywordRelationship"s.
 """
@@ -203,6 +210,8 @@ class Relation(Entity, StorageMethods):
 
     using_options(tablename='relations')
     using_table_options(UniqueConstraint('namespace_id', 'name'))
+
+    default_relations = (u'synonymOf', u'parentOf', u'childOf')
 
     def _get_inverse(self):
         return self._inverse
