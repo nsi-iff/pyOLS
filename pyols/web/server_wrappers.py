@@ -88,7 +88,7 @@ except ImportError:
             print "grab the source from http://quixote.python.ca/releases/"
             sys.exit(1)
 
-class SCGIHandler(scgi_server.SCGIHandler, SimpleXMLRPCDispatcher):
+class SCGIHandler(_SCGIHandler, SimpleXMLRPCDispatcher):
     # XXX: This rpc_obj isn't great, may change after testing
     rpc_dispatcher = None
 
@@ -96,7 +96,7 @@ class SCGIHandler(scgi_server.SCGIHandler, SimpleXMLRPCDispatcher):
         raise Exception("This needs to be tested!")
         self.env = self._input = self._output = None
 
-        scgi_server.SCGIHandler.__init__(self, parent_fd)
+        _SCGIHandler.__init__(self, parent_fd)
 
         SimpleXMLRPCDispatcher.__init__(self, allow_none, encoding)
 
