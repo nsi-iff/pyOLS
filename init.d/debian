@@ -1,0 +1,86 @@
+#!/bin/bash
+
+set -e
+
+# The path to the PyOLS environment goes here
+ENV=/tmp/foo
+# The user which PyOLS will run as
+USER=wolever
+
+if [[ ! "$ENV" ]]
+then
+    echo "ERROR: The ENV variable must be set."
+    exit 1
+fi
+
+if [[ ! "$USER" ]]
+then
+    echo "ERROR: The USER variable must be set."
+    exit 1
+fi
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DESC="PyOLS server"
+NAME=pyols
+DAEMON="`which pyols`"
+PIDFILE=$ENV/$NAME.pid
+SCRIPTNAME=/etc/init.d/$NAME
+
+# Gracefully exit if the package has been removed.
+test -x $DAEMON || { echo "$NAME's daemon ('$DAEMON') not found."; exit 0; }
+
+#
+#	Function that starts the daemon/service.
+#
+d_start() {
+	start-stop-daemon --start --exec "${DAEMON}" \
+	    -m --pidfile "${PIDFILE}" \
+	    -b -c ${USER} \
+	    -- ${ENV} \
+		|| echo -n " already running"
+}
+
+#
+#	Function that stops the daemon/service.
+#
+d_stop() {
+	start-stop-daemon --stop \
+	    --pidfile "${PIDFILE}" --quiet \
+		|| echo -n " not running"
+}
+
+case "$1" in
+  start)
+	echo -n "Starting $DESC: $NAME"
+	d_start
+	echo "."
+	;;
+  stop)
+	echo -n "Stopping $DESC: $NAME"
+	d_stop
+	echo "."
+	;;
+  restart|force-reload)
+	#
+	#	If the "reload" option is implemented, move the "force-reload"
+	#	option to the "reload" entry above. If not, "force-reload" is
+	#	just the same as "restart".
+	#
+	echo -n "Restarting $DESC: $NAME"
+	d_stop
+	# One second might not be time enough for a daemon to stop, 
+	# if this happens, d_start will fail (and dpkg will break if 
+	# the package is being upgraded). Change the timeout if needed
+	# be, or change d_stop to have start-stop-daemon use --retry. 
+	# Notice that using --retry slows down the shutdown process somewhat.
+	sleep 1
+	d_start
+	echo "."
+	;;
+  *)
+	echo "Usage: $SCRIPTNAME {start|stop|restart|force-reload}" >&2
+	exit 3
+	;;
+esac
+
+exit 0

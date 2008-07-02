@@ -1,0 +1,99 @@
+#!/bin/bash
+#
+#	/etc/rc.d/init.d/pyols
+#
+# (run on runlevels 2, 3, 4, 5 with a start start
+#  priority of 20 and a stop priority of 80)
+# chkconfig: 2345 20 80 
+# description: Runs the pyols server
+# processname: pyols
+
+
+# Source function library.
+. /etc/init.d/functions
+
+RETVAL=0
+
+#
+#	See how we were called.
+#
+
+# The path to the environment goes here
+ENV=
+# The user which PyOLS will run as
+USER=
+
+if [[ ! "$ENV" ]]
+then
+    echo "ERROR: The ENV variable must be set."
+    exit 1
+fi
+
+if [[ ! "$USER" ]]
+then
+    echo "ERROR: The USER variable must be set."
+    exit 1
+fi
+
+
+prog="pyols"
+path="`which pyols`"
+pidfile="$ENV/$prog.pid"
+
+test -x $path || { echo "$prog's daemon ('$path') not found."; exit 0; }
+
+start() {
+	# Check if PyOLS is already running
+        echo -n $"Starting $prog: "
+	if [ -f $pidfile ]; then echo " $prog already running"; return 0; fi
+	su -s /bin/bash - $USER -c \
+	      "$path $ENV" &
+	PID=$!
+	sleep 2
+	RETVAL=0
+	# If the process isn't running, there was
+	# an error :(
+	[ -d /proc/$PID ] || RETVAL=1;
+	[ "$RETVAL" -eq 0 ] && success $"$prog startup" || failure $"$prog startup"
+    echo
+	echo $PID > $pidfile
+	return $RETVAL
+}
+
+stop() {
+	echo -n $"Stopping $prog: "
+	if [ ! -f $pidfile ]; then echo " $prog not running"; return 0; fi
+	kill `cat $pidfile`
+	RETVAL=$?
+	[ "$RETVAL" -eq 0 ] && success $"$prog shutdown" || failure $"$prog shutdown"
+	rm $pidfile
+	echo
+    return $RETVAL
+}
+
+
+restart() {
+	stop
+	start
+}	
+
+reload() {
+	restart
+}	
+
+case "$1" in
+start)
+	start
+	;;
+stop)
+	stop
+	;;
+reload|restart)
+	restart
+	;;
+*)
+	echo $"Usage: $0 {start|stop|restart|condrestart|status}"
+	exit 1
+esac
+
+exit $RETVAL

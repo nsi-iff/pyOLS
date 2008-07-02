@@ -1,0 +1,53 @@
+#!/sbin/runscript
+
+opts="reload"
+
+depend() {
+	use apache2
+	need net
+}
+
+# The path to the environment goes here
+ENV=
+# The user which PyOLS will run as
+USER=
+
+if [[ ! "$ENV" ]]
+then
+    eerror "ERROR: The ENV variable must be set."
+    exit 1
+fi
+
+if [[ ! "$USER" ]]
+then
+    eerror "ERROR: The USER variable must be set."
+    exit 1
+fi
+
+SVCNAME=pyols
+PIDFILE=${ENV}/pid
+DAEMON=`which pyols`
+
+test -x $DAEMON || { echo "$SVCNAME's daemon ('$DAEMON') not found."; exit 0; }
+
+start() {
+	ebegin "Starting ${SVCNAME}"
+	start-stop-daemon --start --exec "${DAEMON}" \
+	    -m --pidfile "${PIDFILE}" \
+	    -b -c ${USER} \
+	    -- ${ENV}
+	eend $?
+}
+
+stop() {
+	ebegin "Stopping ${SVCNAME}"
+	start-stop-daemon --stop \
+	    --pidfile "${PIDFILE}" --quiet
+	eend $?
+}
+
+reload() {
+	stop;
+    sleep 1;
+	start;
+}
