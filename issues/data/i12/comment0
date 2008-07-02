@@ -1,0 +1,20 @@
+Added-by: wolever
+Added-on: 1215031134 2008-07-02 17:38:54 Wed -0200
+DT-New-Category: now
+DT-New-Due-in: now
+DT-New-Opened-by: wolever
+DT-New-Opened-on: 1215031134 2008-07-02 17:38:54 Wed -0200
+DT-New-Owned-by: wolever
+DT-New-Reported-for: trunk
+DT-New-Status: open
+DT-New-Title: Refactor testing code
+DT-Old-Category: 
+DT-Old-Due-in: 
+DT-Old-Opened-by: 
+DT-Old-Opened-on: 
+DT-Old-Owned-by: 
+DT-Old-Reported-for: 
+DT-Old-Status: 
+DT-Old-Title: 
+
+A bunch of methods (eg, add_keyword) are duplicated across a few different testing classes.
