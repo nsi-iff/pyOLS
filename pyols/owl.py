@@ -1,6 +1,9 @@
 from pyols.log import log
 from pyols.util import to_unicode
+from pyols.db import db
+from pyols.api import publish
 
+from StringIO import StringIO
 from xml.dom.minidom import parse, parseString, getDOMImplementation
 import re
 
@@ -208,12 +211,15 @@ class OWLExporter(OWLBase):
 
 
 class OWLImporter(OWLBase):
-    def __init__(self, file=None):
-        # 'file' seems to be None only in tests
+    def __init__(self, input=None):
+        """ Import OWL ontology from 'input', which is a file-like object. """
+        # 'input' seems to be None only in tests
+        # Also note that 'input' used to be a filename,
+        # and now it is a file-like object.
         OWLBase.__init__(self)
 
         if file is not None:
-            self._dom = parse(file)
+            self._dom = parse(input)
 
             if self._dom.doctype:
                 self._dom.doctype.name = 'rdf:RDF'
@@ -466,30 +472,39 @@ def exportOWL(ot):
 
         return exporter.serialize()
 
-if __name__ == "__main__":
-    # Code to import an ontology.
-    from pyols.tests import setup_test_db
-    from pyols.api import OntologyTool
-    from pyols.db import db
-    from pyols import graphviz
-    from pyols.model import *
-
-    setup_test_db()
-    ot = OntologyTool(u"foo")
-    oi = OWLImporter("./doc/beer.owl")
+@publish
+def importOWL(ot, owl_data):
+    """ Import OWL data 'owl_data' into the ontology.
+        Note that it is possible that existing data will be silently
+        overwritten with the new data. """
+    owl_data = StringIO(owl_data)
+    oi = OWLImporter(owl_data)
     oi.importClasses()
     oi.importProperties()
 
     for rel in oi.getRelations():
         ot.addRelation(**rel)
+    db.flush()
 
     for kw in oi.getKeywords():
-        Keyword.new(namespace=ot._namespace, **kw).assert_valid()
+        ot.addKeyword(**kw)
     db.flush()
 
     for kwr in oi.getKeywordRelationshps():
         ot.addKeywordRelationship(*kwr)
     db.flush()
+
+if __name__ == "__main__":
+    # This is a bit of simple test code because I don't want to formalize
+    # any unit tests before the input format is decided upon
+    from pyols.tests import setup_test_db
+    from pyols.api import OntologyTool
+    from pyols import graphviz
+    from pyols.model import *
+
+    setup_test_db()
+    ot = OntologyTool(u"foo")
+    ot.importOWL(open("../doc/beer.owl").read())
 
     open("/home/wolever/x.dot", "w").write(ot.getDotSource())
 

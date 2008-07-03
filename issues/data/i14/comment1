@@ -1,0 +1,6 @@
+Added-by: wolever
+Added-on: 1215117538 2008-07-03 17:38:58 Thu -0200
+DT-New-Due-in: release
+DT-Old-Due-in: now
+
+For now, I'll only document that this might be something desierable -- the acutual implementation can be done if/when we find out that it's important.
