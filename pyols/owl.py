@@ -417,8 +417,11 @@ class OWLImporter(OWLBase):
                 propName = prop.tagName
                 self.addKeywordRelationship(src, propName, dst)
 
+@publish
 def exportOWL(ot):
-    """ Export keyword structure to OWL. """
+    """ Export keyword structure to OWL.
+        Note that the format is not particularly well defined
+        at the moment, and may change in the future. """
     exporter = OWLExporter()
     entities = exporter.getEntities()
 
@@ -508,4 +511,4 @@ if __name__ == "__main__":
 
     open("/home/wolever/x.dot", "w").write(ot.getDotSource())
 
-    print exportOWL(ot)
+    print ot.exportOWL()
