@@ -1,5 +1,6 @@
 from pyols.exceptions import PyolsProgrammerError
 
+from xmlrpclib import Binary
 import sys
 
 class curried(object):
@@ -127,6 +128,11 @@ def to_unicode(s):
         return s.decode('utf-8')
     except UnicodeError:
         return s.decode('latin1')
+
+def binary(i):
+    """ Flag instance 'i' as containing binary data so the RPC layer will
+        give it the appropriate treatment. """
+    return Binary(i)
 
 from pyols.tests import run_doctests
 run_doctests()

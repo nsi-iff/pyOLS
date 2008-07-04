@@ -167,7 +167,7 @@ class TestDotTool(PyolsDBTest):
 
         db.flush()
 
-        dot = self.ot.getDotSource()
+        dot = self.ot.getOntologyDotSource()
         self.gc.checkDot(dot)
 
     def testLongNames(self):
@@ -198,7 +198,7 @@ class TestDotTool(PyolsDBTest):
         self.gc.addKeywordRelationship(short, long_trunc, short)
 
         db.flush()
-        dot = self.ot.getDotSource()
+        dot = self.ot.getOntologyDotSource()
         self.gc.checkDot(dot)
 
 run_tests()

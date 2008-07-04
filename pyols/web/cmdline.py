@@ -41,7 +41,6 @@ def run():
     ### Create a new environment?
     if options.create:
         env.create(env_path, OptionsMemory.changed_options)
-        print "Environment created at '%s'." %(env_path)
         print "The pyOLS server can now be started with `%s %s`"\
               %(sys.argv[0], env_path)
         sys.exit(0)

@@ -1,5 +1,5 @@
 from pyols.config import config
-from pyols.env import EnvironmentManager
+from pyols.env import EnvironmentManager, find_graphviz
 from pyols.exceptions import PyolsEnvironmentError
 from pyols.log import log
 from pyols.tests import run_tests, db
@@ -59,5 +59,9 @@ def test_create_env():
     for env_class in (EnvWithSmallVersion, EnvWithBigVersion):
         env = env_class()
         assert_raises(PyolsEnvironmentError, env.load, dir, {})
+
+def test_find_graphviz():
+    assert_equal(find_graphviz('sh'), '/bin')
+    assert_equal(find_graphviz('doesnt_exist'), None)
 
 run_tests()

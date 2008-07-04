@@ -1,83 +1,63 @@
 import popen2
 import os
-
-from warnings import warn
-from pyols.api import publish
-
 from cStringIO import StringIO
 
-class GraphVizTool: 
+from pyols.api import publish
+from pyols.exceptions import PyolsValidationError, PyolsEnvironmentError
+from pyols.config import config
+from pyols.util import binary
+
+class GraphvizTool: 
     """ A tool to provide graph rendering.
-        Based on the GraphViz layout programs (http://www.graphviz.org) """
+        Based on the Graphviz layout programs (http://www.graphviz.org) """
 
-    _toollist = ('dot','twopi','neato','fdp','circo')
+    engine_list = ('dot','twopi','neato','fdp','circo')
 
-    def __init__(self):
-        self._layouter = 'fdp'
+    def __init__(self, layout_engine='dot'):
+        """ Initialize the GVTool with the default engine.
+            An exception will be raised if the tool is not in the engine_list:
+            >>> v = GraphvizTool('neato')
+            >>> v = GraphvizTool('bad_engine')
+            Traceback (most recent call last):
+              ...
+            PyolsValidationError: Invalid layout engine: bad_engine
+            >>> """
+        if layout_engine not in self.engine_list:
+            raise PyolsValidationError("Invalid layout engine: " + layout_engine)
+        self._layouter = layout_engine
 
-    def toollist(self):
-        """returns a list of the graphviz rendering tools.
-        """
-        return self._toollist
+    def assertLayouterPresent(self, layouter=None):
+        """ Check if current or specified layouter is present on the system.
+            If it is not found, raise an exception.
+            >>> config['graphviz_path'] = '/bin/'
+            >>> v = GraphvizTool()
+            >>> v.assertLayouterPresent('sh')
+            >>> v.assertLayouterPresent('bad_engine')
+            Traceback (most recent call last):
+              ...
+            PyolsEnvironmentError: Layout engine '/bin/bad_engine' not found
+            >>> """
 
-    def getLayouter(self):
-        """Return the currently used GraphViz layouter.
-        """
-        return self._layouter
+        if layouter is None:
+            layouter = self._layouter
 
-    def getTool(self):
-        """Deprecated, use getLayouter.
-        """
-        warn("getTool() is deprecated. Please use getLayouter() instead.",
-             DeprecationWarning)
-        return self.getLayouter()
+        layouter = os.path.join(config['graphviz_path'], layouter)
+        if not os.path.exists(layouter):
+            raise PyolsEnvironmentError("Layout engine %r not found" %layouter)
 
-    def setLayouter(self, layouter='fdp'):
-        """Set the currently used GraphViz layouter.
-        """
+    def renderGraph(self, graph):
+        """ Render 'graph'.
+            If there is error text, an exception is raised.  Otherwise
+            the rendered PNG is returned. """
 
-        if not layouter in self._toollist:
-            raise KeyError, "Layouter not known: %s. Please choose one of %s" % (layouter, self._toollist)
-        else:
-            self._layouter = layouter
+        self.assertLayouterPresent()
 
-    def setTool(self, tool='fdp'):
-        """Deprecated, use setLayouter instead.
-        """
-        warn("setTool() is deprecated. Please use setLayouter() instead.",
-             DeprecationWarning)
-        self.setLayouter(tool)
+        tool = os.path.join(config['graphviz_path'], self._layouter)
 
-    def isLayouterPresent(self, layouter=""):
-        """Check if current or specified layouter is present on the system.
-        """
-
-        if not layouter:
-            layouter = self.getLayouter()
-
-        layouter = os.path.join(GV_BIN_PATH, layouter)
-
-        (pout,pin) = popen2.popen4(cmd = "%s -V" % layouter)
-        pin.close()
-        output = pout.read()
-        pout.close()
-
-        return "version" in output
-
-    def renderGraph(self, graph, tool='', options=[]):
-        """Renders the given graph.
-
-        Returns file like object with result which type is dependable on options and an error string, empty if none.
-        """
-        if not tool:
-            tool = self.getLayouter()
-
-        tool = os.path.join(GV_BIN_PATH, tool)
-
-        options = " ".join(options)
-
-        # 2006-08-03 Seperate streams for output and error. Avoids problems with fonts not found.
-        (pout, pin, perr) = popen2.popen3(cmd = "%s %s" % (tool, options), mode = "b")
+        # 2006-08-03 Seperate streams for output and error.
+        #            Avoids problems with fonts not found.
+        cmd = "%s -Tpng" %(tool)
+        (pout, pin, perr) = popen2.popen3(cmd=cmd, mode="b")
         pin.write(graph)
         pin.close()
 
@@ -86,7 +66,11 @@ class GraphVizTool:
         error = perr.read()
         perr.close()
 
-        return (data, error)
+        if error:
+            raise PyolsEnvironmentError("The command %r produced text on "
+                                        "stderr: %s" %(cmd, error))
+
+        return data
 
 
 def dotID(string):
@@ -122,8 +106,7 @@ class DotOptionsDict(dict):
         return dotID(unicode(dict.__getitem__(self, item)))
 
 class DotTool:
-    """Dot code generator for keyword graphs.
-    """
+    """ Dot code generator for keyword graphs. """
     default_options = {
         'root_name': '',
         'font': '',
@@ -271,12 +254,29 @@ def getGraphvizEdgeShapes():
             'normal', 'tee', 'vee']
 
 @publish
-def getDotSource(ot, **options):
+def getOntologyGraph(ot, options={}):
+    """ Graphs the output of getOntologyDotSource and returns a
+        PNG image containing the output.
+        'options' is a dictionary which will be passed to getOntologyDotSource.
+        It can also contain 'layout_engine', the layout enginge which will be
+        used to generate the graph.  The default is 'dot', and the possible
+        engines are: """ + ", ".join(GraphvizTool.engine_list)
+    engine = options.setdefault('layout_engine', 'dot')
+    # Delete the option so it doesn't get passed to getOntologyDotSource
+    del options['layout_engine']
+    graph = getOntologyDotSource(ot, options)
+    
+    t = GraphvizTool(layout_engine=engine)
+    graph = t.renderGraph(graph)
+    return binary(graph)
+
+@publish
+def getOntologyDotSource(ot, options={}):
     """ Generate dot source code for a graph of all the keywords in the
         current namespace and their relationships.
-        Options are:\n""" + \
-        "\n".join(["%s: %s"%i for i in DotTool.default_options.items()
-                   if i[0] != 'root_name'])
+        'options' is a dictionary which can contain:\n        """ + \
+        "\n        ".join(["%s: %s"%i for i in DotTool.default_options.items()
+                          if i[0] != 'root_name'])
 
     dot = DotTool(root_name="", **options)
 

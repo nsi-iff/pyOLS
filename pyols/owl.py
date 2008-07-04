@@ -504,11 +504,13 @@ if __name__ == "__main__":
     from pyols.api import OntologyTool
     from pyols import graphviz
     from pyols.model import *
+    from pyols.config import config
 
     setup_test_db()
     ot = OntologyTool(u"foo")
     ot.importOWL(open("../doc/beer.owl").read())
 
-    open("/home/wolever/x.dot", "w").write(ot.getDotSource())
+    config['graphviz_path'] = '/usr/bin/'
+    open("/tmp/x.png", "w").write(ot.getOntologyGraph().data)
 
     print ot.exportOWL()

@@ -5,6 +5,15 @@ from pyols.config import config
 from pyols.log import log
 
 from os import path, mkdir
+from popen2 import popen4
+
+def find_graphviz(tool='dot'):
+    (pout, pin) = popen4("which %s" %(tool))
+    pin.close()
+    dot = pout.read()
+    pout.close()
+    if not path.isabs(dot): return None
+    return path.dirname(dot)
 
 class EnvironmentManager:
     # Increase this version each time something that will break backwards
@@ -78,6 +87,14 @@ class EnvironmentManager:
         mkfile('README', 'A PyOLS environment.\n'
                          'See http://nsi.cefetcampos.br!')
         mkfile('config.ini', config.default_config())
+
+        gv_path = find_graphviz()
+        if gv_path:
+            config['graphviz_path'] = gv_path
+        else:
+            log.warning("Could not find graphviz binaries. Before PyOLS will "
+                        "be able to generate graphs, the 'graphviz_path' "
+                        "in pyols.ini will need to be set.")
 
         self.load(path, c)
 
