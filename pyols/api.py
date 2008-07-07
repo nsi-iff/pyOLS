@@ -6,26 +6,6 @@ from pyols.util import create_methods
 import difflib
 from types import *
 
-def _unifyRawResults(results):
-    """ Unify result list and add scores for unique objects.
-        Result is list of tuples (score, object).
-        results: a list of (relevence, Keyword) tuples.
-        >>> _unifyRawResults([(1.0, 'dog'), (1.0, 'cat'), (1.0, 'dog')])
-        [(2.0, 'dog'), (1.0, 'cat')]
-        >>> """
-
-    result = []
-    obs = []
-    for (rel, kw) in results:
-        if not kw in obs:
-            result.append((rel, kw))
-            obs.append(kw)
-        else:
-            index = obs.index(kw)
-            result[index] = (result[index][0] + rel, result[index][1])
-
-    return result
-
 def publish(func):
     """ Publish 'func' to the OntologyTool so it will be expored to RPC.
         Unless it is also wrapped in staticmethod, func will be passed
