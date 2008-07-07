@@ -72,7 +72,6 @@ class TestRequestDispatcher:
         else: raise Exception("An exception was expected but none was raised.")
 
         assert_equal(self.d.instance.called, 1)
-                     
 
     def testPath(self):
         r = self.call_one('path')

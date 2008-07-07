@@ -2,6 +2,7 @@ from pyols.api import OntologyTool
 from pyols.model import *
 from pyols.tests import run_tests, db, PyolsDBTest
 from pyols.exceptions import PyolsNotFound, PyolsValidationError
+from pyols.web.main import rpcify
 
 from nose.plugins.skip import SkipTest
 from nose.tools import raises, assert_raises, assert_equal, ok_
@@ -158,6 +159,41 @@ class TestOntologyTool(PyolsDBTest):
         db.flush()
         # The keyword should not exist
         assert_equal(self.keyword_getby(), None)
+
+    def testUpdate(self):
+        kw = rpcify(self.keyword_new())
+        kw['name'] = u'new_name'
+        self.ot.updateKeyword(kw)
+        db.flush()
+        ok_(self.keyword_getby(name=u'new_name'))
+
+        rel = rpcify(self.relation_new())
+        rel['inverse'] = rel['name']
+        rel['name'] = u'new_name'
+        rel['bad_value'] = u'ohnoes!'
+        self.ot.updateRelation(rel)
+        db.flush()
+        rel = Relation.get_by(name=u'new_name')
+        ok_(rel)
+        assert_equal(rel.inverse, rel)
+        # It should be impossible to set "private" members this way
+        ok_(not getattr(rel, 'bad_value', None))
+
+    @raises(PyolsException)
+    def testUpdateWithoutID(self):
+        rel = rpcify(self.relation_new())
+        del rel['id']
+        self.ot.updateRelation(rel)
+
+    @raises(PyolsNotFound)
+    def testUpdateNonexistantRelation(self):
+        self.ot.updateRelation({'id': -1})
+
+    @raises(PyolsNotFound)
+    def testUpdateInvalidInverse(self):
+        rel = rpcify(self.relation_new())
+        rel['inverse'] = u'bad'
+        self.ot.updateRelation(rel)
 
     @raises(PyolsNotFound)
     def testDelKeywordDoesntExist(self):

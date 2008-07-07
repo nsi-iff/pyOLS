@@ -217,7 +217,7 @@ class TestStorageMethods:
         kw.associations.append(ka)
         expected = {'associations': [ka], 'name': 'kw0', 'left_relations': [],
                     'disambiguation': None, 'right_relations': [],
-                    'namespace': ns, 'description': None} 
+                    'namespace': ns, 'description': None, 'id': None }
         assert_equal(expected, kw.__rpc__())
 
 run_tests()

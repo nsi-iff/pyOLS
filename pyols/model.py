@@ -76,7 +76,7 @@ class StorageMethods:
     def assert_unique(self):
         """ Raise an exception if the instance is not unique with
             respect to it's unique constraints.
-            NOTE: This does not check for PK constraints (see #12). """
+            NOTE: This does not check for PK constraints. """
         query = {}
         for col in [c.name for c in self.list_columns() if c.required]:
             query[col] = getattr(self, col)
@@ -88,10 +88,12 @@ class StorageMethods:
                     %(self.__class__.__name__, vals))
 
     @classmethod
-    def list_columns(self):
+    def list_columns(self, include_id=False):
         """ List all the columns in an entity, including their
             names, default values, types and if they are required.
             Returns a list of container objects with attributes.
+            If 'include_id' is true, the 'id' field will be included,
+            if it exists.
             > x = list_columns()[0]
             > x.required
             True
@@ -99,12 +101,13 @@ class StorageMethods:
             unicode
             > x.name
             'name' """
+        # Note that the order of the returned values is significant
         # Ug.  This is an ugly method.  Sorry :(
         type_map = (('Integer', int), ('Unicode', unicode),
                     ('Float', float))
         cols = []
         for b in self._descriptor.builders:
-            if b.name == 'id': continue
+            if b.name == 'id' and not include_id: continue
 
             c = Container()
             c.name = b.name
@@ -146,10 +149,10 @@ class StorageMethods:
 
     def __rpc__(self):
         """ Return a dictionary containing each field of the instance. """
-        # Note that calling __rpc__ on the values of the dictionary
+        # Note that calling rpcify on the values of the dictionary
         # is up to the caller -- we just return a dictionary.
-        return dict([(n.name, getattr(self, n.name))
-                     for n in self.list_columns()])
+        return dict([(n.name, getattr(self, n.name)) for n
+                     in self.list_columns(include_id=True)])
 
 """
 Namespaces are primarly used to separate ontologies.  For example,
@@ -288,6 +291,15 @@ class Relation(Entity, StorageMethods):
             raise PyolsValidationError("%s is not a valid weight for relation %s. "
                                        "Weights must be in the range [0,1]."\
                                        %(self.weight, self.name))
+
+    def __rpc__(self):
+        rpc = StorageMethods.__rpc__(self)
+        del rpc['_types']
+        del rpc['_inverse']
+        rpc['types'] = self.types
+        rpc['inverse'] = self.inverse
+        return rpc
+
 
 class RelationType(Entity, StorageMethods):
     has_field('name', Integer, primary_key=True)

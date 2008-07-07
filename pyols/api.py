@@ -147,6 +147,29 @@ class OntologyTool(object):
         query = self._generate_query(class_, args, kwargs)
         return class_.fetch_by(**query)
 
+    @create_methods('update%s', (Keyword, Relation))
+    def _generic_update(self, class_, new_values):
+        """ Update a %(class_name)s to the values in dictionary new_values.
+            The only value which must be in new_values is 'id'.
+            Input values which are dictionaries or lists (with exception of
+            Relation.types) will be ignored, and at the moment the namespace
+            cannot be changed either (but that's not a technical limitation).
+            > 
+            """
+        valid_keys = ('name', 'description', 'weight', 'types', 'inverse',
+                      'disambiguation')
+        if 'id' not in new_values:
+            raise PyolsException("Required field 'id' was not present in %r, "
+                                 "which was passed to update%s."
+                                 %(new_values, class_.__name__))
+
+        instance = class_.fetch_by(id=new_values['id'])
+        for (key, val) in new_values.items():
+            if key not in valid_keys: continue
+            if key == 'inverse': val = self.getRelation(val)
+            setattr(instance, key, val)
+        return instance
+
     @create_methods('del%s', (obj_with_args(Keyword),
                               obj_with_args(Relation),
                               obj_with_args(KeywordAssociation),
