@@ -29,7 +29,7 @@ if path.exists(path.join(path.dirname(__file__), '.bzr')):
 
 setup(
     name = 'pyOLS',
-    version = "0.1a",
+    version = '0.1a',
     description = 'Python Remote Ontology provides functions for creating, '
                   'searching and graphing ontologies over XML-RPC.',
     author = 'David Wolever',
@@ -41,6 +41,6 @@ setup(
     include_package_data=True,
     entry_points= {
         'console_scripts':
-            ['pyols = pyols.web.cmdline:run']
+            ['pyols = pyols.cmdline:run']
     }
 )
