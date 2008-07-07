@@ -72,7 +72,7 @@ XML-RPC is a protocol for making remote procedure calls -- it uses HTTP
 \end_layout
 
 \begin_layout Itemize
-An ontology is a set related terms and the relationships which bind them.
+An ontology is a set of related terms and the relationships which bind them.
 \end_layout
 
 \begin_layout Slide
