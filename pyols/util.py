@@ -35,6 +35,24 @@ class curried(object):
         self.instance = (instance, )
         return self
 
+def class_with_args(class_, show_defaults=True):
+    """ Return a tuple consiting of (class_, '(' + columns + ')'),
+        where 'columns' comes from the columns returned by
+        ``class_.list_columns()``.
+
+        Useful with ``create_methods`` when ``class_`` implements
+        StorageMethods. """
+    required = []
+    optional = []
+    for col in class_.list_columns():
+        if col.name == "namespace": continue
+        if col.required or not show_defaults:
+            required.append(col.name)
+        else:
+            optional.append(str(col.name) + "=" + repr(col.default))
+    required = ", ".join(required + optional)
+    return (class_, "(" + required + ")")
+
 def create_methods(name, classes):
     """ Create methods named 'name%(class.__name__)s' for each class in classes.
         The arguemnt 'classes' can be a list of classes or (class, string)

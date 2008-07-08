@@ -1,10 +1,13 @@
+""" Publicly available API for PyOLS. """
 from pyols.model import *
 from pyols.fonts import findFonts
 from pyols.exceptions import PyolsNotFound, PyolsProgrammerError, PyolsException
-from pyols.util import create_methods
+from pyols.util import create_methods, class_with_args
 
 import difflib
 from types import *
+
+__all__ = ['publish', 'OntologyTool']
 
 def publish(func):
     """ Publish 'func' to the OntologyTool so it will be expored to RPC.
@@ -25,6 +28,10 @@ def publish(func):
     return func
 
 class OntologyTool(object):
+    """ All of the methods which will be available over RPC.
+        All methods accept primitive types (strings, lists, dictionaries)
+        as arguments and do not require the use of kwargs (as they are not
+        available over RPC). """
     def __init__(self, namespace):
         # Set the namespace we will use for convinience, but it can be changed
         # using instance.namespace = new_namespace without consequence.
@@ -37,28 +44,29 @@ class OntologyTool(object):
         # The namespace is flushed now because there is a good chance
         # other things will depend on it.
         self._namespace.flush()
-
     def _get_namespace(self):
-        """ Return the name of the current namespace. """
+        """ The name of the current namespace. """
         return self._namespace.name
     namespace = property(_get_namespace, _set_namespace)
 
-    # XXX: REFACTOR THIS BIT
-    def obj_with_args(obj, show_defaults=True):
-        required = []
-        optional = []
-        for col in obj.list_columns():
-            if col.name == "namespace": continue
-            if col.required or not show_defaults:
-                required.append(col.name)
-            else:
-                optional.append(str(col.name) + "=" + repr(col.default))
-        required = ", ".join(required + optional)
-        return (obj, "(" + required + ")")
 
-    # XXX: ADD ERROR CHECKING HERE
     def _generate_query(self, class_, args, kwargs, \
                         pk_only=False, include_none=True):
+        """ Return a dictionary which can be used to query for ``class_``,
+            given args and kwargs.  ``pk_only`` and ``include_none``,
+            respectively, return only keys which are part of the primary key
+            and include values even if they are None.::
+
+            >  _generate_query(Keyword, ['foo', 'bar'], {'description': 'baz'})
+            {'namespace': <Namespace ...>,
+             'name': 'foo', 'disambiguation': 'bar',
+             'description': 'baz'}
+            > _generate_query(Keyword, [], {'name': 'foo'})
+            {'namespace': <Namespace ...>,
+             'name': foo'} """
+        # Note: This method does very little error checking -- it might
+        #       explode in weird and wonderful ways if it is supplied
+        #       with sufficiently poor input.
         args = list(args)
         query = {}
         for col in class_.list_columns():
@@ -87,9 +95,9 @@ class OntologyTool(object):
             query[col.name] = to_add
         return query
 
-    @create_methods('add%s', (obj_with_args(Keyword),
-                              obj_with_args(KeywordAssociation),
-                              obj_with_args(KeywordRelationship)))
+    @create_methods('add%s', (class_with_args(Keyword),
+                              class_with_args(KeywordAssociation),
+                              class_with_args(KeywordRelationship)))
     def _generic_add(self, class_, *args, **kwargs):
         """ Add a %(class_name)s to the ontology.  If an instance already exist,
             it will be updated.  The new instance is returned. """
@@ -137,10 +145,10 @@ class OntologyTool(object):
         newrel.inverse = inverse
         return newrel
 
-    @create_methods('get%s', (obj_with_args(Keyword),
-                              obj_with_args(Relation),
-                              obj_with_args(KeywordAssociation),
-                              obj_with_args(KeywordRelationship)))
+    @create_methods('get%s', (class_with_args(Keyword),
+                              class_with_args(Relation),
+                              class_with_args(KeywordAssociation),
+                              class_with_args(KeywordRelationship)))
     def _generic_get(self, class_, *args, **kwargs):
         """ Get a %(class_name)s from the ontology.  It is an
             error to request an item which does not exist. """
@@ -154,7 +162,6 @@ class OntologyTool(object):
             Input values which are dictionaries or lists (with exception of
             Relation.types) will be ignored, and at the moment the namespace
             cannot be changed either (but that's not a technical limitation).
-            > 
             """
         valid_keys = ('name', 'description', 'weight', 'types', 'inverse',
                       'disambiguation')
@@ -170,20 +177,20 @@ class OntologyTool(object):
             setattr(instance, key, val)
         return instance
 
-    @create_methods('del%s', (obj_with_args(Keyword),
-                              obj_with_args(Relation),
-                              obj_with_args(KeywordAssociation),
-                              obj_with_args(KeywordRelationship)))
+    @create_methods('del%s', (class_with_args(Keyword),
+                              class_with_args(Relation),
+                              class_with_args(KeywordAssociation),
+                              class_with_args(KeywordRelationship)))
     def _generic_del(self, class_, *args, **kwargs):
         """ Remove %(class_name)s, along with all dependencies,
             from the current ontology. """
         i = self._generic_get(class_, *args, **kwargs)
         i.remove()
 
-    @create_methods("query%ss", (obj_with_args(Keyword, False),
-                                 obj_with_args(Relation, False),
-                                 obj_with_args(KeywordAssociation, False),
-                                 obj_with_args(KeywordRelationship, False)))
+    @create_methods("query%ss", (class_with_args(Keyword, False),
+                                 class_with_args(Relation, False),
+                                 class_with_args(KeywordAssociation, False),
+                                 class_with_args(KeywordRelationship, False)))
     def _generic_query(self, class_, *args, **kwargs):
         """ Return an iterator over all the %(class_name)ss in the current
             namespace which the given query.  The default of all the arguments
