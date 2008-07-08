@@ -1,4 +1,4 @@
-""" Model for pyOLS. """
+""" Persistant PyOLS objects. """
 
 from pyols.exceptions import *
 from pyols.util import Container
@@ -7,9 +7,11 @@ from elixir import *
 from sqlalchemy import UniqueConstraint
 from itertools import chain
 
+__all__ = ['StorageMethods', 'Namespace', 'Relation', 'RelationType',
+           'Keyword', 'KeywordAssociation', 'KeywordRelationship']
+
 class StorageMethods:
-    """ This class contains all the methods which each storage class
-        should implement. """
+    """ Methods used to access persistant objects. """
 
     @classmethod
     def get_or_create_by(cls, **kwargs):
@@ -154,25 +156,28 @@ class StorageMethods:
         return dict([(n.name, getattr(self, n.name)) for n
                      in self.list_columns(include_id=True)])
 
-"""
-Namespaces are primarly used to separate ontologies.  For example,
-  keyword "foo" can be added to namespace "ontology0" and namespace
-  "ontology1" without error.
 
-Some possible uses:
-    * Namespaces like plone-pending and plone-accepted could be used with
-      PloneOntology to separate pending and accepted parts of an ongology.
-    * A tool could present a "beta" namespace in addition to the "production"
-      namespace, allowing review of the "beta" namespace before it is
-      promoted to "production".
-
-Assumptions:
-    * Namespaces are cheep -- it should be very easy to add and remove them
-    * Deletes should cascade -- when a namespace dissapears, so should all
-      it's "children"
-"""
 class Namespace(Entity, StorageMethods):
+    """ Used to separate ontologies.  For example, keyword "foo" can be added
+        to namespace "ontology0" and namespace "ontology1" without error.
+
+        Some possible uses:
+
+            - Namespaces like plone-pending and plone-accepted could be used with
+              PloneOntology to separate pending and accepted parts of an ongology.
+
+            - A tool could present a "beta" namespace in addition to the
+              "production" namespace, allowing review of the "beta" namespace
+              before it is promoted to "production".
+ 
+        Assumptions:
+
+            - Namespaces are cheep -- it should be very easy to add and remove them
+
+            - Deletes should cascade -- when a namespace dissapears, so should all
+              it's "children" """
     has_field('id', Integer, primary_key=True)
+    name = 'name'
     has_field('name', Unicode(128), unique=True, required=True)
 
     using_options(tablename='namespaces')
@@ -187,26 +192,32 @@ class Namespace(Entity, StorageMethods):
             Relation.new(namespace=n, name=relation).flush()
         return n
 
-"""
-Relations are the different possible ways keywords can be connected.
 
-Relations bind keywords together through "KeywordRelationship"s.
-"""
 class Relation(Entity, StorageMethods):
+    """ Models the different ways Keywords can be related to each other.
+        The actual binding is done by the KeywordRelationship class. """
     has_field('id', Integer, primary_key=True)
+    # Note that these duplicate definitions are for the benefit of
+    # documentation-generating tools -- they don't have any technical purpose.
+    namespace = '<Namespace>'
     belongs_to('namespace', of_kind='Namespace', required=True)
+    name = '128 characters of unicode'
     has_field('name', Unicode(128), required=True)
+    description = 'unicode text'
     has_field('description', UnicodeText, default=u'')
 
+    weight = 'float 0 <= x <= 1'
     has_field('weight', Float, default=1)
     # The delete-orphan is needed for some SQLAlchemy sillyness, even
     # though the _set_types function handles automatically deleting 
     # orphaned types.
+    types = 'list of types, eg: ["inverse", "symmetric"]'
     has_many('_types', of_kind='RelationType', cascade='delete-orphan')
     # Note: the original documentation suggested that a relation could
     #       have more than one inverse.  After much though on the matter,
     #       we have decided that this does not make any sense, so we have
     #       left that out.
+    inverse = '<Relation>'
     belongs_to('_inverse', of_kind='Relation')
     # The 'belongs_to' is slightly misleading here... But
     # it's the best way to express this kind of relationship
@@ -214,6 +225,7 @@ class Relation(Entity, StorageMethods):
     using_options(tablename='relations')
     using_table_options(UniqueConstraint('namespace_id', 'name'))
 
+    # These relations will be added to every namespace
     default_relations = (u'synonymOf', u'parentOf', u'childOf')
 
     def _get_inverse(self):
@@ -302,11 +314,15 @@ class Relation(Entity, StorageMethods):
 
 
 class RelationType(Entity, StorageMethods):
+    """ A helper type to allow Relationships to have many types.
+        It should never be called directly, or even indirectly -- it should
+        be entirely hidden behind the types property on Relationship. """
     has_field('name', Integer, primary_key=True)
     belongs_to('relation', of_kind='Relation', primary_key=True)
 
     using_options(tablename='relation_types')
 
+    # If a type name isn't in this list, an error will be raised
     valid_types = ('transitive', 'symmetric', 'functional', 'inverse_functional')
 
     def assert_valid(self):
@@ -322,17 +338,45 @@ class RelationType(Entity, StorageMethods):
 
 
 class Keyword(Entity, StorageMethods):
-    has_field('id', Integer, primary_key=True)
-    belongs_to('namespace', of_kind='Namespace', required=True)
-    has_field('name', Unicode(128), required=True)
+    """ Keeps track of keyword (but not nessicarly instances of keywords)
+        in the ontology.
 
-    has_field('disambiguation', UnicodeText, default=u'')
+        Keywords can be associated with "real things" in two ways:
+
+          - With the KeywordAssociation class, which creates an association
+            between a keyword and a 'path' (which can be any unicode string).
+            For example, a keyword association between the path "pyols.model"
+            and the keyword "persistant storage".
+
+          - By creating a Keyword with the instance name and an 'instanceOf'
+            relationship type, then creating a KeywordRelationship between
+            the "instance keyword" and the desitred keyword.
+            For example, a KeywordRelationship between keywords "pyols.model"
+            and "persistant storage" through relationship "instanceOf".
+            The disadvantage of this method is that there is no way (yet) to
+            differenciate between keywords which are an 'instance' and keywords
+            which are "actually keywords"."""
+
+    # Note that these duplicate definitions are for the benefit of
+    # documentation-generating tools -- they don't have any technical purpose.
+    has_field('id', Integer, primary_key=True)
+    namespace = '<Namespace>'
+    belongs_to('namespace', of_kind='Namespace', required=True)
+    name = '128 unicode characters'
+    has_field('name', Unicode(128), required=True)
+    disambiguation = '128 unicode characters'
+    has_field('disambiguation', Unicode(128), default=u'')
+
+    description = 'unicode text'
     has_field('description', UnicodeText, default=u'')
 
+    associations = '[<KeywordAssociation(self, "path...")>, ...]'
     has_many('associations', of_kind='KeywordAssociation')
-    # Left relations are relationships which this keyword is the left side of
+    left_relations = '[<KeywordRelationship(self, '\
+                      '<Relationship>, <Keyword>), ...]'
     has_many('left_relations', of_kind='KeywordRelationship', inverse='left')
-    # Similarly, these are relationships in which we reside on the right
+    right_relations = '[<KeywordRelationship(<Keyword>, '\
+                       '<Relationship>, self), ...]'
     has_many('right_relations', of_kind='KeywordRelationship', inverse='right')
 
     using_options(tablename='keywords')
@@ -362,8 +406,14 @@ class Keyword(Entity, StorageMethods):
 
 
 class KeywordAssociation(Entity, StorageMethods):
+    """ Used to assocate Keywords with "real things" (instances).
+        For an example of how they are used, see the documentation
+        on the Keyword class. """
+    keyword = '<Keyword>'
     belongs_to('keyword', of_kind='Keyword', primary_key=True)
+    path = '512 unicode characters'
     has_field('path', Unicode(512), primary_key=True)
+    descrption = 'unicode text'
     has_field('description', UnicodeText, default=u'')
     
     using_options(tablename='keyword_associations')
@@ -374,8 +424,14 @@ class KeywordAssociation(Entity, StorageMethods):
 
 
 class KeywordRelationship(Entity, StorageMethods):
+    """ Used to bind keywords together.
+        For example, keyword "dog" might be bound to keyword "animal"
+        though relation "kind of". """
+    left = '<Keyword>'
     belongs_to('left', of_kind='Keyword', primary_key=True)
+    relation = '<Relation>'
     belongs_to('relation', of_kind='Relation', primary_key=True)
+    right = '<Keyword>'
     belongs_to('right', of_kind='Keyword', primary_key=True)
 
     using_options(tablename='keyword_relationships')

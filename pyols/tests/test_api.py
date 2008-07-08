@@ -1,7 +1,7 @@
 from pyols.api import OntologyTool
 from pyols.model import *
 from pyols.tests import run_tests, db, PyolsDBTest
-from pyols.exceptions import PyolsNotFound, PyolsValidationError
+from pyols.exceptions import PyolsNotFound, PyolsValidationError, PyolsException
 from pyols.web.main import rpcify
 
 from nose.plugins.skip import SkipTest

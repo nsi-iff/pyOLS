@@ -121,7 +121,7 @@ class RequestDispatcher(SimpleXMLRPCDispatcher):
     def dispatch_many(self, call_list):
         """ Dispatch many method calls.
             call_list is in the format:
-                [{'methodName': 'add', 'params': [2, 2]}, ...] """
+            ``[{'methodName': 'add', 'params': [2, 2]}, ...]``"""
         results = []
         for call in call_list:
             method_name = call['methodName']

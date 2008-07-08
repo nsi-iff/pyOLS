@@ -1,6 +1,6 @@
 from pyols.model import *
 from pyols.fonts import findFonts
-from pyols.exceptions import PyolsNotFound, PyolsProgrammerError
+from pyols.exceptions import PyolsNotFound, PyolsProgrammerError, PyolsException
 from pyols.util import create_methods
 
 import difflib
