@@ -1,0 +1,2 @@
+graft doc/api/
+prune doc/build_apidoc.sh

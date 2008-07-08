@@ -6,12 +6,11 @@ ez_setup.use_setuptools()
 
 from setuptools import setup, find_packages
 import sys
-from os import path
+from os import path, system
 
 install_requires = [
     'SQLAlchemy == 0.4.6', # The 0.5 beta breaks Elixir :(
     'Elixir >= 0.5.2',
-    'scgi'
     ]
 
 if sys.version_info < (2, 5):
@@ -27,6 +26,12 @@ if 'develop' in sys.argv:
         'pyparsing >= 1.5.0',
     ])
 
+if 'sdist' in sys.argv:
+    print "Building API documentation..."
+    if system("bash -x doc/build_apidoc.sh") > 0:
+        print "doc/build_apidoc.sh returned an error -- not building."
+        sys.exit(1)
+
 setup_requires = []
 if path.exists(path.join(path.dirname(__file__), '.bzr')):
     # If we're inside a bzr repository,
@@ -41,10 +46,10 @@ setup(
     author = 'David Wolever',
     author_email = 'david@wolever.net',
     url = 'http://nsi.cefetcampos.br/softwares/pyols/',
-    setup_requires=setup_requires,
+    setup_requires = setup_requires,
     install_requires = install_requires,
-    packages=find_packages(),
-    include_package_data=True,
+    packages = find_packages(),
+    # See MANIFEST.in for control over which files are included/excluded
     entry_points= {
         'console_scripts':
             ['pyols = pyols.cmdline:run']

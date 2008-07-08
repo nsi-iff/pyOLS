@@ -11,7 +11,7 @@ PyOLS can now be started by running::
     $ pyols !$
 
 It is worth examining the output of ``pyols --help`` to see the options
-that are available (espeically the ``--wrapper`` option).
+that are available (especially the ``--wrapper`` option).
 
 After PyOLS is installed, ``init.d/README.txt`` will help you start
 PyOLS when your system starts.
@@ -24,7 +24,10 @@ Developing With PyOLS
 
 When developing with PyOLS (that is, writing an application which calls
 PyOLS), it will be useful to have a copy of the PyOLS API documentation
-close at hand.  This can be found in the ``doc`` subdirectory.
+close at hand.  This can be found in the ``doc/api`` subdirectory of
+the tarball.  The most relevant file will be be
+``doc/api/pyols.api.OntologyTool-class.html``, which contains all the
+functions available over RPC.
 
 Developing on PyOLS
 -------------------
@@ -62,7 +65,7 @@ care to look at the implementation of ``run_doctests``, only if the
 module is being run directly from the command line).
 
 So, after editing a function with doctests, always update the doctests
-with the neww functionality then execute the file (``python foo.py``)
+with the new functionality then execute the file (``python foo.py``)
 to verify that both your changes and doctests are correct.
 
 .. _doctests: http://docs.python.org/lib/module-doctest.html
