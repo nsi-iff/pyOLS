@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# Make sure we've got setuptools installed before
+# anything else happens
+import ez_setup
+ez_setup.use_setuptools()
+
 from setuptools import setup, find_packages
 import sys
 from os import path
@@ -34,7 +40,7 @@ setup(
                   'searching and graphing ontologies over XML-RPC.',
     author = 'David Wolever',
     author_email = 'david@wolever.net',
-    url = '',
+    url = 'http://nsi.cefetcampos.br/softwares/pyols/',
     setup_requires=setup_requires,
     install_requires = install_requires,
     packages=find_packages(),

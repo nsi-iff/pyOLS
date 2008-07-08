@@ -85,7 +85,7 @@ class EnvironmentManager:
                                        "'%s' already exists." %(self.path()))
         mkfile('version', 'PyOLS environment version: %s' %self.version)
         mkfile('README', 'A PyOLS environment.\n'
-                         'See http://nsi.cefetcampos.br!')
+                         'See http://nsi.cefetcampos.br/softwares/pyols/')
         mkfile('config.ini', config.default_config())
 
         gv_path = find_graphviz()
