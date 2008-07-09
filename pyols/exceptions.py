@@ -14,7 +14,7 @@ class PyolsProgrammerError(AssertionError, PyolsException):
          to cause one of these). """
     pass
 
-class PyolsConfigError(KeyError, PyolsException):
+class PyolsConfigError(PyolsException):
     """ Used when something goes wrong with the config. """
     pass
 

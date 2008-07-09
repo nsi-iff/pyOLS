@@ -80,9 +80,9 @@ class EnvironmentManager:
 
         try:
             mkdir(self.path())
-        except OSError:
-            raise PyolsValidationError("Cannot create a new environment: path "
-                                       "'%s' already exists." %(self.path()))
+        except OSError, e:
+            raise PyolsValidationError("Cannot create a new environment:\n"\
+                                       + str(e))
         mkfile('version', 'PyOLS environment version: %s' %self.version)
         mkfile('README', 'A PyOLS environment.\n'
                          'See http://nsi.cefetcampos.br/softwares/pyols/')
