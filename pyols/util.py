@@ -1,3 +1,4 @@
+"""Various utility functions."""
 from pyols.exceptions import PyolsProgrammerError
 
 from xmlrpclib import Binary

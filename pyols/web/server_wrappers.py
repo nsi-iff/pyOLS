@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+"""Wrappers to get the RequestDispatcher online."""
 
 from pyols.web import autoreload
 from pyols.log import log

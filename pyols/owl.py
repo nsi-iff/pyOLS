@@ -1,3 +1,5 @@
+"""Functions to import/export OWL ontologies.
+Note that this is mostly inherited from PloneOntology, and the correctness is dubious."""
 from pyols.log import log
 from pyols.util import to_unicode
 from pyols.db import db

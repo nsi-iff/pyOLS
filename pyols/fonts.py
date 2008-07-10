@@ -1,3 +1,5 @@
+"""Font-related things inherited from PloneOntology.
+I don't know how much of this works."""
 import os
 import sys
 import glob
@@ -63,7 +65,6 @@ def win32InstalledFonts(fontDirectory = None):
     finally:
         _winreg.CloseKey(k)
     
-
 def linuxFontDirectories():
     """ Get system font directories on Linux/Unix
     
@@ -133,7 +134,6 @@ def getFontDirectories():
     else:
         paths = linuxFontDirectories()
     return paths
-
 
 def findFonts(paths = None):
     """ Return a set of truetype fonts on the system.

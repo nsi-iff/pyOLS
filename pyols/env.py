@@ -1,3 +1,4 @@
+"""PyOLS environment directory functions."""
 from pyols.exceptions import PyolsNotFound, PyolsValidationError,\
                              PyolsEnvironmentError
 from pyols.db import db

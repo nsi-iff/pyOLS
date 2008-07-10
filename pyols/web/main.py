@@ -174,8 +174,14 @@ class RequestDispatcher(SimpleXMLRPCDispatcher):
         import pydoc
         return pydoc.getdoc(method)
 
+
+def get_dispatcher():
+    return RequestDispatcher
+
+
+# Support for the doctests
 class ExampleRPCFunctions(object):
-    """ A little class, used for testing. """
+    """ A little class, used by the doctests of RequestDispatcher. """
     def __init__(self, path):
         self._path = path
 
@@ -191,8 +197,6 @@ class ExampleRPCFunctions(object):
 class TestDispatcher(RequestDispatcher):
     instance_class = ExampleRPCFunctions
 
-def get_dispatcher():
-    return RequestDispatcher
 
 from pyols.tests import run_doctests
 run_doctests()

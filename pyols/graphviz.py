@@ -1,3 +1,5 @@
+"""Graphviz related functions.
+There is still some PloneOntology code in here, so be warned!"""
 import popen2
 import os
 from cStringIO import StringIO

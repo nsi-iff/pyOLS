@@ -1,3 +1,4 @@
+"""The PyOLS database manager."""
 from pyols.exceptions import PyolsProgrammerError
 
 from elixir import metadata, session, setup_all, drop_all, objectstore
