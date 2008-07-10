@@ -92,11 +92,9 @@ except ImportError:
             sys.exit(1)
 
 class SCGIHandler(_SCGIHandler, SimpleXMLRPCDispatcher):
-    # XXX: This rpc_obj isn't great, may change after testing
-    rpc_dispatcher = None
+    dispatcher = None
 
     def __init__(self, parent_fd, allow_none=True, encoding=None):
-        raise Exception("This needs to be tested!")
         self.env = self._input = self._output = None
 
         _SCGIHandler.__init__(self, parent_fd)
@@ -120,7 +118,7 @@ class SCGIHandler(_SCGIHandler, SimpleXMLRPCDispatcher):
         # See RFC 3875, section 4.1.2
         body_size = int(self.env.get('CONTENT_LENGTH', 0))
         request_text = input.read(body_size)
-
+        self.register_instance(self.dispatcher(self.env['PATH_INFO']))
         self.handle_request(request_text)
 
         try:
@@ -128,8 +126,7 @@ class SCGIHandler(_SCGIHandler, SimpleXMLRPCDispatcher):
             input.close()
             conn.close()
         except IOError, err:
-            # XXX: Log this properly
-            print "IOError while closing connection ignored: %s" % err
+            log.info("IOError while closing connection ignored: %s" % err)
 
     ###
     # SimpleXMLRPCDispatcher methods
@@ -188,8 +185,8 @@ class SCGIHandler(_SCGIHandler, SimpleXMLRPCDispatcher):
             self.handle_xmlrpc(request_text)
 
 class SCGIServer(object):
-    def __init__(self, obj, port=4000):
-        SCGIHandler.rpc_obj = obj
+    def __init__(self, dispatcher, port=4000):
+        SCGIHandler.dispatcher = dispatcher
         self._server = _SCGIServer(SCGIHandler, host="localhost",
                                    port=port, max_children=5)
 

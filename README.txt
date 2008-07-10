@@ -16,6 +16,32 @@ that are available (especially the ``--wrapper`` option).
 After PyOLS is installed, ``init.d/README.txt`` will help you start
 PyOLS when your system starts.
 
+SCGI Setup
+----------
+
+If the SCGI wrapper is going to be used a webserver needs to be setup
+to act as the frontend.
+
+While many web servers support the SCGI proticol, I will only describe
+the setup procedure for Apache here.  Instructions for other servers,
+such as lighttpd, can be easily found on Google.
+
+  1. Make sure the SCGI module is installed (for example, on Debian,
+     run: ``apt-get isntall libapache2-mod-scgi``).
+
+  2. Enable the SCGI module.  With Apache 2 on Debian, the command
+     is ``a2enmod scgi``.  On other distributions, a line similar to
+     ``LoadModule scgi_module mod_scgi.so`` will need to be added
+     to ``apache.conf`` (or ``httpd.conf``, or ``modules.conf``,
+     depending on your distribution's naming standard).
+
+  3. Add the line ``SCGIMount /$PATH $HOST:$PORT`` to ``apache.conf``
+     (or ``httpd.conf``, depending on your distribution's naming
+     scheme), where ``$PATH`` is replaced by the path which PyOLS
+     will be accessable from (eg, ``/pyols``), ``$HOST`` is the host
+     PyOLS will be running on (probably ``localhost``) and ``$PORT``
+     is the port PyOLS will be running on (probably ``4000``).
+
 Developing
 ==========
 
