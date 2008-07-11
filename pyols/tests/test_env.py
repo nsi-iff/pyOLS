@@ -20,6 +20,8 @@ def _destory_temp_dirs():
         except OSError, e: print "Error removing temp dirs:", e
 
 def tempdir():
+    """ Return the name of a temporary directory which can be created,
+        and will be removed when the script exits. """
     # I need to write my own tempdir function because
     # the EnvironmentManager expectes that the directory
     # won't exist, while mkdtemp creates the directory.

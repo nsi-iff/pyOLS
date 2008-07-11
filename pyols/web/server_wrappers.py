@@ -2,6 +2,7 @@
 
 from pyols.web import autoreload
 from pyols.log import log
+from pyols.config import config
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer, CGIXMLRPCRequestHandler, \
                                SimpleXMLRPCDispatcher, SimpleXMLRPCRequestHandler
@@ -55,9 +56,12 @@ class StandaloneServer(object):
         # Note that, becuse of the way the autorestarter works, all the code
         # which executes up to here is run twice (except, that is, for the
         # code in this block)
-        if "RUN_MAIN" in environ:
+        if "RUN_MAIN" not in environ:
             log.info("Starting standalone server on port %s" %(self._port, ))
-        autoreload.main(self._serve, self._modification_callback)
+        if config.as_bool('no_reload'):
+            self._serve()
+        else:
+            autoreload.main(self._serve, self._modification_callback)
 
     def _serve(self):
         """ The "actual" serve function. """

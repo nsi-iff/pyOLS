@@ -11,13 +11,13 @@ from os import path
 class OptionsMemory(Option):
     """ An option which remembers if it has been set
         or the default was used. """
-    changed_options = {}
+    changed = []
 
     def process(self, *args):
         # uuhh... See optparse.py if this doesn't make sense
         ini_option = self.get_opt_string().replace('--','').replace('-', '_')
         if ini_option != 'create':
-            OptionsMemory.changed_options[ini_option] = args[1]
+            OptionsMemory.changed.append(ini_option)
         Option.process(self, *args)
 
 def run():
@@ -28,6 +28,8 @@ def run():
                       default='standalone', help='use the specified wrapper '
                       'around the RPC server. Valid wrappers: %s' \
                       %(', '.join(wrappers.keys())))
+    parser.add_option('-R', '--no-reload', action='store_true', default=False,
+                      help='Do not auto-reload the standalone server.')
     parser.add_option('-c', '--create', action='store_true', default=False,
                       help='create a new pyOLS environment')
     (options, args) = parser.parse_args()
@@ -38,14 +40,17 @@ def run():
                      "Did you specify an environment directory?")
     env_path = args.pop()
 
+    changed_options = dict([(option, getattr(options, option))
+                            for option in OptionsMemory.changed])
+
     ### Create a new environment?
     if options.create:
-        env.create(env_path, OptionsMemory.changed_options)
+        env.create(env_path, changed_options)
         print "The pyOLS server can now be started with `%s %s`"\
               %(sys.argv[0], env_path)
         sys.exit(0)
 
-    env.load(env_path, OptionsMemory.changed_options)
+    env.load(env_path, changed_options)
 
     ### Handle the wrapper
     if config['web_wrapper'] not in wrappers:

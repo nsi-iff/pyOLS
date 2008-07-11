@@ -6,7 +6,9 @@ from nose.tools import nottest
 import sys
 
 def setup_test_db():
-    """ Setup a database which can be used with any tests involving the DB. """
+    """ Setup a database which can be used with any tests involving the DB.
+        It is assumed that calling this functions has no side-effects and
+        no cleanup (eg, deleting files) is required afterwards. """
     if not db.connected:
         db.connect("sqlite:///:memory:", debug=False)
         db.create_tables()
