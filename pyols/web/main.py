@@ -8,22 +8,26 @@ import sys
 from SimpleXMLRPCServer import SimpleXMLRPCDispatcher, resolve_dotted_attribute
 from xmlrpclib import Fault
 
-def rpcify(instance, _seen={}):
+def rpcify(instance, depth=1, _seen={}):
     """ Try to convert 'instance' to a format which can be sent over RPC.
         This is acomplished by iterating over itterables and calling the
         __rpc__ method of the instances they contain, if it exists.
+        The 'depth' argument will be passed to each __rpc__ method, and
+        recursive calls will have a 'depth' of 'depth - 1'.
         There is no guarentee that the returned value can be marsheled by
         xmlrpclib, but xmlrpclib will handle those errors.
         >>> rpcify(xrange(5))
         [0, 1, 2, 3, 4]
         >>> class Spam:
-        ...     def __rpc__(self):
-        ...         return "Eggs!"
+        ...     def __rpc__(self, depth):
+        ...         if depth > 0:
+        ...            return ("Eggs at %d!" %(depth), Spam())
+        ...         return "Eggs at %d!" %(depth)
         ...
         >>> rpcify(Spam())
-        'Eggs!'
+        ['Eggs at 1!', 'Eggs at 0!']
         >>> rpcify(iter([Spam(), Spam()]))
-        ['Eggs!', 'Eggs!']
+        [['Eggs at 1!', 'Eggs at 0!'], ['Eggs at 1!', 'Eggs at 0!']]
         >>> rpcify('Ham?')
         'Ham?'
         >>> a = ['a', 'a']
@@ -51,8 +55,10 @@ def rpcify(instance, _seen={}):
     #                'bar': [{'id': 2,
     #                         'foo': [{'id': 1}]}]}
     seen = _seen.get(id(instance), 0)
-    if seen >= 2:
-        return 'recursion limit'
+    # '2' has been chosen to allow relationships to have an 'inverse'
+    # and Keywords to have correct 'left_relations' and 'right_relations'
+    if seen >= 2: return 'recursion limit'
+
     if isinstance(instance, (list, tuple, dict, StorageMethods)):
         # It is only possible for some kinds of objects to
         # recurse -- so only keep track of those ones.
@@ -62,12 +68,12 @@ def rpcify(instance, _seen={}):
     # because xmlrpclib does not make it easy to add this sort of thing.
     if hasattr(instance, '__iter__'):
         if isinstance(instance, dict):
-            return dict([(key, rpcify(val, _seen.copy()))
+            return dict([(key, rpcify(val, depth, _seen.copy()))
                          for key, val in instance.items()])
-        return [rpcify(item, _seen.copy()) for item in instance]
+        return [rpcify(item, depth, _seen.copy()) for item in instance]
 
     f = getattr(instance, '__rpc__', None)
-    return f and rpcify(f(), _seen.copy()) or instance
+    return f and rpcify(f(depth), depth-1, _seen.copy()) or instance
 
 
 class RequestDispatcher(SimpleXMLRPCDispatcher):
@@ -82,7 +88,7 @@ class RequestDispatcher(SimpleXMLRPCDispatcher):
         >>> d._dispatch('add', (40, 2))
         42
         >>> d._dispatch('path', [])
-        '/foo/'
+        u'/foo/'
         >>> """
     instance_class = OntologyTool
 

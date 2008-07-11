@@ -149,12 +149,13 @@ class StorageMethods:
                                   "dangling relations. Offending class: "
                                   "%s" %(self.__class__.__name__))
 
-    def __rpc__(self):
+    def __rpc__(self, depth):
         """ Return a dictionary containing each field of the instance. """
         # Note that calling rpcify on the values of the dictionary
         # is up to the caller -- we just return a dictionary.
         return dict([(n.name, getattr(self, n.name)) for n
-                     in self.list_columns(include_id=True)])
+                     in self.list_columns(include_id=True)
+                     if depth > 0 or n.required])
 
 
 class Namespace(Entity, StorageMethods):
@@ -304,12 +305,13 @@ class Relation(Entity, StorageMethods):
                                        "Weights must be in the range [0,1]."\
                                        %(self.weight, self.name))
 
-    def __rpc__(self):
-        rpc = StorageMethods.__rpc__(self)
-        del rpc['_types']
-        del rpc['_inverse']
-        rpc['types'] = self.types
-        rpc['inverse'] = self.inverse
+    def __rpc__(self, depth):
+        rpc = StorageMethods.__rpc__(self, depth)
+        if depth > 0:
+            del rpc['_types']
+            del rpc['_inverse']
+            rpc['types'] = self.types
+            rpc['inverse'] = self.inverse
         return rpc
 
 

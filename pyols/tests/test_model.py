@@ -124,6 +124,15 @@ class TestRelation(PyolsDBTest):
         assert_equal(set([kw.name for kw in Keyword.query_by()]),
                      set(["kw0", "kw1"]))
 
+    def test__rpc__(self):
+        # The __rpc__ method of Relation should return 'types' as a list
+        # of strings and should have an 'inverse' instead of '_inverse'
+        rel = Relation.new(name=u'foo', types=['symmetric'])        
+        rel._inverse = rel
+        rpc = rel.__rpc__(1)
+        assert_equal(rpc['types'], ['symmetric'])
+        assert_equal(rpc['inverse'], rel)
+
 
 class TestRelationType:
     def testValid(self):
@@ -221,6 +230,12 @@ class TestStorageMethods:
         expected = {'associations': [ka], 'name': 'kw0', 'left_relations': [],
                     'disambiguation': None, 'right_relations': [],
                     'namespace': ns, 'description': None, 'id': None }
-        assert_equal(expected, kw.__rpc__())
+        assert_equal(expected, kw.__rpc__(1))
+
+        # When the depth falls below 1, only the required fields
+        # should be present
+        expected = {'name': 'kw0', 'namespace': ns, 'id': None }
+        assert_equal(expected, kw.__rpc__(0))
+        assert_equal(expected, kw.__rpc__(-42))
 
 run_tests()

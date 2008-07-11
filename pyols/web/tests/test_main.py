@@ -27,8 +27,8 @@ class RPCFunctions:
     def get_self(self):
         return self
 
-    def __rpc__(self):
-        return iter(['one', [{'two': iter([3])}, 'four']])
+    def __rpc__(self, depth):
+        return iter([depth, [{'two': iter([3])}, 'four']])
 
 class TestDispatcher(RequestDispatcher):
     instance_class = RPCFunctions
@@ -80,7 +80,7 @@ class TestRequestDispatcher:
     def testRPCification(self):
         # Ensure that returned instances are rpcified
         r = self.call_one('get_self')
-        assert_equal(r, ['one', [{'two': [3]}, 'four']])
+        assert_equal(r, [1, [{'two': [3]}, 'four']])
 
     @raises(Fault)
     def testUnsupportedMethod(self):
