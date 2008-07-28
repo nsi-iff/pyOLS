@@ -4,8 +4,8 @@ from pyols.web import autoreload
 from pyols.log import log
 from pyols.config import config
 
-from SimpleXMLRPCServer import SimpleXMLRPCServer, CGIXMLRPCRequestHandler, \
-                               SimpleXMLRPCDispatcher, SimpleXMLRPCRequestHandler
+from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCDispatcher, \
+                               SimpleXMLRPCRequestHandler
 import BaseHTTPServer
 from os import environ
 import sys
@@ -19,7 +19,8 @@ class ServerInterface(object):
     def serve(self):
         """ Start serving.
             In the case of SCGI and Standalone, listen for connections.
-            In the case of CGI, handle the current request. """
+            In the case of CGI, (if it is implemented in the future)
+            handle the current request. """
 
 class _StandaloneHandler(SimpleXMLRPCRequestHandler):
     # This class is nessicary because I can't find any other way
@@ -69,16 +70,6 @@ class StandaloneServer(object):
 
     def _modification_callback(self, file):
         log.info("%s was modified.  Restarting." %(file, ))
-
-
-class CGIServer(CGIXMLRPCRequestHandler):
-    def __init__(self, dispatcher):
-        CGIXMLRPCRequestHandler.__init__(self)
-        self.register_instance(dispatcher("/tmp/"))
-        raise Exception("This needs to be written!")
-
-    def serve(self):
-        self.handle_request() 
 
 
 try:
@@ -197,4 +188,4 @@ class SCGIServer(object):
     def serve(self):
         self._server.serve()
 
-wrappers = {'scgi': SCGIServer, 'standalone': StandaloneServer, 'cgi': CGIServer}
+wrappers = {'scgi': SCGIServer, 'standalone': StandaloneServer}

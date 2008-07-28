@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 """A simple script which shows how PyOLS can be used.
-Run with out any arguments to see the demonstration."""
+If the --uri URL argument is supplied, the demonstration
+will be run against URI instead of creating a new 
+environment.
+Example:
+    $ ./demo.py
+    $ ./demo.py --uri http://localhost/pyols_scgi/test
+"""
 
 from pyols import cmdline
 from pyols.tests.test_env import tempdir
@@ -11,9 +17,19 @@ import os
 import signal
 import time
 
-if '-h' in argv or '--help' in argv:
+def help():
     print __doc__
     exit(1)
+
+if '-h' in argv or '--help' in argv:
+    help()
+
+uri = None
+if '--uri' in argv:
+    index = argv.index('--uri')
+    argv.pop(index)
+    try: uri = argv.pop(index)
+    except IndexError: help()
 
 ###
 # The following code is used to setup the environment
@@ -67,20 +83,23 @@ def fork_start_server():
     cmdline.run() # Start the server
 
 
-print "Creating temporary environment..."
-env = setup_environment()
-print "Done.  Sleeping to give the server time time to wake up..."
-cleanup = fork_start_server()
-print "Server set up!"
+if not uri:
+    # We need to create the temp environment
+    print "Creating temporary environment..."
+    env = setup_environment()
+    print "Done.  Sleeping to give the server time time to wake up..."
+    cleanup = fork_start_server()
+    print "Server set up!"
+    uri = "http://127.1:8000/example_namespace/"
 
 ###
 # If you are reading this code to learn how to use PyOLS,
 # this is where you should start.
 ###
 print
-print "Client connecting..."
+print "Client connecting to %s..." %(uri)
 from xmlrpclib import ServerProxy
-s = ServerProxy("http://127.1:8000/example_namespace/")
+s = ServerProxy(uri)
 
 print "Connected.  Importing 'doc/beer.owl'..."
 s.importOWL(file('doc/beer.owl').read())
