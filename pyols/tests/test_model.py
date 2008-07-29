@@ -199,8 +199,10 @@ class TestNamespace(PyolsDBTest):
         for rel in Relation.default_relations:
             assert Relation.get_by(namespace=ns, name=rel)
 
-    def testClone(self):
+    def testCopy(self):
         ns = Namespace.new(name=u'asdf')
+        ns.flush()
+        ns.copy_to(u'new_ns')
 
 
 class TestStorageMethods:

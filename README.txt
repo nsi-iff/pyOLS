@@ -95,3 +95,9 @@ with the new functionality then execute the file (``python foo.py``)
 to verify that both your changes and doctests are correct.
 
 .. _doctests: http://docs.python.org/lib/module-doctest.html
+
+Gotchas
+^^^^^^^
+
+The Namespace.copy_to method makes some SQLite-specific
+assumptions... Check it if you are migrating to a new database.

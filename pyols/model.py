@@ -184,14 +184,92 @@ class Namespace(Entity, StorageMethods):
     using_options(tablename='namespaces')
 
     @classmethod
-    def new(cls, **kwargs):
+    def new(cls, default_relations=True, **kwargs):
         n = super(Namespace, cls).new(**kwargs)
         # Note that everything here must be flushed because it
         # may be used in the rest of the query.
         n.flush()
-        for relation in Relation.default_relations:
-            Relation.new(namespace=n, name=relation).flush()
+        if default_relations:
+            for relation in Relation.default_relations:
+                Relation.new(namespace=n, name=relation).flush()
         return n
+
+    def copy_to(self, target_name):
+        """ Copy all the contents of this namespace to namesapce 'target_name'.
+            Namespace 'target_name' must not exist. """
+
+        ##################### WARNING: Here be dragons! #####################
+        # I've dropped down to low-level  SQLAlchemy here because it's silly
+        # to go through the ORM.  Hopefully the code should be fairly
+        # self-explanitory, though... And if not SA is well documented :)
+        # I have also used a little bit of SQLite-specific locking code to
+        # make life just that much easier.  If you're porting to a different
+        # database, you'll have to do the Right Thing here.
+        from sqlalchemy import select, func
+        from elixir import session
+        ex = session.execute
+        sel = lambda *args: select(*args).execute().fetchall()
+        insert = lambda class_, new: ex(class_.table.insert(), new)
+
+        new_ns = Namespace.new(name=target_name, default_relations=False)
+        new_ns.flush()
+
+        # Because we have written some data from the database, SQLite has
+        # granted us a write-lock.  See the fifth paragraph of:
+        # http://www.sqlite.org/lang_transaction.html
+        # This lets us be sure that we can generate sequential IDs like this
+
+        # Primary classes are those which everything else depends on
+        primary_classes = (Relation, Keyword)
+
+        # Secondary classes use only the primary classes
+        secondary_classes = (KeywordAssociation, KeywordRelationship,
+                             RelationType)
+
+        # Get the current maximum id for each "primary" class
+        id_map = {}
+        for class_ in primary_classes:
+            id_map[class_] = {}
+            to_add = [] # Instances which will be added after new ids
+                        # have been assigned to each instance
+
+            # The 'or 0' is needed because 'None' is returned if
+            # no rows exist.
+            base_id = (sel([func.max(class_.id)])[0][0] or 0) + 1
+            col_names = [c.name for c in class_.list_columns(True)]
+            # class_.table.c is the list of columns in the class' table
+            for new_id, row in enumerate(sel(class_.table.c)):
+                new = dict(zip(col_names, row))
+
+                new_id += base_id
+                id_map[class_][new['id']] = new_id
+                new['id'] = new_id
+                new['namespace_id'] = new_ns.id
+
+                if new.get('_inverse_id'):
+                    # Don't flush this yet -- wait 'till we're done
+                    # to resolve inverses
+                    to_add.append(new)
+                    continue
+                print "Inserting " + repr(new)
+                insert(class_, new)
+
+            for new in to_add:
+                # Update the _inverse with the new ID
+                new['_inverse_id'] = id_map[class_][new['_inverse_id']]
+                insert(class_, new)
+
+        for class_ in secondary_classes:
+            col_names = [c.name for c in class_.list_columns(True)]
+            col_types = [c.type for c in class_.list_columns(True)]
+            for row in sel(class_.table.c):
+                new = dict(zip(col_names, row))
+                for (name, type, value) in zip(col_names, col_types, row):
+                    # For each column which is a foregn key linking to
+                    # one of the primary classes, update the link
+                    if issubclass(type, primary_classes):
+                        new['name'] = id_map[type][value]
+                insert(class_, new)
 
 
 class Relation(Entity, StorageMethods):
