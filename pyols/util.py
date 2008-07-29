@@ -37,20 +37,20 @@ class curried(object):
         return self
 
 def class_with_args(class_, show_defaults=True):
-    """ Return a tuple consiting of (class_, '(' + columns + ')'),
-        where 'columns' comes from the columns returned by
-        ``class_.list_columns()``.
+    """ Return a tuple consiting of (class_, '(' + fields + ')'),
+        where 'fields' comes from the fields returned by
+        ``class_.list_fields()``.
 
         Useful with ``create_methods`` when ``class_`` implements
         StorageMethods. """
     required = []
     optional = []
-    for col in class_.list_columns():
-        if col.name == "namespace": continue
-        if col.required or not show_defaults:
-            required.append(col.name)
+    for field in class_.list_fields():
+        if field.name == "namespace": continue
+        if field.required or not show_defaults:
+            required.append(field.name)
         else:
-            optional.append(str(col.name) + "=" + repr(col.default))
+            optional.append(str(field.name) + "=" + repr(field.default))
     required = ", ".join(required + optional)
     return (class_, "(" + required + ")")
 

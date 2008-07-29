@@ -195,19 +195,19 @@ class TestNamespace(PyolsDBTest):
     def testNewNamespace(self):
         # New namespaces should come pre-loaded with all
         # the default realtions
-        ns = Namespace.new(name=u'asdf')
+        ns = Namespace.new(name=u'testns')
         for rel in Relation.default_relations:
             assert Relation.get_by(namespace=ns, name=rel)
 
     def testCopy(self):
-        ns = Namespace.new(name=u'asdf')
-        ns.flush()
-        ns.copy_to(u'new_ns')
+        pass
+        #self.add_data()
+        #self.ns.copy_to(u'new_ns')
 
 
 class TestStorageMethods:
-    def test_list_columns(self):
-        kw_cols = Keyword.list_columns()
+    def test_list_fields(self):
+        kw_fields = Keyword.list_fields()
         expected = [('namespace', None, Namespace, True),
                     ('name', None, unicode, True),
                     ('disambiguation', u'', unicode, False),
@@ -216,13 +216,13 @@ class TestStorageMethods:
                     ('left_relations', None, KeywordRelationship, False),
                     ('right_relations', None, KeywordRelationship, False)]
 
-        for (id, col) in enumerate(kw_cols):
+        for (id, field) in enumerate(kw_fields):
             for (name, val) in zip(('name', 'default', 'type', 'required'),
                                     expected[id]):
-                col_val = getattr(col, name)
-                assert_equal(val, col_val,
-                             "Error on col %s: %s: %s != %s."
-                              %(col.name, name, col_val, val))
+                field_val = getattr(field, name)
+                assert_equal(val, field_val,
+                             "Error on field %s: %s: %s != %s."
+                              %(field.name, name, field_val, val))
 
     def test__rpc__(self):
         ns = Namespace(name="ns")

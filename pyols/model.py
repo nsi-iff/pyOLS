@@ -67,7 +67,7 @@ class StorageMethods:
 
     def has_required_fields(self):
         """ Assert that all the required fields have been filled out. """
-        required_fields = [c.name for c in self.list_columns() if c.required]
+        required_fields = [f.name for f in self.list_fields() if f.required]
         for field in required_fields:
             field_val = getattr(self, field)
             if not field_val:
@@ -80,7 +80,8 @@ class StorageMethods:
             respect to it's unique constraints.
             NOTE: This does not check for PK constraints. """
         query = {}
-        for col in [c.name for c in self.list_columns() if c.required]:
+
+        for col in [f.name for f in self.list_fields() if f.required]:
             query[col] = getattr(self, col)
 
         if self.get_by(**query):
@@ -90,13 +91,15 @@ class StorageMethods:
                     %(self.__class__.__name__, vals))
 
     @classmethod
-    def list_columns(self, include_id=False):
-        """ List all the columns in an entity, including their
+    def list_fields(self, include_id=False):
+        """ List all the fields in an entity, including their
             names, default values, types and if they are required.
             Returns a list of container objects with attributes.
             If 'include_id' is true, the 'id' field will be included,
             if it exists.
-            > x = list_columns()[0]
+            Note that this does not list the underlying database
+            columns -- see 'class.table.c' for that.
+            > x = list_fields()[0]
             > x.required
             True
             > x.type
@@ -153,9 +156,9 @@ class StorageMethods:
         """ Return a dictionary containing each field of the instance. """
         # Note that calling rpcify on the values of the dictionary
         # is up to the caller -- we just return a dictionary.
-        return dict([(n.name, getattr(self, n.name)) for n
-                     in self.list_columns(include_id=True)
-                     if depth > 0 or n.required])
+        return dict([(f.name, getattr(self, f.name)) for f
+                     in self.list_fields(include_id=True)
+                     if depth > 0 or f.required])
 
 
 class Namespace(Entity, StorageMethods):
@@ -236,7 +239,7 @@ class Namespace(Entity, StorageMethods):
             # The 'or 0' is needed because 'None' is returned if
             # no rows exist.
             base_id = (sel([func.max(class_.id)])[0][0] or 0) + 1
-            col_names = [c.name for c in class_.list_columns(True)]
+            col_names = [c.name for c in class_.table.c]
             # class_.table.c is the list of columns in the class' table
             for new_id, row in enumerate(sel(class_.table.c)):
                 new = dict(zip(col_names, row))
@@ -259,9 +262,10 @@ class Namespace(Entity, StorageMethods):
                 new['_inverse_id'] = id_map[class_][new['_inverse_id']]
                 insert(class_, new)
 
+        return
         for class_ in secondary_classes:
-            col_names = [c.name for c in class_.list_columns(True)]
-            col_types = [c.type for c in class_.list_columns(True)]
+            col_names = [c.name for c in class_.table.c]
+            col_types = [c.type for c in class_.list_fields(True)]
             for row in sel(class_.table.c):
                 new = dict(zip(col_names, row))
                 for (name, type, value) in zip(col_names, col_types, row):
@@ -269,6 +273,7 @@ class Namespace(Entity, StorageMethods):
                     # one of the primary classes, update the link
                     if issubclass(type, primary_classes):
                         new['name'] = id_map[type][value]
+                print "Inserting " + repr(new)
                 insert(class_, new)
 
 

@@ -69,18 +69,18 @@ class OntologyTool(object):
         #       with sufficiently poor input.
         args = list(args)
         query = {}
-        for col in class_.list_columns():
-            if pk_only and not col.required: continue
+        for field in class_.list_fields():
+            if pk_only and not field.required: continue
 
-            if col.name == 'namespace':
+            if field.name == 'namespace':
                 query['namespace'] = self._namespace
                 continue
 
-            if col.required and args:
+            if field.required and args:
                 to_add = args.pop(0)
             else:
-                if col.name in kwargs:
-                    to_add = kwargs[col.name]
+                if field.name in kwargs:
+                    to_add = kwargs[field.name]
                 elif args:
                     to_add = args.pop(0)
                 else:
@@ -89,10 +89,10 @@ class OntologyTool(object):
             if to_add is None and not include_none:
                 continue
 
-            if col.type.__module__ == 'pyols.model':
-                to_add = self._generic_get(col.type, to_add)
+            if field.type.__module__ == 'pyols.model':
+                to_add = self._generic_get(field.type, to_add)
 
-            query[col.name] = to_add
+            query[field.name] = to_add
         return query
 
     @create_methods('add%s', (class_with_args(Keyword),

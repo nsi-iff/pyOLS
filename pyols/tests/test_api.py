@@ -231,8 +231,8 @@ class TestOntologyTool(PyolsDBTest):
             assert_equal(len(kws), x+1)
 
         # Before we get any further, check that the definition
-        # of Keyword has not chnaged
-        assert_equal(Keyword.list_columns()[3].name, 'description')
+        # of Keyword has not changed
+        assert_equal(Keyword.list_fields()[3].name, 'description')
 
         assert_equal(len(list(self.ot.queryKeywords(None, None, u'kwd0'))), 1)
         assert_equal(len(list(self.ot.queryKeywords(u'testKW0'))), 1)
