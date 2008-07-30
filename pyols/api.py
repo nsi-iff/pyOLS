@@ -49,6 +49,11 @@ class OntologyTool(object):
         return self._namespace.name
     namespace = property(_get_namespace, _set_namespace)
 
+    def copyNamespace(self, target):
+        """ Copy the content of the current namespace to 'target'.
+            It is an error if namespace 'target' exists.
+            The new namespace is returned. """
+        return self._namespace.copy_to(target)
 
     def _generate_query(self, class_, args, kwargs, \
                         pk_only=False, include_none=True):
@@ -108,6 +113,8 @@ class OntologyTool(object):
         for (k, v) in self._generate_query(class_, args, kwargs).items():
             setattr(new, k, v)
         new.assert_valid()
+        # Note that assert_unique is not called here because, if the object
+        # is not unique, the existing version will be returned.
         return new
 
     def addRelation(self, name, weight=1.0, types=[],
@@ -147,6 +154,7 @@ class OntologyTool(object):
 
     @create_methods('get%s', (class_with_args(Keyword),
                               class_with_args(Relation),
+                              class_with_args(Namespace),
                               class_with_args(KeywordAssociation),
                               class_with_args(KeywordRelationship)))
     def _generic_get(self, class_, *args, **kwargs):
@@ -155,7 +163,7 @@ class OntologyTool(object):
         query = self._generate_query(class_, args, kwargs)
         return class_.fetch_by(**query)
 
-    @create_methods('update%s', (Keyword, Relation))
+    @create_methods('update%s', (Keyword, Relation, Namespace))
     def _generic_update(self, class_, new_values):
         """ Update a %(class_name)s to the values in dictionary new_values.
             The only value which must be in new_values is 'id'.
@@ -179,6 +187,7 @@ class OntologyTool(object):
 
     @create_methods('del%s', (class_with_args(Keyword),
                               class_with_args(Relation),
+                              class_with_args(Namespace),
                               class_with_args(KeywordAssociation),
                               class_with_args(KeywordRelationship)))
     def _generic_del(self, class_, *args, **kwargs):
@@ -189,6 +198,7 @@ class OntologyTool(object):
 
     @create_methods("query%ss", (class_with_args(Keyword, False),
                                  class_with_args(Relation, False),
+                                 class_with_args(Namespace, False),
                                  class_with_args(KeywordAssociation, False),
                                  class_with_args(KeywordRelationship, False)))
     def _generic_query(self, class_, *args, **kwargs):

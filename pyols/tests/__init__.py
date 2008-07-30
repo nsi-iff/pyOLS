@@ -23,6 +23,26 @@ class PyolsDBTest(object):
     def teardown(self):
         db.abort_txn()
 
+    def add_data(self):
+        from pyols.model import *
+        ns = Namespace(name=u"testns")
+        for kw in (u"kw0", u"kw1", u"kw2"):
+            setattr(self, kw, Keyword.new(name=kw, namespace=ns))
+        for rel in (u"rel0", u"rel1"):
+            setattr(self, rel, Relation.new(name=rel, namespace=ns))
+
+        self.kwr0 = KeywordRelationship.new(left=self.kw0, relation=self.rel0,
+                                           right=self.kw1)
+        self.kwr1 = KeywordRelationship.new(left=self.kw0, relation=self.rel1,
+                                           right=self.kw1)
+        self.kwr2 = KeywordRelationship.new(left=self.kw1, relation=self.rel0,
+                                           right=self.kw0)
+
+        self.kwa0 = KeywordAssociation.new(keyword=self.kw0, path=u"kwa0")
+        self.kwa1 = KeywordAssociation.new(keyword=self.kw2, path=u"kwa1")
+        self.ns = ns
+        db.flush()
+
 @nottest
 def run_tests(pdb=False):
     caller_locals = sys._getframe(1).f_locals

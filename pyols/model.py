@@ -191,6 +191,8 @@ class Namespace(Entity, StorageMethods):
         n = super(Namespace, cls).new(**kwargs)
         # Note that everything here must be flushed because it
         # may be used in the rest of the query.
+        n.assert_valid()
+        n.assert_unique()
         n.flush()
         if default_relations:
             for relation in Relation.default_relations:
@@ -205,10 +207,8 @@ class Namespace(Entity, StorageMethods):
         # I've dropped down to low-level  SQLAlchemy here because it's silly
         # to go through the ORM.  Hopefully the code should be fairly
         # self-explanitory, though... And if not SA is well documented :)
-        # I have also used a little bit of SQLite-specific locking code to
-        # make life just that much easier.  If you're porting to a different
-        # database, you'll have to do the Right Thing here.
-        from sqlalchemy import select, func
+        # Note that the tests use the same sort of code...
+        from sqlalchemy import select, func, and_
         from elixir import session
         ex = session.execute
         sel = lambda *args: select(*args).execute().fetchall()
@@ -241,7 +241,8 @@ class Namespace(Entity, StorageMethods):
             base_id = (sel([func.max(class_.id)])[0][0] or 0) + 1
             col_names = [c.name for c in class_.table.c]
             # class_.table.c is the list of columns in the class' table
-            for new_id, row in enumerate(sel(class_.table.c)):
+            query = class_.namespace_id==self.id
+            for new_id, row in enumerate(sel(class_.table.c, query)):
                 new = dict(zip(col_names, row))
 
                 new_id += base_id
@@ -254,7 +255,6 @@ class Namespace(Entity, StorageMethods):
                     # to resolve inverses
                     to_add.append(new)
                     continue
-                print "Inserting " + repr(new)
                 insert(class_, new)
 
             for new in to_add:
@@ -262,19 +262,27 @@ class Namespace(Entity, StorageMethods):
                 new['_inverse_id'] = id_map[class_][new['_inverse_id']]
                 insert(class_, new)
 
-        return
         for class_ in secondary_classes:
             col_names = [c.name for c in class_.table.c]
             col_types = [c.type for c in class_.list_fields(True)]
-            for row in sel(class_.table.c):
+            fks = [] # foregn keys
+            for (name, type) in zip(col_names, col_types):
+                if issubclass(type, primary_classes):
+                    fks.append((name, type))
+
+            # Find all the 'class_'s which reference a "primary object"
+            # who's namespace is the old namespace.  We only check the
+            # first foregn key because it is sufficient.
+            query = and_(fks[0][1].id==getattr(class_, fks[0][0]),
+                         fks[0][1].namespace_id==self.id)
+            for row in sel(class_.table.c, query):
                 new = dict(zip(col_names, row))
-                for (name, type, value) in zip(col_names, col_types, row):
-                    # For each column which is a foregn key linking to
-                    # one of the primary classes, update the link
-                    if issubclass(type, primary_classes):
-                        new['name'] = id_map[type][value]
-                print "Inserting " + repr(new)
+                for name, type in fks:
+                    # Update the foregn key references from the ID map
+                    new[name] = id_map[type][new[name]]
                 insert(class_, new)
+                
+        return new_ns
 
 
 class Relation(Entity, StorageMethods):
@@ -418,7 +426,6 @@ class RelationType(Entity, StorageMethods):
         StorageMethods.assert_valid(self)
 
     def remove(self):
-        """ Remove this type. """
         self.delete()
 
 
@@ -504,7 +511,6 @@ class KeywordAssociation(Entity, StorageMethods):
     using_options(tablename='keyword_associations')
 
     def remove(self):
-        """ Remove the association. """
         self.delete()
 
 
@@ -522,5 +528,4 @@ class KeywordRelationship(Entity, StorageMethods):
     using_options(tablename='keyword_relationships')
 
     def remove(self):
-        """ Remove this relationship. """
         self.delete()

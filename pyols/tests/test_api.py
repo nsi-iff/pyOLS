@@ -74,6 +74,12 @@ class TestOntologyTool(PyolsDBTest):
         self.ot.namespace = u"testNS"
         assert_equal(self.ot.namespace, "testNS")
 
+    def testCopyNamespace(self):
+        # This test can be simple because the hard testing is done
+        # on Namespace.copy_to
+        nn = self.ot.copyNamespace(u"new_ns")
+        assert_equal(nn.name, u"new_ns")
+
     def testAdd(self):
         kw0 = self.addKeyword(u"kw0")
         kw1 = self.addKeyword(u"kw1")

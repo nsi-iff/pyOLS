@@ -151,22 +151,7 @@ class TestRelationType:
 class TestKeyword(PyolsDBTest):
     def setup(self):
         super(TestKeyword, self).setup()
-        ns = Namespace(name=u"testns")
-        for kw in (u"kw0", u"kw1", u"kw2"):
-            setattr(self, kw, Keyword.new(name=kw, namespace=ns))
-        for rel in (u"rel0", u"rel1"):
-            setattr(self, rel, Relation.new(name=rel, namespace=ns))
-
-        self.kwr0 = KeywordRelationship.new(left=self.kw0, relation=self.rel0,
-                                           right=self.kw1)
-        self.kwr1 = KeywordRelationship.new(left=self.kw0, relation=self.rel1,
-                                           right=self.kw1)
-        self.kwr2 = KeywordRelationship.new(left=self.kw1, relation=self.rel0,
-                                           right=self.kw0)
-
-        self.kwa0 = KeywordAssociation.new(keyword=self.kw0, path=u"kwa0")
-        self.kwa1 = KeywordAssociation.new(keyword=self.kw2, path=u"kwa1")
-        db.flush()
+        self.add_data()
 
     def testRelations(self):
         assert_equal(sorted(self.kw0.relations),
@@ -200,9 +185,50 @@ class TestNamespace(PyolsDBTest):
             assert Relation.get_by(namespace=ns, name=rel)
 
     def testCopy(self):
-        pass
-        #self.add_data()
-        #self.ns.copy_to(u'new_ns')
+        self.add_data()
+        
+        ########## HERE BE DRAGONS! ##########
+        # See comments in the copy_to method...
+        from sqlalchemy import select, func, and_
+        from elixir import session
+        sel = lambda *args: select(*args).execute().fetchall()
+        # Strip the ID and Namespace from Relations and Keywords
+        noid = lambda rs: set([r[2:] for r in rs])
+
+        from pyols import model
+        storage_classes = [getattr(model, cls) for cls in model.__all__
+                           if cls not in ('Namespace', 'StorageMethods')]
+
+        expected = {}
+        for cls in storage_classes:
+            expected[cls] = set(sel(cls.table.c))
+
+        for ns in (u'new_ns0', u'new_ns1'):
+            ns = self.ns.copy_to(ns)
+            
+            # Ensure that these have been coppied over
+            for cls in (Relation, Keyword):
+                instances = set(sel(cls.table.c, cls.namespace_id == ns.id))
+                assert_equal(noid(expected[cls]), noid(instances))
+
+            # Note: This is _not_ a complete test -- it will only check
+            #       that the same _number_ of items exist -- not that they
+            #       are identical.  This is definatly incorrect, but I can't
+            #       think of a simple way to make it better... So this is how
+            #       it will remain.  Unless you want to fix it :)
+            for cls, fk, fk_type in ((KeywordAssociation, 'keyword', Keyword),
+                                     (KeywordRelationship, 'left', Keyword),
+                                     (RelationType, 'relation', Relation)):
+                query = and_(fk_type.id == getattr(cls, fk + '_id'),
+                             fk_type.namespace_id==ns.id)
+                instances = sel(cls.table.c, query)
+                assert_equal(len(instances), len(expected[cls]))
+
+    @raises(PyolsValidationError)
+    def testInvalidCopy(self):
+        ns = Namespace.new(name=u'testns')
+        ns.flush()
+        ns.copy_to(u'testns')
 
 
 class TestStorageMethods:
@@ -239,5 +265,6 @@ class TestStorageMethods:
         expected = {'name': 'kw0', 'namespace': ns, 'id': None }
         assert_equal(expected, kw.__rpc__(0))
         assert_equal(expected, kw.__rpc__(-42))
+
 
 run_tests()
