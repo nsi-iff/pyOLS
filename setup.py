@@ -10,7 +10,7 @@ from os import path, system
 
 install_requires = [
     'SQLAlchemy == 0.4.6', # The 0.5 beta breaks Elixir :(
-    'Elixir >= 0.5.2',
+    'Elixir == 0.5.2',
     ]
 
 if sys.version_info < (2, 5):
